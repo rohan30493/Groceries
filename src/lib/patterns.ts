@@ -1,11 +1,20 @@
 import patternRulesRaw from "../../data/pattern_rules.json";
 import categorySectionsRaw from "../../data/category_sections.json";
+import { calculateItemLastOrdered } from "./orderRecency";
+import { calculateItemCadence, calculateReplenishmentScore, ReplenishmentStatus } from "./replenishment";
+import { HouseholdOrder } from "./orderLifecycle";
+import { isItemInActiveOrder } from "./purchaseMemory";
 
 export interface CompanionSuggestion {
   item: string;
   triggeredBy: string;
   reason: string;
   confidence: number;
+  lastOrderedText?: string;
+  cadenceText?: string | null;
+  dueText?: string | null;
+  replenishmentStatus?: ReplenishmentStatus;
+  daysUntilDue?: number | null;
 }
 
 export interface GroceryItem {
@@ -212,12 +221,15 @@ function normalizeForCompanions(name: string): string {
 }
 
 /**
- * Predicts what items might be missing based on co-occurrence with already added items.
+ * Predicts what items might be missing based on co-occurrence with already added items,
+ * ranked and qualified by cadence-aware replenishment intelligence.
  * Only returns suggestions when items have actually been added!
  */
 export function getMissingItemSuggestions(
   currentList: string[],
-  lastAddedItem?: string | null
+  lastAddedItem?: string | null,
+  orders?: HouseholdOrder[],
+  activeOrders?: HouseholdOrder[]
 ): CompanionSuggestion[] {
   // Never show suggestions on empty list - only when items have been added!
   if (!currentList || currentList.length === 0) {
@@ -229,13 +241,23 @@ export function getMissingItemSuggestions(
 
   // Helper to check if item is already in list
   const isAlreadyInList = (candidate: string) => {
-    const cLower = candidate.toLowerCase();
+    const cLower = candidate.toLowerCase().trim();
     for (const inList of currentLowerSet) {
       if (inList.includes(cLower) || cLower.includes(inList)) {
         return true;
       }
     }
     return false;
+  };
+
+  // Helper to check if item is in active order (suppress from recommendations)
+  const isAlreadyInActiveOrder = (candidate: string) => {
+    if (!activeOrders || activeOrders.length === 0) return false;
+    return isItemInActiveOrder(candidate, activeOrders);
+  };
+
+  const isExcluded = (candidate: string) => {
+    return isAlreadyInList(candidate) || isAlreadyInActiveOrder(candidate);
   };
 
   // Prioritize last added item first if available
@@ -255,18 +277,27 @@ export function getMissingItemSuggestions(
         rawItem.toLowerCase().includes(key.toLowerCase())
       ) {
         for (const comp of companions) {
-          if (!isAlreadyInList(comp.companion)) {
+          if (!isExcluded(comp.companion)) {
             const isFromLastAdded = lastAddedItem && rawItem === lastAddedItem;
             const boost = isFromLastAdded ? 0.3 : 0;
             const effectiveConfidence = comp.confidence + boost;
 
+            const cadence = calculateItemCadence(comp.companion, orders);
+            const replenishmentScore = calculateReplenishmentScore(cadence, effectiveConfidence);
+
             const existing = suggestionsMap.get(comp.companion);
-            if (!existing || effectiveConfidence > existing.confidence) {
+            if (!existing || replenishmentScore > existing.confidence) {
+              const recencyText = calculateItemLastOrdered(comp.companion, orders) || undefined;
               suggestionsMap.set(comp.companion, {
                 item: comp.companion,
                 triggeredBy: rawItem,
                 reason: `Usually ordered with ${rawItem} (${Math.round(comp.confidence * 100)}% of the time in past orders)`,
-                confidence: effectiveConfidence
+                confidence: replenishmentScore,
+                lastOrderedText: recencyText,
+                cadenceText: cadence.uiCadenceText,
+                dueText: cadence.uiDueText,
+                replenishmentStatus: cadence.replenishmentStatus,
+                daysUntilDue: cadence.daysUntilDue
               });
             }
           }
@@ -280,16 +311,25 @@ export function getMissingItemSuggestions(
     const cat = detectCategory(it);
     return cat === "Fruits & Vegetables" || cat === "Dairy, Bread & Eggs";
   });
-  if (hasProduceOrDairy && !isAlreadyInList("Cat Food") && !isAlreadyInList("Sheba")) {
+  if (hasProduceOrDairy && !isExcluded("Cat Food") && !isExcluded("Sheba")) {
+    const catFoodCadence = calculateItemCadence("Cat Food", orders);
+    const catFoodScore = calculateReplenishmentScore(catFoodCadence, 0.65);
+    const recencyText = calculateItemLastOrdered("Cat Food", orders) || undefined;
+
     suggestionsMap.set("Cat Food", {
       item: "Cat Food",
       triggeredBy: "Samba & Milo",
       reason: "Cat food reminder for Samba & Milo",
-      confidence: 0.65
+      confidence: catFoodScore,
+      lastOrderedText: recencyText,
+      cadenceText: catFoodCadence.uiCadenceText,
+      dueText: catFoodCadence.uiDueText,
+      replenishmentStatus: catFoodCadence.replenishmentStatus,
+      daysUntilDue: catFoodCadence.daysUntilDue
     });
   }
 
-  // Sort by confidence descending
+  // Sort by replenishment-adjusted confidence descending
   const sorted = Array.from(suggestionsMap.values()).sort((a, b) => b.confidence - a.confidence);
   return sorted.slice(0, 5);
 }

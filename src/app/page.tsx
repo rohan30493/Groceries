@@ -20,6 +20,11 @@ import {
   Search,
   Grid,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Package,
+  Truck,
+  XCircle,
   Clock
 } from "lucide-react";
 import {
@@ -42,9 +47,38 @@ import {
   archiveCompletedRun,
   fetchCategorySectionsDb,
   fetchPatternRulesDb,
+  saveHouseholdOrder,
+  fetchHouseholdOrders,
+  updateHouseholdOrder,
+  clearActiveBasketDb,
   toGroceryItem,
   DbGroceryItem
 } from "../lib/supabase";
+import {
+  BasketHandoffState,
+  LIRA_HANDOFF_MESSAGE,
+  initHandoffState,
+  registerBasketActivity,
+  liraCompleteAndHandoff,
+  canPlaceOrder,
+  executePlaceOrder,
+  resetBasketState,
+  getLiraAutonomousRecommendations,
+  AutonomousRecommendation
+} from "../lib/handoff";
+import {
+  HouseholdOrder,
+  OrderStatus,
+  OrderItemStatus,
+  createOrderFromBasket,
+  updateOrderStatus,
+  updateOrderItemOutcome
+} from "../lib/orderLifecycle";
+import {
+  getDefaultHistoricalOrders,
+  getCanonicalPurchaseMemory,
+  isItemInActiveOrder
+} from "../lib/purchaseMemory";
 
 // Helper to format human-readable time (e.g., "9:15 AM" or "Yesterday, 8:40 PM")
 function formatEventTime(isoStringOrText?: string): string {
@@ -69,16 +103,60 @@ function formatEventTime(isoStringOrText?: string): string {
   }
 }
 
+// Helpers for Order History formatting: "Sep 12 · ₹2,840"
+function formatOrderHeaderDate(isoDateOrStr?: string): string {
+  if (!isoDateOrStr) return "Recent Order";
+  try {
+    const d = new Date(isoDateOrStr);
+    if (isNaN(d.getTime())) return isoDateOrStr;
+    return d.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+  } catch {
+    return isoDateOrStr;
+  }
+}
+
+function formatOrderAmount(amount?: number): string {
+  if (!amount || isNaN(amount) || amount === 0) return "";
+  return ` · ₹${Math.round(amount).toLocaleString("en-IN")}`;
+}
+
+function formatPlatformName(platform?: string): string {
+  if (!platform) return "Zepto";
+  const p = platform.trim();
+  if (p === "SWIGGY_INSTAMART") return "Swiggy Instamart";
+  if (p === "ZEPTO") return "Zepto";
+  if (p === "HANDPICKD") return "Handpickd";
+  if (p === "HOUSEHOLD_APP") return "Household App";
+  return p;
+}
+
 // Initial sample items to populate the list on first load
 const INITIAL_ITEMS: GroceryItem[] = [];
 
 export default function GroceryAssistantApp() {
-  const [activeTab, setActiveTab] = useState<"lira" | "rohan">("lira");
+  const [activeTab, setActiveTab] = useState<"lira" | "rohan" | "orders">("lira");
   const [items, setItems] = useState<GroceryItem[]>(INITIAL_ITEMS);
   const [inputText, setInputText] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [copiedNotification, setCopiedNotification] = useState(false);
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
+
+  // Order history and active orders
+  const [orders, setOrders] = useState<HouseholdOrder[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("household_orders_cache");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return getDefaultHistoricalOrders();
+  });
+  const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
+  const [ordersFilter, setOrdersFilter] = useState<"ALL" | "ORDER_PLACED" | "DELIVERED" | "CANCELLED">("ALL");
+  const [ordersDisplayLimit, setOrdersDisplayLimit] = useState<number>(30);
 
   // Dynamic category sections loaded from Supabase (falls back to DEFAULT_CATEGORY_SECTIONS)
   const [categorySections, setCategorySections] = useState<CategorySection[]>(DEFAULT_CATEGORY_SECTIONS);
@@ -87,6 +165,9 @@ export default function GroceryAssistantApp() {
   const [recentlyAddedAnimation, setRecentlyAddedAnimation] = useState<string | null>(null);
   const [lastAddedItem, setLastAddedItem] = useState<string | null>(null);
   const [isCloudSynced, setIsCloudSynced] = useState<boolean>(false);
+
+  // Gated order handoff state (Lira builds autonomously, then hands off with 'I’m done. Please proceed with order.')
+  const [handoffState, setHandoffState] = useState<BasketHandoffState>(() => initHandoffState(0));
 
   // Load from localStorage on mount & sync with Supabase in real time
   useEffect(() => {
@@ -97,6 +178,13 @@ export default function GroceryAssistantApp() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setItems(parsed);
+        }
+      }
+      const savedHandoff = localStorage.getItem("household_basket_handoff_state");
+      if (savedHandoff) {
+        const parsedHandoff = JSON.parse(savedHandoff);
+        if (parsedHandoff && parsedHandoff.status) {
+          setHandoffState(parsedHandoff);
         }
       }
     } catch (e) {
@@ -122,7 +210,23 @@ export default function GroceryAssistantApp() {
       }
     });
 
-    // 4. Supabase Realtime multi-device subscription (Lira & Rohan stay synced)
+    // 4. Fetch household orders from Supabase & merge with default historical orders
+    fetchHouseholdOrders().then((dbOrders) => {
+      if (dbOrders && dbOrders.length > 0) {
+        setOrders((prev) => {
+          const dbIds = new Set(dbOrders.map((o) => o.orderId));
+          const merged = [...dbOrders];
+          for (const p of prev) {
+            if (!dbIds.has(p.orderId)) {
+              merged.push(p);
+            }
+          }
+          return merged;
+        });
+      }
+    });
+
+    // 5. Supabase Realtime multi-device subscription (Lira & Rohan stay synced)
     const channel = supabase
       .channel("household-grocery-changes")
       .on(
@@ -153,6 +257,15 @@ export default function GroceryAssistantApp() {
     };
   }, []);
 
+  // Cache recent orders in localStorage for offline & instant render
+  useEffect(() => {
+    try {
+      localStorage.setItem("household_orders_cache", JSON.stringify(orders.slice(0, 100)));
+    } catch (e) {
+      console.error("Failed to cache orders", e);
+    }
+  }, [orders]);
+
   // Save to localStorage on change as reliable backup
   useEffect(() => {
     try {
@@ -162,17 +275,40 @@ export default function GroceryAssistantApp() {
     }
   }, [items]);
 
+  // Save handoff state to localStorage on change
+  useEffect(() => {
+    try {
+      localStorage.setItem("household_basket_handoff_state", JSON.stringify(handoffState));
+    } catch (e) {
+      console.error("Failed to save handoff state to localStorage", e);
+    }
+  }, [handoffState]);
+
+  // Derived filtered subsets
+  const pendingItems = useMemo(() => items.filter((it) => !it.isDone), [items]);
+  const completedItems = useMemo(() => items.filter((it) => it.isDone), [items]);
+
+  // Active orders in flight (ORDER_PLACED)
+  const activeOrders = useMemo(() => {
+    return orders.filter((o) => o.status === "ORDER_PLACED");
+  }, [orders]);
+
   // Current active (pending) item names for pattern matching
   const currentItemNames = useMemo(() => {
     return items.filter((it) => !it.isDone).map((it) => it.name);
   }, [items]);
 
-  // Intelligent Pattern Suggestions (reactively calculated from current active items + last added item)
+  // Intelligent Pattern Suggestions (reactively calculated from current active items + last added item + cadence replenishment)
   const patternSuggestions = useMemo(() => {
     if (currentItemNames.length === 0) return [];
-    const rawSuggestions = getMissingItemSuggestions(currentItemNames, lastAddedItem);
+    const rawSuggestions = getMissingItemSuggestions(
+      currentItemNames,
+      lastAddedItem,
+      orders,
+      activeOrders
+    );
     return rawSuggestions.filter((s) => !dismissedSuggestions.has(s.item.toLowerCase()));
-  }, [currentItemNames, lastAddedItem, dismissedSuggestions]);
+  }, [currentItemNames, lastAddedItem, dismissedSuggestions, orders, activeOrders]);
 
   // Real-time preview of parsed items from text/speech
   const detectedPreview = useMemo(() => {
@@ -201,12 +337,29 @@ export default function GroceryAssistantApp() {
 
     const activeCategory =
       categorySections.find((c) => c.id === selectedCategoryId) || categorySections[0];
-    return { isSearch: false, results: [], activeCategory };
+    return {
+      isSearch: false,
+      results: [] as Array<{ item: CategoryItemDef; categoryName: string; categoryIcon: string }>,
+      activeCategory
+    };
   }, [categorySections, categorySearchQuery, selectedCategoryId]);
 
-  // Derived filtered subsets
-  const pendingItems = useMemo(() => items.filter((it) => !it.isDone), [items]);
-  const completedItems = useMemo(() => items.filter((it) => it.isDone), [items]);
+  // Autonomous recommendations that Lira suggests based on co-occurrence & top household staples
+  // Passed activeOrders and orders so items currently in flight are not immediately re-added and due staples are prioritized
+  const autonomousRecs = useMemo(() => {
+    return getLiraAutonomousRecommendations(items, 6, activeOrders, orders);
+  }, [items, activeOrders, orders]);
+
+  // Filtered orders for Order History tab
+  const filteredOrders = useMemo(() => {
+    if (ordersFilter === "ALL") return orders;
+    return orders.filter((o) => o.status === ordersFilter);
+  }, [orders, ordersFilter]);
+
+  // Order placement check for Rohan (gated until Lira hands off with 'I’m done. Please proceed with order.')
+  const canOrderResult = useMemo(() => {
+    return canPlaceOrder(handoffState, "Rohan", pendingItems.length);
+  }, [handoffState, pendingItems.length]);
 
   // Add multiple items from input bar or speech
   const handleAddItems = (text: string, sender: "Lira" | "Rohan" = "Lira") => {
@@ -231,6 +384,7 @@ export default function GroceryAssistantApp() {
     setItems((prev) => [...newItems, ...prev]);
     setLastAddedItem(parsedNames[0]);
     setInputText("");
+    setHandoffState((prev) => registerBasketActivity(prev, pendingItems.length + newItems.length));
 
     // Cloud sync
     newItems.forEach((it) => upsertGroceryItem(it));
@@ -258,6 +412,7 @@ export default function GroceryAssistantApp() {
 
     setItems((prev) => [newItem, ...prev]);
     setLastAddedItem(name);
+    setHandoffState((prev) => registerBasketActivity(prev, pendingItems.length + 1));
 
     // Cloud sync
     upsertGroceryItem(newItem);
@@ -271,6 +426,122 @@ export default function GroceryAssistantApp() {
     setTimeout(() => {
       setRecentlyAddedAnimation((curr) => (curr === itemName ? null : curr));
     }, 1200);
+  };
+
+  // Lira autonomously adds all currently recommended items to the basket
+  const handleAutonomousAddAll = () => {
+    if (autonomousRecs.length === 0) return;
+    const nowIso = new Date().toISOString();
+    const timeFormatted = formatEventTime(nowIso);
+
+    const newItems: GroceryItem[] = [];
+    autonomousRecs.forEach((rec, idx) => {
+      const isAlreadyPresent = items.some(
+        (it) => !it.isDone && it.name.toLowerCase().trim() === rec.name.toLowerCase().trim()
+      );
+      if (!isAlreadyPresent) {
+        newItems.push({
+          id: `item-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+          name: rec.name,
+          category: rec.category || detectCategory(rec.name),
+          addedBy: "Lira",
+          addedAt: timeFormatted,
+          createdAt: nowIso,
+          isDone: false
+        });
+      }
+    });
+
+    if (newItems.length > 0) {
+      setItems((prev) => [...newItems, ...prev]);
+      setLastAddedItem(newItems[0].name);
+      setHandoffState((prev) => registerBasketActivity(prev, pendingItems.length + newItems.length));
+      newItems.forEach((it) => upsertGroceryItem(it));
+    }
+  };
+
+  // Lira completes the basket and triggers handoff with the exact message: "I’m done. Please proceed with order."
+  const handleLiraHandoff = () => {
+    if (pendingItems.length === 0) return;
+    try {
+      const nextState = liraCompleteAndHandoff(handoffState, pendingItems.length);
+      setHandoffState(nextState);
+    } catch (e) {
+      console.error("Handoff error", e);
+    }
+  };
+
+  // Rohan places the order (gated until Lira hands off)
+  const handlePlaceOrder = async () => {
+    const check = canPlaceOrder(handoffState, "Rohan", pendingItems.length);
+    if (!check.allowed) {
+      alert(check.reason || "Cannot place order.");
+      return;
+    }
+
+    const result = executePlaceOrder(handoffState, "Rohan", pendingItems.length);
+    if (!result.success) {
+      alert(result.error || "Failed to place order.");
+      return;
+    }
+
+    // 1. Create the new HouseholdOrder in ORDER_PLACED status with canonical identities
+    const newOrder = createOrderFromBasket(pendingItems, "Zepto", "Rohan");
+
+    // 2. Add to orders history (newest first)
+    setOrders((prev) => [newOrder, ...prev]);
+
+    // 3. Persist to Supabase household_orders
+    saveHouseholdOrder(newOrder);
+
+    // 4. Remove active items from current basket (both local state & Supabase grocery_items)
+    const activeItemIds = pendingItems.map((it) => it.id);
+    setItems((prev) => prev.filter((it) => it.isDone));
+    clearActiveBasketDb(activeItemIds);
+
+    // 5. Transition handoff state to 'ordered'
+    setHandoffState(result.nextState);
+  };
+
+  // Order lifecycle management handlers for Order History UI
+  const handleUpdateOrderStatus = (orderId: string, status: OrderStatus) => {
+    setOrders((prev) => {
+      const next = prev.map((o) => (o.orderId === orderId ? updateOrderStatus(o, status) : o));
+      const target = next.find((o) => o.orderId === orderId);
+      if (target) updateHouseholdOrder(target);
+      return next;
+    });
+  };
+
+  const handleUpdateItemOutcome = (
+    orderId: string,
+    lineItemIdOrCanonical: string,
+    outcome: OrderItemStatus
+  ) => {
+    setOrders((prev) => {
+      const next = prev.map((o) =>
+        o.orderId === orderId ? updateOrderItemOutcome(o, lineItemIdOrCanonical, outcome) : o
+      );
+      const target = next.find((o) => o.orderId === orderId);
+      if (target) updateHouseholdOrder(target);
+      return next;
+    });
+  };
+
+  const toggleOrderExpanded = (orderId: string) => {
+    setExpandedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) next.delete(orderId);
+      else next.add(orderId);
+      return next;
+    });
+  };
+
+  // Reset to start a new grocery run
+  const handleStartNewBasket = () => {
+    setItems((prev) => prev.filter((it) => !it.isDone));
+    setHandoffState(resetBasketState());
+    setActiveTab("lira");
   };
 
   // Toggle Done / Bought status (sync to Supabase with exact purchased_at timestamp)
@@ -292,7 +563,12 @@ export default function GroceryAssistantApp() {
 
   // Delete an item (sync to Supabase)
   const deleteItem = (id: string) => {
-    setItems((prev) => prev.filter((it) => it.id !== id));
+    setItems((prev) => {
+      const next = prev.filter((it) => it.id !== id);
+      const remainingPending = next.filter((it) => !it.isDone).length;
+      setHandoffState((hPrev) => registerBasketActivity(hPrev, remainingPending));
+      return next;
+    });
     deleteGroceryItemDb(id);
   };
 
@@ -432,6 +708,22 @@ export default function GroceryAssistantApp() {
                 </span>
               )}
             </button>
+            <button
+              onClick={() => setActiveTab("orders")}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                activeTab === "orders"
+                  ? "bg-white text-emerald-800 shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>Orders</span>
+              {activeOrders.length > 0 && (
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-500 text-white animate-pulse">
+                  {activeOrders.length}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </header>
@@ -457,6 +749,151 @@ export default function GroceryAssistantApp() {
                 </div>
               </div>
             </div>
+
+            {/* Lira Handoff Status & Gate Banner */}
+            {handoffState.status === "ready_for_order" ? (
+              <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm animate-fadeIn">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm font-bold">
+                      👩‍🍳
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                          Lira Handoff Gate
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+                          Handed Off to Rohan
+                        </span>
+                      </div>
+                      <p className="text-base font-bold text-slate-900 mt-1 italic">
+                        &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
+                      </p>
+                      <p className="text-xs text-slate-600 mt-0.5">
+                        Basket is complete with {pendingItems.length} items. Handed off to Rohan for ordering.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab("rohan")}
+                    className="shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <span>Switch to Rohan to Place Order &rarr;</span>
+                  </button>
+                </div>
+              </div>
+            ) : pendingItems.length > 0 && handoffState.status === "building" ? (
+              <div className="bg-amber-50/90 border border-amber-300/90 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-2xs">
+                    🧺
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                        Basket Status: Building by Lira
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold">
+                        {pendingItems.length} items
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-800 mt-0.5">
+                      Refine or add what is needed. When finished, complete the basket to hand off to Rohan.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleLiraHandoff}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5 shrink-0"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Complete Basket &amp; Hand Off</span>
+                </button>
+              </div>
+            ) : handoffState.status === "ordered" ? (
+              <div className="bg-slate-100 border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Last Run Ordered
+                  </span>
+                  <p className="text-sm font-medium text-slate-700 mt-0.5">
+                    Order for {handoffState.lastRunSummary?.itemCount ?? 0} items placed by Rohan.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setActiveTab("orders")}
+                    className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1"
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>View Orders</span>
+                  </button>
+                  <button
+                    onClick={handleStartNewBasket}
+                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-colors"
+                  >
+                    Start New Basket
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Autonomous Basket Builder (Lira's Intelligent Staple & Replenishment Suggestions) */}
+            {autonomousRecs.length > 0 && (
+              <div className="bg-teal-50/70 border border-teal-200 rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center justify-between gap-2 mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-teal-700 shrink-0" />
+                    <div>
+                      <h3 className="text-sm font-bold text-teal-950">
+                        Lira&apos;s Autonomous Recommendations
+                      </h3>
+                      <p className="text-[11px] text-teal-700">
+                        Intelligent staples and co-occurrences needed for the household
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleAutonomousAddAll}
+                    className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-2xs transition-colors flex items-center gap-1 shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Auto-Add All ({autonomousRecs.length})</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                  {autonomousRecs.map((rec) => (
+                    <div
+                      key={rec.name}
+                      className="bg-white/95 border border-teal-100 rounded-xl p-2.5 flex items-center justify-between gap-2 hover:border-teal-300 transition-colors shadow-2xs"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-slate-800 truncate">
+                            {rec.name}
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800 font-medium">
+                            {rec.category}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                          {rec.reason}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleAddSingleItem(rec.name, "Lira")}
+                        className="bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 shrink-0"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Add</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Input Card */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
@@ -556,13 +993,35 @@ export default function GroceryAssistantApp() {
                       className="bg-white/95 border border-amber-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-2xs hover:border-amber-300 transition-all"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-slate-900 text-sm flex items-center gap-1.5">
+                        <div className="font-semibold text-slate-900 text-sm flex items-center gap-1.5 flex-wrap">
                           <span>{suggestion.item}</span>
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">
                             Usually with {suggestion.triggeredBy}
                           </span>
+                          {suggestion.dueText && (
+                            <span
+                              className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                suggestion.replenishmentStatus === "DUE_NOW"
+                                  ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                  : suggestion.replenishmentStatus === "APPROACHING_DUE"
+                                  ? "bg-amber-100 text-amber-900 border border-amber-300"
+                                  : "bg-slate-100 text-slate-600 border border-slate-200"
+                              }`}
+                            >
+                              {suggestion.dueText}
+                            </span>
+                          )}
                         </div>
-                        <p className="text-xs text-slate-500 truncate">{suggestion.reason}</p>
+                        <p className="text-xs text-slate-500 truncate mt-0.5">{suggestion.reason}</p>
+                        {suggestion.cadenceText ? (
+                          <p className="text-xs text-slate-600 font-medium mt-1">
+                            {suggestion.cadenceText}
+                          </p>
+                        ) : suggestion.lastOrderedText ? (
+                          <p className="text-xs text-slate-500 mt-1">
+                            {suggestion.lastOrderedText}
+                          </p>
+                        ) : null}
                       </div>
 
                       <div className="flex items-center gap-1.5">
@@ -906,6 +1365,39 @@ export default function GroceryAssistantApp() {
                   ))}
                 </div>
               )}
+
+              {/* Lira Handoff Callout at bottom of list */}
+              {pendingItems.length > 0 && (
+                handoffState.status === "ready_for_order" ? (
+                  <div className="mt-3.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span className="text-xs font-semibold text-emerald-950">
+                        Basket handed off: &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab("rohan")}
+                      className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1"
+                    >
+                      <span>Go to Rohan&apos;s View to Place Order &rarr;</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <span className="text-xs text-slate-500">
+                      Finished building the basket?
+                    </span>
+                    <button
+                      onClick={handleLiraHandoff}
+                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-2xs transition-colors flex items-center gap-1.5"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Complete Basket &amp; Hand Off</span>
+                    </button>
+                  </div>
+                )
+              )}
             </div>
           </div>
         )}
@@ -915,6 +1407,110 @@ export default function GroceryAssistantApp() {
         {/* ========================================================================= */}
         {activeTab === "rohan" && (
           <div className="space-y-5">
+            {/* Lira Handoff Gate Status Banner in Rohan's View */}
+            {handoffState.status === "ready_for_order" ? (
+              <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm animate-fadeIn">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm font-bold">
+                      👩‍🍳
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                          Lira Handoff Gate • Open
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-950 font-bold border border-emerald-300">
+                          Ready to Order
+                        </span>
+                      </div>
+                      <p className="text-base font-bold text-slate-900 mt-1 italic">
+                        &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
+                      </p>
+                      <p className="text-xs text-slate-600 mt-0.5">
+                        Lira has finalized the basket with {pendingItems.length} items. The ordering gate is open — you can now place the order.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handlePlaceOrder}
+                    className="shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 ring-2 ring-emerald-500/40"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    <span>Place Order Now ({pendingItems.length})</span>
+                  </button>
+                </div>
+              </div>
+            ) : handoffState.status === "building" ? (
+              <div className="bg-amber-50/90 border border-amber-300 rounded-2xl p-4 shadow-sm animate-fadeIn">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-2xs">
+                      ⏳
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                          Handoff Gate Locked • Basket in Progress
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold">
+                          Building by Lira
+                        </span>
+                      </div>
+                      <p className="text-xs text-amber-900 font-medium mt-1">
+                        Lira is autonomously building and refining the basket ({pendingItems.length} items so far). Order placement is gated until Lira hands off with:
+                      </p>
+                      <p className="text-xs font-bold text-amber-950 mt-0.5 italic">
+                        &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab("lira")}
+                    className="shrink-0 px-3.5 py-1.5 bg-white border border-amber-300 hover:bg-amber-50 text-amber-900 font-semibold text-xs rounded-xl transition-colors"
+                  >
+                    View Lira&apos;s Basket &rarr;
+                  </button>
+                </div>
+              </div>
+            ) : handoffState.status === "ordered" ? (
+              <div className="bg-emerald-50/80 border border-emerald-300 rounded-2xl p-4 shadow-sm animate-fadeIn">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                      ✓
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                        Order Placed by Rohan
+                      </span>
+                      <p className="text-sm font-semibold text-slate-900 mt-0.5">
+                        Order for {handoffState.lastRunSummary?.itemCount ?? 0} items placed at {formatEventTime(handoffState.orderedAt ?? undefined)}.
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Basket cleared. Items are now in flight and tracked in Order History.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setActiveTab("orders")}
+                      className="shrink-0 px-3.5 py-2 bg-white border border-emerald-300 hover:bg-emerald-50 text-emerald-800 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>View Orders</span>
+                    </button>
+                    <button
+                      onClick={handleStartNewBasket}
+                      className="shrink-0 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-colors"
+                    >
+                      Start New Basket
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             {/* Header Toolbar */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -928,6 +1524,20 @@ export default function GroceryAssistantApp() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={handlePlaceOrder}
+                    disabled={!canOrderResult.allowed}
+                    title={canOrderResult.allowed ? "Place order with current items" : canOrderResult.reason}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all shadow-sm ${
+                      canOrderResult.allowed
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white ring-2 ring-emerald-500/50 cursor-pointer"
+                        : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+                    }`}
+                  >
+                    <ShoppingCart className="w-3.5 h-3.5" />
+                    <span>{canOrderResult.allowed ? `Place Order (${pendingItems.length})` : "Place Order (Locked)"}</span>
+                  </button>
+
                   <button
                     onClick={handleCopyList}
                     className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
@@ -1102,6 +1712,288 @@ export default function GroceryAssistantApp() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* VIEW 3: ORDER HISTORY (Simple, Mobile-Friendly & Purchase Memory)        */}
+        {/* ========================================================================= */}
+        {activeTab === "orders" && (
+          <div className="space-y-4 pb-12">
+            {/* Orders Header Card */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 tracking-tight">Orders</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {orders.length} total orders across Zepto, Swiggy Instamart & Handpickd
+                  </p>
+                </div>
+                {activeOrders.length > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-xs font-semibold text-amber-800">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                    <span>{activeOrders.length} In Flight</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Filter Tabs */}
+              <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-slate-100 overflow-x-auto no-scrollbar">
+                {(["ALL", "ORDER_PLACED", "DELIVERED", "CANCELLED"] as const).map((filter) => {
+                  const label =
+                    filter === "ALL"
+                      ? "All Orders"
+                      : filter === "ORDER_PLACED"
+                      ? `In Flight (${activeOrders.length})`
+                      : filter === "DELIVERED"
+                      ? "Delivered"
+                      : "Cancelled";
+                  const count =
+                    filter === "ALL"
+                      ? orders.length
+                      : filter === "ORDER_PLACED"
+                      ? activeOrders.length
+                      : orders.filter((o) => o.status === filter).length;
+
+                  return (
+                    <button
+                      key={filter}
+                      onClick={() => setOrdersFilter(filter)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all ${
+                        ordersFilter === filter
+                          ? "bg-slate-900 text-white shadow-xs"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                      }`}
+                    >
+                      {label} <span className="opacity-70 text-[10px] ml-1">({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Orders Feed */}
+            <div className="space-y-3">
+              {filteredOrders.length === 0 ? (
+                <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                    📦
+                  </div>
+                  <h3 className="font-semibold text-slate-800 text-sm">No orders found</h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {ordersFilter === "ORDER_PLACED"
+                      ? "No orders currently in flight. When Rohan places an order, it will appear here."
+                      : "No orders match this filter."}
+                  </p>
+                </div>
+              ) : (
+                filteredOrders.slice(0, ordersDisplayLimit).map((order) => {
+                  const isExpanded = expandedOrderIds.has(order.orderId);
+                  const headerDate = formatOrderHeaderDate(order.placedAt);
+                  const amountStr = formatOrderAmount(order.totalAmount);
+                  const platformStr = formatPlatformName(order.platform);
+
+                  // Status Badge Styles
+                  let badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                  let statusLabel = "Delivered";
+                  if (order.status === "ORDER_PLACED") {
+                    badgeStyle = "bg-amber-50 text-amber-800 border-amber-300";
+                    statusLabel = "Order Placed";
+                  } else if (order.status === "PARTIALLY_DELIVERED") {
+                    badgeStyle = "bg-purple-50 text-purple-700 border-purple-200";
+                    statusLabel = "Partially Delivered";
+                  } else if (order.status === "CANCELLED") {
+                    badgeStyle = "bg-rose-50 text-rose-700 border-rose-200";
+                    statusLabel = "Cancelled";
+                  }
+
+                  return (
+                    <div
+                      key={order.orderId}
+                      className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden transition-all hover:border-slate-300"
+                    >
+                      {/* Tap / Click Order Summary Header */}
+                      <div
+                        onClick={() => toggleOrderExpanded(order.orderId)}
+                        className="p-4 cursor-pointer hover:bg-slate-50/70 transition-colors flex items-center justify-between gap-3 select-none"
+                      >
+                        <div className="min-w-0 flex-1">
+                          {/* Sep 12 · ₹2,840 */}
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                              {headerDate}
+                              {amountStr}
+                            </h3>
+                            {order.status === "ORDER_PLACED" && (
+                              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                            )}
+                          </div>
+
+                          {/* Zepto · Delivered */}
+                          <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-600">
+                            <span className="font-semibold text-slate-700">{platformStr}</span>
+                            <span className="text-slate-300">•</span>
+                            <span
+                              className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${badgeStyle}`}
+                            >
+                              {statusLabel}
+                            </span>
+                          </div>
+
+                          {/* 18 items */}
+                          <p className="text-xs text-slate-400 mt-1">
+                            {order.items.length} {order.items.length === 1 ? "item" : "items"}
+                          </p>
+                        </div>
+
+                        <div className="shrink-0 text-slate-400">
+                          {isExpanded ? (
+                            <ChevronUp className="w-5 h-5 text-slate-600" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5" />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Tapped / Expanded Items List */}
+                      {isExpanded && (
+                        <div className="border-t border-slate-100 bg-slate-50/50 p-4 space-y-3 animate-fadeIn">
+                          <div className="flex items-center justify-between pb-2 border-b border-slate-200/70">
+                            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                              Order Items
+                            </span>
+                            <span className="text-xs text-slate-500 font-medium">
+                              {order.items.length} items
+                            </span>
+                          </div>
+
+                          {/* Item List: e.g. Milk ×2, Paneer ×1 */}
+                          <div className="space-y-2 divide-y divide-slate-100">
+                            {order.items.map((item) => {
+                              const isDelivered = item.status === "DELIVERED";
+                              const isCancelled = item.status === "CANCELLED";
+                              const isPlaced = item.status === "ORDER_PLACED";
+
+                              return (
+                                <div
+                                  key={item.id}
+                                  className="pt-2 first:pt-0 flex items-center justify-between gap-3 text-sm"
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-semibold text-slate-900 leading-snug">
+                                      {item.canonicalName || item.name}
+                                      <span className="text-slate-500 font-normal ml-1">
+                                        ×{item.quantity}
+                                      </span>
+                                    </p>
+                                    {item.name !== item.canonicalName && (
+                                      <p className="text-[11px] text-slate-400 truncate">
+                                        {item.name}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* Item Status / Outcome Pill */}
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    {isDelivered && (
+                                      <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                        <Check className="w-3 h-3 text-emerald-600" /> Delivered
+                                      </span>
+                                    )}
+                                    {isCancelled && (
+                                      <span className="text-[11px] font-semibold text-rose-700 bg-rose-100/70 border border-rose-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                        <XCircle className="w-3 h-3 text-rose-600" /> Cancelled
+                                      </span>
+                                    )}
+                                    {isPlaced && (
+                                      <span className="text-[11px] font-semibold text-amber-800 bg-amber-100/80 border border-amber-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                        <Clock className="w-3 h-3 text-amber-600" /> In Flight
+                                      </span>
+                                    )}
+
+                                    {/* Item outcome controls for active/partial orders */}
+                                    {(order.status === "ORDER_PLACED" || order.status === "PARTIALLY_DELIVERED") && (
+                                      <div className="flex items-center gap-1 ml-1">
+                                        {!isDelivered && (
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleUpdateItemOutcome(order.orderId, item.id, "DELIVERED");
+                                            }}
+                                            title="Mark item received"
+                                            className="px-2 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px] font-semibold"
+                                          >
+                                            Receive
+                                          </button>
+                                        )}
+                                        {!isCancelled && (
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleUpdateItemOutcome(order.orderId, item.id, "CANCELLED");
+                                            }}
+                                            title="Mark item cancelled"
+                                            className="px-2 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-semibold"
+                                          >
+                                            Cancel
+                                          </button>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Action toolbar for active in-flight order */}
+                          {order.status === "ORDER_PLACED" && (
+                            <div className="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between gap-2">
+                              <p className="text-[11px] text-slate-500 italic">
+                                Active order is blocking Lira from re-adding these items.
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdateOrderStatus(order.orderId, "CANCELLED");
+                                  }}
+                                  className="px-3 py-1.5 bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 text-xs font-semibold rounded-xl transition-colors"
+                                >
+                                  Cancel Order
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdateOrderStatus(order.orderId, "DELIVERED");
+                                  }}
+                                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Mark Delivered</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+
+              {/* Pagination / Load More */}
+              {filteredOrders.length > ordersDisplayLimit && (
+                <div className="text-center pt-3">
+                  <button
+                    onClick={() => setOrdersDisplayLimit((prev) => prev + 30)}
+                    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition-colors shadow-2xs"
+                  >
+                    Load More Orders ({filteredOrders.length - ordersDisplayLimit} remaining)
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </main>

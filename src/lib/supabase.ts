@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { GroceryItem } from "./patterns";
+import { HouseholdOrder } from "./orderLifecycle";
+import { normalizeRawOrder } from "./purchaseMemory";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ymtzcoftaofshockhpck.supabase.co";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_iNliYMfe5w_0jDajihxS5Q_MYgrm5F3";
@@ -111,6 +113,77 @@ export async function clearCompletedItemsDb() {
     if (error) console.error("Error clearing completed items:", error.message);
   } catch (err) {
     console.warn("Supabase clear completed failed:", err);
+  }
+}
+
+// Clear active basket items from grocery_items
+export async function clearActiveBasketDb(itemIds?: string[]) {
+  try {
+    if (itemIds && itemIds.length > 0) {
+      const { error } = await supabase.from("grocery_items").delete().in("id", itemIds);
+      if (error) console.error("Error clearing basket items:", error.message);
+    } else {
+      const { error } = await supabase.from("grocery_items").delete().neq("id", "0");
+      if (error) console.error("Error clearing basket items:", error.message);
+    }
+  } catch (err) {
+    console.warn("Supabase clear active basket failed:", err);
+  }
+}
+
+// Save a household order with normalized line items to household_orders
+export async function saveHouseholdOrder(order: HouseholdOrder): Promise<boolean> {
+  try {
+    const payload = {
+      order_id: order.orderId,
+      platform: order.platform,
+      order_date: order.placedAt,
+      total_amount: order.totalAmount,
+      items_count: order.itemsCount,
+      items: order.items.map((it) => ({
+        id: it.id,
+        name: it.name,
+        canonical_name: it.canonicalName,
+        quantity: it.quantity,
+        unit: it.unit,
+        price: it.price,
+        total: it.total,
+        status: it.status,
+        delivered_at: it.deliveredAt,
+        category: it.category
+      }))
+    };
+    const { error } = await supabase.from("household_orders").upsert(payload);
+    if (error) {
+      console.warn("Error saving household order to Supabase:", error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn("saveHouseholdOrder exception:", err);
+    return false;
+  }
+}
+
+export async function updateHouseholdOrder(order: HouseholdOrder): Promise<boolean> {
+  return saveHouseholdOrder(order);
+}
+
+// Fetch all household orders from Supabase
+export async function fetchHouseholdOrders(): Promise<HouseholdOrder[]> {
+  try {
+    const { data, error } = await supabase
+      .from("household_orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error || !data) {
+      return [];
+    }
+    return data.map(normalizeRawOrder);
+  } catch (err) {
+    console.warn("fetchHouseholdOrders exception:", err);
+    return [];
   }
 }
 
