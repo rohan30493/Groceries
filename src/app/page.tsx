@@ -19,7 +19,8 @@ import {
   AlertCircle,
   Search,
   Grid,
-  ChevronRight
+  ChevronRight,
+  Clock
 } from "lucide-react";
 import {
   GroceryItem,
@@ -28,7 +29,7 @@ import {
   getMissingItemSuggestions,
   CompanionSuggestion,
   patternRules,
-  CATEGORY_SECTIONS,
+  CATEGORY_SECTIONS as DEFAULT_CATEGORY_SECTIONS,
   CategorySection,
   CategoryItemDef
 } from "../lib/patterns";
@@ -38,9 +39,35 @@ import {
   upsertGroceryItem,
   deleteGroceryItemDb,
   clearCompletedItemsDb,
+  archiveCompletedRun,
+  fetchCategorySectionsDb,
+  fetchPatternRulesDb,
   toGroceryItem,
   DbGroceryItem
 } from "../lib/supabase";
+
+// Helper to format human-readable time (e.g., "9:15 AM" or "Yesterday, 8:40 PM")
+function formatEventTime(isoStringOrText?: string): string {
+  if (!isoStringOrText) return "";
+  if (!isoStringOrText.includes("-") && !isoStringOrText.includes("T")) {
+    return isoStringOrText;
+  }
+  try {
+    const d = new Date(isoStringOrText);
+    if (isNaN(d.getTime())) return isoStringOrText;
+    const now = new Date();
+    const isToday =
+      d.getDate() === now.getDate() &&
+      d.getMonth() === now.getMonth() &&
+      d.getFullYear() === now.getFullYear();
+
+    const timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (isToday) return `Today, ${timeStr}`;
+    return `${d.toLocaleDateString([], { month: "short", day: "numeric" })}, ${timeStr}`;
+  } catch {
+    return isoStringOrText;
+  }
+}
 
 // Initial sample items to populate the list on first load
 const INITIAL_ITEMS: GroceryItem[] = [];
@@ -53,7 +80,8 @@ export default function GroceryAssistantApp() {
   const [copiedNotification, setCopiedNotification] = useState(false);
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
 
-  // Category browsing states
+  // Dynamic category sections loaded from Supabase (falls back to DEFAULT_CATEGORY_SECTIONS)
+  const [categorySections, setCategorySections] = useState<CategorySection[]>(DEFAULT_CATEGORY_SECTIONS);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("fruits-vegetables");
   const [categorySearchQuery, setCategorySearchQuery] = useState<string>("");
   const [recentlyAddedAnimation, setRecentlyAddedAnimation] = useState<string | null>(null);
@@ -83,7 +111,14 @@ export default function GroceryAssistantApp() {
       setIsCloudSynced(true);
     });
 
-    // 3. Supabase Realtime multi-device subscription (Lira & Rohan stay synced)
+    // 3. Fetch dynamic category sections & rules from Supabase (continuous replenishment learning)
+    fetchCategorySectionsDb().then((sections) => {
+      if (sections && sections.length > 0) {
+        setCategorySections(sections as CategorySection[]);
+      }
+    });
+
+    // 4. Supabase Realtime multi-device subscription (Lira & Rohan stay synced)
     const channel = supabase
       .channel("household-grocery-changes")
       .on(
@@ -142,15 +177,15 @@ export default function GroceryAssistantApp() {
 
   // Total canonical staples count
   const totalStaplesCount = useMemo(() => {
-    return CATEGORY_SECTIONS.reduce((acc, cat) => acc + cat.items.length, 0);
-  }, []);
+    return categorySections.reduce((acc, cat) => acc + cat.items.length, 0);
+  }, [categorySections]);
 
   // Category browse data with search filtering
   const categoryBrowseData = useMemo(() => {
     if (categorySearchQuery.trim()) {
       const q = categorySearchQuery.toLowerCase().trim();
       const results: Array<{ item: CategoryItemDef; categoryName: string; categoryIcon: string }> = [];
-      CATEGORY_SECTIONS.forEach((cat) => {
+      categorySections.forEach((cat) => {
         cat.items.forEach((it) => {
           if (it.name.toLowerCase().includes(q)) {
             results.push({ item: it, categoryName: cat.name, categoryIcon: cat.icon });
@@ -161,23 +196,31 @@ export default function GroceryAssistantApp() {
     }
 
     const activeCategory =
-      CATEGORY_SECTIONS.find((c) => c.id === selectedCategoryId) || CATEGORY_SECTIONS[0];
+      categorySections.find((c) => c.id === selectedCategoryId) || categorySections[0];
     return { isSearch: false, results: [], activeCategory };
-  }, [selectedCategoryId, categorySearchQuery]);
+  }, [categorySections, categorySearchQuery, selectedCategoryId]);
 
-  // Add parsed natural language items to the list (sync to Supabase)
+  // Derived filtered subsets
+  const pendingItems = useMemo(() => items.filter((it) => !it.isDone), [items]);
+  const completedItems = useMemo(() => items.filter((it) => it.isDone), [items]);
+
+  // Add multiple items from input bar or speech
   const handleAddItems = (text: string, sender: "Lira" | "Rohan" = "Lira") => {
     if (!text.trim()) return;
 
     const parsedNames = parseNaturalLanguageList(text);
     if (parsedNames.length === 0) return;
 
+    const nowIso = new Date().toISOString();
+    const timeFormatted = formatEventTime(nowIso);
+
     const newItems: GroceryItem[] = parsedNames.map((name, idx) => ({
       id: `item-${Date.now()}-${idx}`,
       name: name,
       category: detectCategory(name),
       addedBy: sender,
-      addedAt: "Just now",
+      addedAt: timeFormatted,
+      createdAt: nowIso,
       isDone: false
     }));
 
@@ -196,12 +239,16 @@ export default function GroceryAssistantApp() {
     );
     if (isAlreadyPresent) return;
 
+    const nowIso = new Date().toISOString();
+    const timeFormatted = formatEventTime(nowIso);
+
     const newItem: GroceryItem = {
       id: `item-${Date.now()}-${Math.random()}`,
       name: name,
       category: detectCategory(name),
       addedBy: addedBy,
-      addedAt: "Just now",
+      addedAt: timeFormatted,
+      createdAt: nowIso,
       isDone: false
     };
 
@@ -222,11 +269,16 @@ export default function GroceryAssistantApp() {
     }, 1200);
   };
 
-  // Toggle Done / Bought status (sync to Supabase)
+  // Toggle Done / Bought status (sync to Supabase with exact purchased_at timestamp)
   const toggleItemDone = (id: string) => {
     const target = items.find((it) => it.id === id);
     if (target) {
-      const updated = { ...target, isDone: !target.isDone };
+      const willBeDone = !target.isDone;
+      const updated: GroceryItem = {
+        ...target,
+        isDone: willBeDone,
+        purchasedAt: willBeDone ? new Date().toISOString() : undefined
+      };
       setItems((prev) =>
         prev.map((it) => (it.id === id ? updated : it))
       );
@@ -240,10 +292,11 @@ export default function GroceryAssistantApp() {
     deleteGroceryItemDb(id);
   };
 
-  // Clear completed items (sync to Supabase)
+  // Clear and archive completed items (sync to Supabase and log into household_orders for continuous learning)
   const clearCompleted = () => {
+    const toArchive = items.filter((it) => it.isDone);
     setItems((prev) => prev.filter((it) => !it.isDone));
-    clearCompletedItemsDb();
+    archiveCompletedRun(toArchive);
   };
 
   // Voice speech-to-text integration
@@ -314,9 +367,6 @@ export default function GroceryAssistantApp() {
   };
 
   // Group items by category for Rohan's checklist
-  const pendingItems = items.filter((it) => !it.isDone);
-  const completedItems = items.filter((it) => it.isDone);
-
   const groupedPending = useMemo(() => {
     const groups: Record<string, GroceryItem[]> = {};
     pendingItems.forEach((it) => {
@@ -583,7 +633,7 @@ export default function GroceryAssistantApp() {
               {/* Category Pills Carousel (Zepto style) */}
               {!categorySearchQuery && (
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-3.5 scrollbar-thin">
-                  {CATEGORY_SECTIONS.map((cat) => {
+                  {categorySections.map((cat) => {
                     const isSelected = selectedCategoryId === cat.id;
                     return (
                       <button
@@ -765,7 +815,10 @@ export default function GroceryAssistantApp() {
                     <div key={it.id} className="py-2.5 flex items-center justify-between">
                       <div>
                         <span className="text-base font-medium text-slate-800">{it.name}</span>
-                        <span className="text-[10px] text-slate-400 block">{it.category}</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] text-slate-400">{it.category}</span>
+                          <span className="text-[10px] text-slate-400">• Added {formatEventTime(it.createdAt || it.addedAt)}</span>
+                        </div>
                       </div>
                       <button
                         onClick={() => deleteItem(it.id)}
@@ -891,9 +944,13 @@ export default function GroceryAssistantApp() {
                             </button>
                             <div>
                               <p className="text-base font-medium text-slate-900">{item.name}</p>
-                              <div className="flex items-center gap-2 mt-0.5">
+                              <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                                <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                                  <Clock className="w-3 h-3 text-slate-400" />
+                                  <span>Added {formatEventTime(item.createdAt || item.addedAt)}</span>
+                                </span>
                                 <span className="text-[10px] text-slate-400">
-                                  Added by: {item.addedBy}
+                                  • by {item.addedBy}
                                 </span>
                                 {item.addedBy === "Pattern Suggestion" && (
                                   <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-medium">
@@ -936,19 +993,31 @@ export default function GroceryAssistantApp() {
                 </h3>
                 <div className="divide-y divide-slate-200/60">
                   {completedItems.map((item) => (
-                    <div key={item.id} className="py-2 flex items-center justify-between">
+                    <div key={item.id} className="py-2.5 flex items-center justify-between">
                       <div
                         onClick={() => toggleItemDone(item.id)}
                         className="flex items-center gap-2.5 cursor-pointer flex-1"
                       >
-                        <div className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center">
+                        <div className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center shrink-0">
                           <Check className="w-3.5 h-3.5" />
                         </div>
-                        <span className="text-sm line-through text-slate-400 font-medium">{item.name}</span>
+                        <div>
+                          <span className="text-sm line-through text-slate-500 font-medium block leading-snug">{item.name}</span>
+                          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
+                            {item.purchasedAt ? (
+                              <span className="text-emerald-700 font-medium">
+                                Bought {formatEventTime(item.purchasedAt)}
+                              </span>
+                            ) : (
+                              <span>Bought</span>
+                            )}
+                            <span>• Added {formatEventTime(item.createdAt || item.addedAt)} ({item.addedBy})</span>
+                          </div>
+                        </div>
                       </div>
                       <button
                         onClick={() => toggleItemDone(item.id)}
-                        className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1"
+                        className="text-xs text-slate-400 hover:text-slate-700 px-2 py-1 font-medium"
                         title="Restore to active list"
                       >
                         Undo

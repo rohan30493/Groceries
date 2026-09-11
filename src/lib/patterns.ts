@@ -15,6 +15,8 @@ export interface GroceryItem {
   addedBy: "Lira" | "Rohan" | "Pattern Suggestion";
   addedAt: string;
   isDone: boolean;
+  purchasedAt?: string;
+  createdAt?: string;
   notes?: string;
 }
 
