@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ghar Ki Groceries | Smart Family Grocery List",
+  title: "D718 Groceries | Smart Family Grocery List",
   description: "Household Grocery Assistant with pattern-based missing item suggestions",
 };
 

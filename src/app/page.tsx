@@ -668,7 +668,7 @@ export default function GroceryAssistantApp() {
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h1 className="font-bold text-lg text-slate-900 leading-tight">Ghar Ki Groceries</h1>
+                <h1 className="font-bold text-lg text-slate-900 leading-tight">D718 Groceries</h1>
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span>Cloud Synced</span>
