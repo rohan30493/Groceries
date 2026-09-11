@@ -1,0 +1,2591 @@
+[
+  {
+    "timestamp": "11/12/25, 5:49:58 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Cat food - Me-O delite,",
+    "detected_items": [
+      "Cat Food",
+      "Me-O Delite Cat Food"
+    ]
+  },
+  {
+    "timestamp": "12/12/25, 7:47:32 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Haldi powder, Sambhar powder, Sugar, milk pouch,  milk tetra pack,",
+    "detected_items": [
+      "Haldi (Turmeric Powder)",
+      "Milk",
+      "Milk (Tetra Pack)",
+      "Milk Pouch",
+      "Sambhar Powder",
+      "Sugar"
+    ]
+  },
+  {
+    "timestamp": "12/12/25, 7:48:02 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Thin Poha for Rudra's mixture",
+    "detected_items": [
+      "Poha",
+      "Thin Poha"
+    ]
+  },
+  {
+    "timestamp": "13/12/25, 6:43:28 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Cheese cubes, plus vegetables for next week. Mittoo to suggest what vegetables are required",
+    "detected_items": [
+      "Cheese",
+      "Cheese Cubes"
+    ]
+  },
+  {
+    "timestamp": "15/12/25, 6:48:02 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Cheese cubes, Idli batter, Tomatoes, Atta",
+    "detected_items": [
+      "Atta (Wheat Flour)",
+      "Cheese",
+      "Cheese Cubes",
+      "Tomatoes",
+      "iD Idli Batter"
+    ]
+  },
+  {
+    "timestamp": "15/12/25, 7:31:07 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "Palak , Methi , Sarson ka Saag , mushroom , broccoli, beans , carrots , asparagus , lobia ,",
+    "detected_items": [
+      "Asparagus",
+      "Beans",
+      "Broccoli",
+      "Carrots",
+      "Fenugreek (Methi)",
+      "Lobia",
+      "Mushroom",
+      "Sarson ka Saag",
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "15/12/25, 8:12:04 AM",
+    "sender": "Lira Suri",
+    "raw_message": "There are  carrots in the fridge",
+    "detected_items": [
+      "Carrots"
+    ]
+  },
+  {
+    "timestamp": "15/12/25, 10:12:16 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "Also please order orange and pomegranate",
+    "detected_items": [
+      "Oranges",
+      "Pomegranate (Anaar)"
+    ]
+  },
+  {
+    "timestamp": "15/12/25, 10:14:27 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "Agar Agar powder",
+    "detected_items": [
+      "Agar Agar Powder (Gummies)"
+    ]
+  },
+  {
+    "timestamp": "16/12/25, 7:20:29 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Rudra's milk shake is in the fridge please warm it up and give him",
+    "detected_items": [
+      "Milk"
+    ]
+  },
+  {
+    "timestamp": "15/02/26, 4:48:20 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Frozen green peas, Apples and",
+    "detected_items": [
+      "Apples",
+      "Frozen Green Peas",
+      "Green Peas"
+    ]
+  },
+  {
+    "timestamp": "16/02/26, 2:15:39 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Ghee, jaggery powder, Suji,  a small packet of pasta,",
+    "detected_items": [
+      "Desi Ghee",
+      "Jaggery Powder",
+      "Suji (Semolina)"
+    ]
+  },
+  {
+    "timestamp": "17/02/26, 8:27:08 PM",
+    "sender": "Rhythm Office",
+    "raw_message": "These are all the options he likes to eat . So give him variety everyday and not just stick to tomato rice , Khichdi or Dalia",
+    "detected_items": [
+      "Rice",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "18/02/26, 8:40:38 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Cabbage, bindi, palak, capsicum, carotts, french beans, cauliflower, fresh cream,",
+    "detected_items": [
+      "Beans",
+      "Cabbage (Patta Gobi)",
+      "Capsicum / Bell Peppers",
+      "Cauliflower (Gobi)",
+      "French Beans",
+      "Lady Finger (Bhindi)",
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "18/02/26, 8:41:24 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Onions, potatoes and tomatoes",
+    "detected_items": [
+      "Onions",
+      "Potatoes",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "19/02/26, 8:52:25 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Milk (Tetra pack), Fox nuts, milk bread, Keto bread, Strawberry Jam,",
+    "detected_items": [
+      "Bread",
+      "Keto Bread",
+      "Milk",
+      "Milk (Tetra Pack)",
+      "Milk Bread",
+      "Strawberries"
+    ]
+  },
+  {
+    "timestamp": "21/02/26, 5:08:42 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Dark Soya sauce, dosa batter, Ginger, Garlic, Green chilli, chana dal, yellow Moong dal",
+    "detected_items": [
+      "Chana Dal",
+      "Garlic (Lahsun)",
+      "Ginger (Adrak)",
+      "Green Chillies",
+      "Moong Dal (Yellow)",
+      "Sauce",
+      "iD Dosa Batter"
+    ]
+  },
+  {
+    "timestamp": "21/02/26, 5:15:09 PM",
+    "sender": "Rohan",
+    "raw_message": "Eggs?",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "21/02/26, 5:15:45 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs are there for next 3-4 days",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "21/02/26, 5:16:39 PM",
+    "sender": "Lira Suri",
+    "raw_message": "You may order garlic which is not peeled. I will peel them",
+    "detected_items": [
+      "Garlic (Lahsun)"
+    ]
+  },
+  {
+    "timestamp": "23/02/26, 5:11:39 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs, Methi, Palak, Karela, Beetroot, Ghea, Thori, Apple, raw moongfali, milk, oats",
+    "detected_items": [
+      "Apples",
+      "Bitter Gourd (Karela)",
+      "Bottle Gourd (Lauki / Ghea)",
+      "Eggs",
+      "Fenugreek (Methi)",
+      "Milk",
+      "Ridge Gourd (Tori)",
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "23/02/26, 5:12:08 PM",
+    "sender": "Lira Suri",
+    "raw_message": "also Poha",
+    "detected_items": [
+      "Poha"
+    ]
+  },
+  {
+    "timestamp": "25/02/26, 7:51:34 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Paneer, Biscuits for chotu",
+    "detected_items": [
+      "Biscuits",
+      "Fresh Paneer"
+    ]
+  },
+  {
+    "timestamp": "25/02/26, 1:50:52 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Also milk for chotu",
+    "detected_items": [
+      "Milk"
+    ]
+  },
+  {
+    "timestamp": "27/02/26, 12:14:36 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Milk bread,  Keto bread, Besan, Kasuri methi, Mushrooms, Black Urad,  Rajma,",
+    "detected_items": [
+      "Besan (Gram Flour)",
+      "Black Urad Dal",
+      "Bread",
+      "Fenugreek (Methi)",
+      "Keto Bread",
+      "Milk",
+      "Milk Bread",
+      "Rajma"
+    ]
+  },
+  {
+    "timestamp": "28/02/26, 2:11:27 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Onions, Paneer,  lettuce, baby tomatoes, Cucumber, Feta cheese, chicken for salad, Milk bread and Keto bread,",
+    "detected_items": [
+      "Bread",
+      "Cheese",
+      "Cherry / Baby Tomatoes",
+      "Cucumber",
+      "Feta Cheese",
+      "Fresh Paneer",
+      "Keto Bread",
+      "Lettuce",
+      "Milk",
+      "Milk Bread",
+      "Onions",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "28/02/26, 4:01:57 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Also apples",
+    "detected_items": [
+      "Apples"
+    ]
+  },
+  {
+    "timestamp": "28/02/26, 7:22:04 PM",
+    "sender": "Rohan",
+    "raw_message": "do we dahi and eggs or dalia",
+    "detected_items": [
+      "Curd (Dahi)",
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "12/03/26, 8:31:32 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "Recieved 4 more apples from instamart",
+    "detected_items": [
+      "Apples"
+    ]
+  },
+  {
+    "timestamp": "17/04/26, 6:26:18 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Tomatoes, Milk bread, Milk tetra pack, keto bread,",
+    "detected_items": [
+      "Bread",
+      "Keto Bread",
+      "Milk",
+      "Milk (Tetra Pack)",
+      "Milk Bread",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "17/04/26, 6:26:32 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Nimbu",
+    "detected_items": [
+      "Lemons (Nimbu)"
+    ]
+  },
+  {
+    "timestamp": "19/04/26, 2:53:13 PM",
+    "sender": "Rohan",
+    "raw_message": "Green carton of fresh milk is in the fridge",
+    "detected_items": [
+      "Milk"
+    ]
+  },
+  {
+    "timestamp": "06/05/26, 7:03:19 PM",
+    "sender": "Rohan",
+    "raw_message": "Ordered Pindi Chole, Butter Chicken , Naan and Paratha.",
+    "detected_items": [
+      "Amul Butter"
+    ]
+  },
+  {
+    "timestamp": "16/05/26, 9:24:07 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Poha also without Onion?",
+    "detected_items": [
+      "Onions",
+      "Poha"
+    ]
+  },
+  {
+    "timestamp": "16/05/26, 9:36:10 PM",
+    "sender": "Rhythm Office",
+    "raw_message": "No that can be with onion",
+    "detected_items": [
+      "Onions"
+    ]
+  },
+  {
+    "timestamp": "22/05/26, 2:51:21 PM",
+    "sender": "Lira Suri",
+    "raw_message": "No no. He did not eat roti. I quickly mixed curd and put tadka and gave him curd rice. He just finished eating",
+    "detected_items": [
+      "Curd (Dahi)",
+      "Rice"
+    ]
+  },
+  {
+    "timestamp": "28/06/26, 7:33:25 PM",
+    "sender": "Rhythm Office",
+    "raw_message": "Dipika can take 1/2 apple with 1 date to pick him up",
+    "detected_items": [
+      "Apples"
+    ]
+  },
+  {
+    "timestamp": "28/06/26, 7:34:28 PM",
+    "sender": "Lira Suri",
+    "raw_message": "There is no peanut chutney",
+    "detected_items": [
+      "Peanuts"
+    ]
+  },
+  {
+    "timestamp": "29/06/26, 8:26:42 PM",
+    "sender": "Rhythm Office",
+    "raw_message": "Also tomorrow Dipika can take 1 date and banana for him",
+    "detected_items": [
+      "Bananas"
+    ]
+  },
+  {
+    "timestamp": "30/06/26, 1:19:31 PM",
+    "sender": "Rohan",
+    "raw_message": "So 7 servings of curd",
+    "detected_items": [
+      "Curd (Dahi)"
+    ]
+  },
+  {
+    "timestamp": "30/06/26, 1:22:22 PM",
+    "sender": "Rhythm Office",
+    "raw_message": "Pasta bread too",
+    "detected_items": [
+      "Bread"
+    ]
+  },
+  {
+    "timestamp": "06/07/26, 9:15:11 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "Did Rudra eat his egg ?",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "06/07/26, 4:18:47 PM",
+    "sender": "Lira Suri",
+    "raw_message": "He ate one slice of peanut butter sandwich plus one orange. He was asking for orange as soon as he entered the house",
+    "detected_items": [
+      "Amul Butter",
+      "Oranges",
+      "Peanuts"
+    ]
+  },
+  {
+    "timestamp": "07/07/26, 8:39:26 AM",
+    "sender": "Lira Suri",
+    "raw_message": "He ate 2 dosas. The one with potato he put in his mouth and brought it out and said Nani I am done. I had also made another one with only cheese and when I asked him he said he will eat and he ate that one. So in all he had 2 dosas minus potato",
+    "detected_items": [
+      "Cheese",
+      "Potatoes"
+    ]
+  },
+  {
+    "timestamp": "07/07/26, 10:24:21 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "If not ready , then a boiled egg",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "07/07/26, 4:52:02 PM",
+    "sender": "Rhythm Office",
+    "raw_message": "Did Rudra eat his egg ?",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "07/07/26, 5:01:37 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Yes he ate egg and cashews",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "07/07/26, 5:01:59 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Was happy with the egg",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "08/07/26, 9:00:56 AM",
+    "sender": "Lira Suri",
+    "raw_message": "I have not told her to pick up anything from the table or kitchen and keep inside. Today also no one told her. The moment she sees you she tries to do things which she doesn't do otherwise. These vegetables came in the morning. I had taken the salad material inside and was making salad for Rohan. After you came to the dinning table she picked up and brought inside. I immediately told her yesterday sukka rakna hai because I know she will put in water so I turned around and she had held the cucumber and carrot near the tap but water was not opened I immediately had to say what I said. She otherwise does not do anything in the kitchen then why in front of you try to be busy. A couple of weeks back when she used to stand in the kitchen I did tell instead of standing you can do some small jobs in the kitchen and learn a few things but she never did anything. I never bothered after that it's her wish. No body has told her to do anything. Today also since morning she did not pick those veggies then why in front of you. She can attend to Rudra when he is at home.",
+    "detected_items": [
+      "Carrots",
+      "Cucumber"
+    ]
+  },
+  {
+    "timestamp": "09/07/26, 8:44:08 AM",
+    "sender": "Lira Suri",
+    "raw_message": "He removed the egg and only had roti. Then I told him that I will tell mumma that you did not eat the egg today he picked up the omelette and had two bites, say a quarter of the omelette. At the end he picked up one piece of kiwi on his own and ate reluctantly. He made faces to show he doesn't like it. I thought he will spit it out but he ate",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "09/07/26, 9:44:11 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "Did you use the regular egg? Or the ones ordered for him",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "11/07/26, 3:51:50 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Green chilli, Ginger, Garlic, Brinjal, Thori, Ghea, Methi, Palak, Cabbage, Bindi, French beans, Carrot,",
+    "detected_items": [
+      "Beans",
+      "Bottle Gourd (Lauki / Ghea)",
+      "Brinjal (Baingan)",
+      "Cabbage (Patta Gobi)",
+      "Carrots",
+      "Fenugreek (Methi)",
+      "French Beans",
+      "Garlic (Lahsun)",
+      "Ginger (Adrak)",
+      "Green Chillies",
+      "Lady Finger (Bhindi)",
+      "Ridge Gourd (Tori)",
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "11/07/26, 3:55:36 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Also Onions",
+    "detected_items": [
+      "Onions"
+    ]
+  },
+  {
+    "timestamp": "13/07/26, 11:33:00 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Amul Butter, Normal bread, Panneer,",
+    "detected_items": [
+      "Amul Butter",
+      "Bread",
+      "Normal Bread"
+    ]
+  },
+  {
+    "timestamp": "17/07/26, 5:20:21 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Paneer,  Jaggery powder, Makhana,",
+    "detected_items": [
+      "Fresh Paneer",
+      "Jaggery Powder"
+    ]
+  },
+  {
+    "timestamp": "19/07/26, 4:08:42 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs,  Normal Bread & Milk bread - for Rudra.",
+    "detected_items": [
+      "Bread",
+      "Eggs",
+      "Milk",
+      "Milk Bread",
+      "Normal Bread"
+    ]
+  },
+  {
+    "timestamp": "20/07/26, 2:21:45 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Oats, Curd, Boondi, Garlic, Ginger",
+    "detected_items": [
+      "Curd (Dahi)",
+      "Garlic (Lahsun)",
+      "Ginger (Adrak)"
+    ]
+  },
+  {
+    "timestamp": "20/07/26, 3:53:37 PM",
+    "sender": "Rhythm Office",
+    "raw_message": "Palak",
+    "detected_items": [
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "20/07/26, 4:37:54 PM",
+    "sender": "Lira Suri",
+    "raw_message": "+ Paneer, Brinjal, methi, capsicum, Bindi, Thori, Cabbage, Cauliflower",
+    "detected_items": [
+      "Brinjal (Baingan)",
+      "Cabbage (Patta Gobi)",
+      "Capsicum / Bell Peppers",
+      "Cauliflower (Gobi)",
+      "Fenugreek (Methi)",
+      "Fresh Paneer",
+      "Lady Finger (Bhindi)",
+      "Ridge Gourd (Tori)"
+    ]
+  },
+  {
+    "timestamp": "21/07/26, 9:47:56 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "So that crispy Bhindi in the fridge can be made on Saturday",
+    "detected_items": [
+      "Lady Finger (Bhindi)"
+    ]
+  },
+  {
+    "timestamp": "22/07/26, 1:23:06 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Lettuce required for tomorrow",
+    "detected_items": [
+      "Lettuce"
+    ]
+  },
+  {
+    "timestamp": "22/07/26, 6:57:49 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Sona Masoori Rice - 2 kg",
+    "detected_items": [
+      "Rice",
+      "Sona Masoori Rice"
+    ]
+  },
+  {
+    "timestamp": "23/07/26, 7:25:02 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Wheat flour, Low Carb flour, Onions, Lettuce, Feta Cheese",
+    "detected_items": [
+      "Cheese",
+      "Feta Cheese",
+      "Lettuce",
+      "Low Carb / Keto Atta",
+      "Onions"
+    ]
+  },
+  {
+    "timestamp": "25/07/26, 7:40:13 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Paneer, Amul Butter, Tomatoes, Nimbu, Rajma, Yellow Moong Dal, Red Masoor dal, Zeera, Milk Tetra Pack, Tea leaves, Poha",
+    "detected_items": [
+      "Amul Butter",
+      "Fresh Paneer",
+      "Jeera Powder",
+      "Lemons (Nimbu)",
+      "Masoor Dal (Red)",
+      "Milk",
+      "Milk (Tetra Pack)",
+      "Moong Dal (Yellow)",
+      "Poha",
+      "Rajma",
+      "Tea Leaves",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "27/07/26, 7:21:41 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs, Curd, Black chana, Toor Dal, Vinegar for washing clothes,",
+    "detected_items": [
+      "Black Chana",
+      "Curd (Dahi)",
+      "Eggs",
+      "Vinegar"
+    ]
+  },
+  {
+    "timestamp": "27/07/26, 4:16:52 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Dry food for cats (the one with Pomegranate)",
+    "detected_items": [
+      "Pomegranate (Anaar)"
+    ]
+  },
+  {
+    "timestamp": "27/07/26, 6:42:12 PM",
+    "sender": "Rhythm Office",
+    "raw_message": "Also cheese grated",
+    "detected_items": [
+      "Cheese"
+    ]
+  },
+  {
+    "timestamp": "28/07/26, 9:40:02 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Carrots, French beans, capsicum, Banana, Paneer,",
+    "detected_items": [
+      "Bananas",
+      "Beans",
+      "Capsicum / Bell Peppers",
+      "Carrots",
+      "French Beans",
+      "Fresh Paneer"
+    ]
+  },
+  {
+    "timestamp": "28/07/26, 9:42:20 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "Also Palak",
+    "detected_items": [
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "29/07/26, 1:46:50 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Liquid handwash, Milk bread,",
+    "detected_items": [
+      "Bread",
+      "Milk",
+      "Milk Bread"
+    ]
+  },
+  {
+    "timestamp": "29/07/26, 7:40:10 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Broccoli, Milk bread,",
+    "detected_items": [
+      "Bread",
+      "Broccoli",
+      "Milk",
+      "Milk Bread"
+    ]
+  },
+  {
+    "timestamp": "31/07/26, 8:48:05 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Onions, Potatoes, Tomatoes, Besan, Cashew, Frozen green peas,",
+    "detected_items": [
+      "Besan (Gram Flour)",
+      "Frozen Green Peas",
+      "Green Peas",
+      "Onions",
+      "Potatoes",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "02/08/26, 9:06:09 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Dosa batter, Curd, Eggs, Paneer,  Brinjal, Methi, Palak, Cabbage, Cauliflower, Capsicum, Bindi, Thori,",
+    "detected_items": [
+      "Brinjal (Baingan)",
+      "Cabbage (Patta Gobi)",
+      "Capsicum / Bell Peppers",
+      "Cauliflower (Gobi)",
+      "Curd (Dahi)",
+      "Eggs",
+      "Fenugreek (Methi)",
+      "Fresh Paneer",
+      "Lady Finger (Bhindi)",
+      "Ridge Gourd (Tori)",
+      "Spinach (Palak)",
+      "iD Dosa Batter"
+    ]
+  },
+  {
+    "timestamp": "03/08/26, 3:26:25 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Frozen sweet corn, Suji, Dosa batter, Catch Pepper powder sprinkler, Liquid soap to wash Rudra's water bottles, Elichi banana, Murmura,",
+    "detected_items": [
+      "Bananas",
+      "Murmura (Puffed Rice)",
+      "Mysore Sandal Soap",
+      "Suji (Semolina)",
+      "iD Dosa Batter"
+    ]
+  },
+  {
+    "timestamp": "04/08/26, 3:53:48 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Tobasco, Marie, Glucose and Monaco biscuits and some namkeen",
+    "detected_items": [
+      "Biscuits",
+      "Marie Biscuits",
+      "Monaco Biscuits",
+      "Namkeen"
+    ]
+  },
+  {
+    "timestamp": "05/08/26, 6:16:54 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Cucumber, Paneer, Milk Tetra Pack",
+    "detected_items": [
+      "Cucumber",
+      "Fresh Paneer",
+      "Milk",
+      "Milk (Tetra Pack)"
+    ]
+  },
+  {
+    "timestamp": "05/08/26, 6:17:16 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Paneer needed urgently to make Palak Paneer",
+    "detected_items": [
+      "Fresh Paneer",
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "09/08/26, 10:53:42 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Rice, Apples, Amul Butter",
+    "detected_items": [
+      "Amul Butter",
+      "Apples",
+      "Rice"
+    ]
+  },
+  {
+    "timestamp": "09/08/26, 11:25:15 AM",
+    "sender": "Rohan",
+    "raw_message": "Eggs ?",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "10/08/26, 11:16:59 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Banana, Apples required",
+    "detected_items": [
+      "Apples",
+      "Bananas"
+    ]
+  },
+  {
+    "timestamp": "10/08/26, 3:09:01 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Kiwi, Oranges, Broccoli, Palak, Methi, Dania patta, Capsicum, Brinjal, Bindi, Carrots, French beans, Ghea, Lettuce, Cucumber, Baby tomatoes,",
+    "detected_items": [
+      "Beans",
+      "Bottle Gourd (Lauki / Ghea)",
+      "Brinjal (Baingan)",
+      "Broccoli",
+      "Capsicum / Bell Peppers",
+      "Carrots",
+      "Cherry / Baby Tomatoes",
+      "Coriander (Dhaniya Patta)",
+      "Cucumber",
+      "Fenugreek (Methi)",
+      "French Beans",
+      "Lady Finger (Bhindi)",
+      "Lettuce",
+      "Spinach (Palak)",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "10/08/26, 9:01:30 PM",
+    "sender": "Rohan",
+    "raw_message": "Gobhi or cabbage?",
+    "detected_items": [
+      "Cabbage (Patta Gobi)"
+    ]
+  },
+  {
+    "timestamp": "10/08/26, 9:03:42 PM",
+    "sender": "Lira Suri",
+    "raw_message": "You may add Ginger n Garlic",
+    "detected_items": [
+      "Garlic (Lahsun)",
+      "Ginger (Adrak)"
+    ]
+  },
+  {
+    "timestamp": "13/08/26, 5:50:57 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd, Amul Butter, Maggie Hot n Sweet Tomato sauce, Murmura,",
+    "detected_items": [
+      "Amul Butter",
+      "Curd (Dahi)",
+      "Murmura (Puffed Rice)",
+      "Sauce",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "18/08/26, 10:34:11 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Atta, Curd, Paneer, Onions, Potatoes, Tomatoes, Garlic, Palak, Methi, Brinjal, Bindi, Cabbage , Cauliflower, Carrots, French beans, Thori, Lettuce, Cucumber, Baby-tomatoes,",
+    "detected_items": [
+      "Atta (Wheat Flour)",
+      "Beans",
+      "Brinjal (Baingan)",
+      "Cabbage (Patta Gobi)",
+      "Carrots",
+      "Cauliflower (Gobi)",
+      "Cucumber",
+      "Curd (Dahi)",
+      "Fenugreek (Methi)",
+      "French Beans",
+      "Fresh Paneer",
+      "Garlic (Lahsun)",
+      "Lady Finger (Bhindi)",
+      "Lettuce",
+      "Onions",
+      "Potatoes",
+      "Ridge Gourd (Tori)",
+      "Spinach (Palak)",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "18/08/26, 10:46:07 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "Do we have Bhindi ?",
+    "detected_items": [
+      "Lady Finger (Bhindi)"
+    ]
+  },
+  {
+    "timestamp": "19/08/26, 1:03:21 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Bundi for Raita,",
+    "detected_items": [
+      "Boondi for Raita"
+    ]
+  },
+  {
+    "timestamp": "20/08/26, 8:46:28 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Frozen green peas,  Sona Masoori Rice,   Tea leaves,  Bundi,   Milk Tetra Pack,",
+    "detected_items": [
+      "Boondi for Raita",
+      "Frozen Green Peas",
+      "Green Peas",
+      "Milk",
+      "Milk (Tetra Pack)",
+      "Rice",
+      "Sona Masoori Rice",
+      "Tea Leaves"
+    ]
+  },
+  {
+    "timestamp": "23/08/26, 8:48:48 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Sheba - chicken with tuna in gravy (cat food)",
+    "detected_items": [
+      "Cat Food",
+      "Sheba Cat Food (Tuna & Chicken)"
+    ]
+  },
+  {
+    "timestamp": "24/08/26, 9:35:39 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Idli Batter,  Paneer, Feta Cheese",
+    "detected_items": [
+      "Cheese",
+      "Feta Cheese",
+      "Fresh Paneer",
+      "iD Idli Batter"
+    ]
+  },
+  {
+    "timestamp": "24/08/26, 10:55:48 AM",
+    "sender": "Rohan",
+    "raw_message": "Do we have peanut butter",
+    "detected_items": [
+      "Amul Butter",
+      "Peanuts"
+    ]
+  },
+  {
+    "timestamp": "25/08/26, 11:29:24 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Banana, Palak, Beetroot, Tomatoes, raw Peanuts,",
+    "detected_items": [
+      "Bananas",
+      "Peanuts",
+      "Spinach (Palak)",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "25/08/26, 11:38:16 AM",
+    "sender": "Rohan",
+    "raw_message": "Did paneer come",
+    "detected_items": [
+      "Fresh Paneer"
+    ]
+  },
+  {
+    "timestamp": "26/08/26, 7:20:41 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Keto bread & Cheese, Eggs, Black eyed beans,",
+    "detected_items": [
+      "Beans",
+      "Bread",
+      "Cheese",
+      "Eggs",
+      "Keto Bread"
+    ]
+  },
+  {
+    "timestamp": "26/08/26, 7:25:02 PM",
+    "sender": "Rohan",
+    "raw_message": "Yes lobia",
+    "detected_items": [
+      "Lobia"
+    ]
+  },
+  {
+    "timestamp": "28/08/26, 10:38:20 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Stevia, Elichi Banana, Marie Biscuit, Monaco biscuits, Rajma,  Onions, Potatoes, Milk Bread",
+    "detected_items": [
+      "Bananas",
+      "Biscuits",
+      "Bread",
+      "Marie Biscuits",
+      "Milk",
+      "Milk Bread",
+      "Monaco Biscuits",
+      "Onions",
+      "Potatoes",
+      "Rajma",
+      "Stevia Sweetener"
+    ]
+  },
+  {
+    "timestamp": "31/08/26, 6:08:15 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Paneer, Poha, Suji, Onions, Potatoes, Garlic, Ginger, Green chilli, Palak, Brinjal, Bindi, Cabbage, Cauliflower, Ghea, Thori, Carrots, French beans,  Capcicum",
+    "detected_items": [
+      "Beans",
+      "Bottle Gourd (Lauki / Ghea)",
+      "Brinjal (Baingan)",
+      "Cabbage (Patta Gobi)",
+      "Carrots",
+      "Cauliflower (Gobi)",
+      "French Beans",
+      "Fresh Paneer",
+      "Garlic (Lahsun)",
+      "Ginger (Adrak)",
+      "Green Chillies",
+      "Lady Finger (Bhindi)",
+      "Onions",
+      "Poha",
+      "Potatoes",
+      "Ridge Gourd (Tori)",
+      "Spinach (Palak)",
+      "Suji (Semolina)"
+    ]
+  },
+  {
+    "timestamp": "31/08/26, 9:14:35 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Don't order onions and potatoes, it was delivered in the morning",
+    "detected_items": [
+      "Onions",
+      "Potatoes"
+    ]
+  },
+  {
+    "timestamp": "02/09/26, 1:09:45 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Milk Tetra Pack, Eggs,  Cooking oil,",
+    "detected_items": [
+      "Eggs",
+      "Milk",
+      "Milk (Tetra Pack)"
+    ]
+  },
+  {
+    "timestamp": "03/09/26, 10:53:21 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Dania patta, Paneer,",
+    "detected_items": [
+      "Coriander (Dhaniya Patta)",
+      "Fresh Paneer"
+    ]
+  },
+  {
+    "timestamp": "04/09/26, 12:05:06 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Paneer, Dania patta, Bread",
+    "detected_items": [
+      "Bread",
+      "Coriander (Dhaniya Patta)",
+      "Fresh Paneer"
+    ]
+  },
+  {
+    "timestamp": "06/09/26, 11:05:10 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Bananas and bread",
+    "detected_items": [
+      "Bread"
+    ]
+  },
+  {
+    "timestamp": "07/09/26, 9:44:19 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd,  Apples, Tomatoes, Onions, Potatoes",
+    "detected_items": [
+      "Apples",
+      "Curd (Dahi)",
+      "Onions",
+      "Potatoes",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "07/09/26, 9:44:43 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "Do we have enough carrot , beans at home ?",
+    "detected_items": [
+      "Beans",
+      "Carrots"
+    ]
+  },
+  {
+    "timestamp": "07/09/26, 11:34:07 AM",
+    "sender": "Rhythm Office",
+    "raw_message": "Just cut medium size - Carrot , beans and throw in some green peas .",
+    "detected_items": [
+      "Beans",
+      "Carrots",
+      "Green Peas"
+    ]
+  },
+  {
+    "timestamp": "07/09/26, 6:57:28 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Beetroot, cauliflower, Palak, Oranges",
+    "detected_items": [
+      "Cauliflower (Gobi)",
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "07/09/26, 6:58:56 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd,  Apples, Tomatoes, Onions, Potatoes",
+    "detected_items": [
+      "Apples",
+      "Curd (Dahi)",
+      "Onions",
+      "Potatoes",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "08/09/26, 9:59:14 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd, fresh cream, Paneer",
+    "detected_items": [
+      "Curd (Dahi)",
+      "Fresh Paneer"
+    ]
+  },
+  {
+    "timestamp": "09/09/26, 2:25:38 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs required for tomorrow",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "09/09/26, 8:31:18 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Rohan can you order eggs",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "10/09/26, 3:26:23 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Cats litter bags, Milk Tetra Pack, Bread, Eggs, Jaggery, Besan,  groundnuts, Lettuce, Cucumber, Baby Tomatoes,",
+    "detected_items": [
+      "Besan (Gram Flour)",
+      "Bread",
+      "Cherry / Baby Tomatoes",
+      "Cucumber",
+      "Eggs",
+      "Jaggery Powder",
+      "Lettuce",
+      "Milk",
+      "Milk (Tetra Pack)",
+      "Peanuts / Groundnuts",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "16/12/25, 3:53:16 PM",
+    "sender": "Rohan",
+    "raw_message": "Do we have more poop bags for samba and milo ?",
+    "detected_items": [
+      "Pet Poop Bags"
+    ]
+  },
+  {
+    "timestamp": "19/02/26, 9:49:40 PM",
+    "sender": "Rohan",
+    "raw_message": "I am marinating and keeping chicken in the fridge for chilli chicken. He can cook it and use red yellow bell peppers and spring onion and anything else as well.",
+    "detected_items": [
+      "Capsicum / Bell Peppers",
+      "Onions",
+      "Spring Onions"
+    ]
+  },
+  {
+    "timestamp": "20/02/26, 2:16:56 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Hard to believe unless the Parathas are smaller than a puri. Curd I can believe",
+    "detected_items": [
+      "Curd (Dahi)"
+    ]
+  },
+  {
+    "timestamp": "24/02/26, 11:28:22 AM",
+    "sender": "Lira Suri",
+    "raw_message": "For the moment only atta. Did you order fresh cream the other day. It never came. Need to make dal makhani",
+    "detected_items": [
+      "Atta (Wheat Flour)"
+    ]
+  },
+  {
+    "timestamp": "26/02/26, 8:26:11 PM",
+    "sender": "Rohan",
+    "raw_message": "I have marinated and kept chicken in the fridge for chilli chicken. Its only 250gms this time. have added soy sauce, vinegar, chilli garlic paste , oil , egg , cornflour and baking sode. He can prepare the dish tomorrow.",
+    "detected_items": [
+      "Eggs",
+      "Garlic (Lahsun)",
+      "Sauce",
+      "Vinegar"
+    ]
+  },
+  {
+    "timestamp": "26/02/26, 8:26:43 PM",
+    "sender": "Rohan",
+    "raw_message": "not sure if we have capsicum or mushroom , but I can order in the morning if needed",
+    "detected_items": [
+      "Capsicum / Bell Peppers",
+      "Mushroom"
+    ]
+  },
+  {
+    "timestamp": "26/02/26, 8:28:27 PM",
+    "sender": "Lira Suri",
+    "raw_message": "We have capsicum Red, green and Yellow (half half). The other half was used last week",
+    "detected_items": [
+      "Capsicum / Bell Peppers"
+    ]
+  },
+  {
+    "timestamp": "26/02/26, 8:30:23 PM",
+    "sender": "Lira Suri",
+    "raw_message": "No mushroom",
+    "detected_items": [
+      "Mushroom"
+    ]
+  },
+  {
+    "timestamp": "05/03/26, 8:00:26 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs and some vegetables",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "05/03/26, 10:36:38 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Green chilli",
+    "detected_items": [
+      "Green Chillies"
+    ]
+  },
+  {
+    "timestamp": "08/03/26, 6:33:55 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Ginger and Garlic, Zeera powder, Dania powder, Lettuce,  baby tomatoes",
+    "detected_items": [
+      "Cherry / Baby Tomatoes",
+      "Coriander (Dhaniya Patta)",
+      "Garlic (Lahsun)",
+      "Ginger (Adrak)",
+      "Jeera Powder",
+      "Lettuce",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "09/03/26, 3:22:17 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Ghee, Bread - normal, Potatoes,",
+    "detected_items": [
+      "Bread",
+      "Desi Ghee",
+      "Potatoes"
+    ]
+  },
+  {
+    "timestamp": "10/03/26, 7:57:15 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Paneer, Curd,  Tomatoes, Dania patta,  Carrots,  Palak, White Chana, Kulcha",
+    "detected_items": [
+      "Carrots",
+      "Coriander (Dhaniya Patta)",
+      "Curd (Dahi)",
+      "Fresh Paneer",
+      "Kulcha",
+      "Spinach (Palak)",
+      "Tomatoes",
+      "White Chana (Kabuli)"
+    ]
+  },
+  {
+    "timestamp": "11/03/26, 10:22:01 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Tea leaves, Lemon, Feta cheese, Ghea, Cabbage, Cauliflower, Bell peppers (Red, Yellow and Green - one each for making chilli Paneer),",
+    "detected_items": [
+      "Bottle Gourd (Lauki / Ghea)",
+      "Cabbage (Patta Gobi)",
+      "Capsicum / Bell Peppers",
+      "Cauliflower (Gobi)",
+      "Cheese",
+      "Feta Cheese",
+      "Fresh Paneer",
+      "Lemons (Nimbu)",
+      "Tea Leaves"
+    ]
+  },
+  {
+    "timestamp": "12/03/26, 8:29:10 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Apples, Biscuits for Rudra, Stevia",
+    "detected_items": [
+      "Apples",
+      "Biscuits",
+      "Stevia Sweetener"
+    ]
+  },
+  {
+    "timestamp": "12/03/26, 8:30:36 AM",
+    "sender": "Rohan",
+    "raw_message": "Didn't we get Apple now ?",
+    "detected_items": [
+      "Apples"
+    ]
+  },
+  {
+    "timestamp": "12/03/26, 9:37:12 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Yes. We got 4 apples",
+    "detected_items": [
+      "Apples"
+    ]
+  },
+  {
+    "timestamp": "12/03/26, 10:44:58 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Maggie hot n sweet Tomato catchup",
+    "detected_items": [
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "13/03/26, 1:16:41 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Colin spray, Onions, Potatoes, Green chilli, Paneer, Milk bread,",
+    "detected_items": [
+      "Bread",
+      "Colin Glass Cleaner",
+      "Fresh Paneer",
+      "Green Chillies",
+      "Milk",
+      "Milk Bread",
+      "Onions",
+      "Potatoes"
+    ]
+  },
+  {
+    "timestamp": "13/03/26, 5:34:11 PM",
+    "sender": "Rohan",
+    "raw_message": "Did we get the bread",
+    "detected_items": [
+      "Bread"
+    ]
+  },
+  {
+    "timestamp": "15/03/26, 9:29:20 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "15/03/26, 7:14:26 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd (tomorrow you can order)",
+    "detected_items": [
+      "Curd (Dahi)"
+    ]
+  },
+  {
+    "timestamp": "17/03/26, 11:42:07 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Salt, Milk tetra pack,  Cabbage, Cauliflower, Carrots, French beans, Ghea",
+    "detected_items": [
+      "Beans",
+      "Bottle Gourd (Lauki / Ghea)",
+      "Cabbage (Patta Gobi)",
+      "Carrots",
+      "Cauliflower (Gobi)",
+      "French Beans",
+      "Milk",
+      "Milk (Tetra Pack)",
+      "Salt"
+    ]
+  },
+  {
+    "timestamp": "17/03/26, 11:42:36 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Tomatoes, Garlic",
+    "detected_items": [
+      "Garlic (Lahsun)",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "19/03/26, 7:51:49 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Zeera powder and Kashmiri mirch powder",
+    "detected_items": [
+      "Jeera Powder",
+      "Kashmiri Mirch Powder"
+    ]
+  },
+  {
+    "timestamp": "21/03/26, 5:33:07 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Low carb flour, Onions, Potatoes, Suji, Poha, Peanuts",
+    "detected_items": [
+      "Low Carb / Keto Atta",
+      "Onions",
+      "Peanuts",
+      "Poha",
+      "Potatoes",
+      "Suji (Semolina)"
+    ]
+  },
+  {
+    "timestamp": "23/03/26, 5:52:05 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs, Paneer, Lettuce, cucumber, baby tomatoes, bindi, cauliflower, capsicum, palak",
+    "detected_items": [
+      "Capsicum / Bell Peppers",
+      "Cauliflower (Gobi)",
+      "Cherry / Baby Tomatoes",
+      "Cucumber",
+      "Eggs",
+      "Fresh Paneer",
+      "Lady Finger (Bhindi)",
+      "Lettuce",
+      "Spinach (Palak)",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "25/03/26, 5:46:03 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Meo-Delite cat food,",
+    "detected_items": [
+      "Cat Food",
+      "Me-O Delite Cat Food"
+    ]
+  },
+  {
+    "timestamp": "25/03/26, 5:51:20 PM",
+    "sender": "Lira Suri",
+    "raw_message": "I think it is over. Low carb flour is totally over",
+    "detected_items": [
+      "Low Carb / Keto Atta"
+    ]
+  },
+  {
+    "timestamp": "25/03/26, 6:45:05 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Please ad Ginger to the list",
+    "detected_items": [
+      "Ginger (Adrak)"
+    ]
+  },
+  {
+    "timestamp": "26/03/26, 3:33:22 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd, amul butter,",
+    "detected_items": [
+      "Amul Butter",
+      "Curd (Dahi)"
+    ]
+  },
+  {
+    "timestamp": "27/03/26, 3:02:52 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Need vegetables: Cabbage, Cauliflower, Bindi, Ghea, Palak, Carrots, French beans, Tomatoes, Normal Bread",
+    "detected_items": [
+      "Beans",
+      "Bottle Gourd (Lauki / Ghea)",
+      "Bread",
+      "Cabbage (Patta Gobi)",
+      "Carrots",
+      "Cauliflower (Gobi)",
+      "French Beans",
+      "Lady Finger (Bhindi)",
+      "Normal Bread",
+      "Spinach (Palak)",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "31/03/26, 2:13:07 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Potatoes, Onions, Green Moong, Keto Bread,",
+    "detected_items": [
+      "Bread",
+      "Green Moong Dal",
+      "Keto Bread",
+      "Onions",
+      "Potatoes"
+    ]
+  },
+  {
+    "timestamp": "01/04/26, 12:41:03 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Milk bread,",
+    "detected_items": [
+      "Bread",
+      "Milk",
+      "Milk Bread"
+    ]
+  },
+  {
+    "timestamp": "02/04/26, 6:08:31 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Milk (Tetra Pack),  Ghee, Dosa batter, green chillies,",
+    "detected_items": [
+      "Desi Ghee",
+      "Green Chillies",
+      "Milk",
+      "Milk (Tetra Pack)",
+      "iD Dosa Batter"
+    ]
+  },
+  {
+    "timestamp": "03/04/26, 9:14:51 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Paneer, Cauliflower, Thori, Ghea, Palak, Pumpkin - (small cut pieces), Tea leaves,",
+    "detected_items": [
+      "Bottle Gourd (Lauki / Ghea)",
+      "Cauliflower (Gobi)",
+      "Fresh Paneer",
+      "Pumpkin (Kaddu)",
+      "Ridge Gourd (Tori)",
+      "Spinach (Palak)",
+      "Tea Leaves"
+    ]
+  },
+  {
+    "timestamp": "07/04/26, 9:59:53 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Feta cheese, Cheese slices, Paneer, Potatoes, Dosa batter, Normal Bread, Cauliflower, Carrot, French beans, Capcicum,",
+    "detected_items": [
+      "Beans",
+      "Bread",
+      "Carrots",
+      "Cauliflower (Gobi)",
+      "Cheese",
+      "Feta Cheese",
+      "French Beans",
+      "Fresh Paneer",
+      "Normal Bread",
+      "Potatoes",
+      "iD Dosa Batter"
+    ]
+  },
+  {
+    "timestamp": "09/04/26, 5:44:34 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Chicken for salad, Lettuce, Baby tomatoes, Ginger, Garlic,",
+    "detected_items": [
+      "Cherry / Baby Tomatoes",
+      "Garlic (Lahsun)",
+      "Ginger (Adrak)",
+      "Lettuce",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "11/04/26, 4:00:19 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Atta,  Eggs, Curd, Vinegar for washing clothes,",
+    "detected_items": [
+      "Atta (Wheat Flour)",
+      "Curd (Dahi)",
+      "Eggs",
+      "Vinegar"
+    ]
+  },
+  {
+    "timestamp": "13/04/26, 9:15:01 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Onions, Paneer, Corn flour, red chilli sauce, green chilli sauce (both small bottles),",
+    "detected_items": [
+      "Chilli Sauce",
+      "Fresh Paneer",
+      "Green Chillies",
+      "Onions",
+      "Sauce"
+    ]
+  },
+  {
+    "timestamp": "13/04/26, 9:39:13 AM",
+    "sender": "Lira Suri",
+    "raw_message": "For today you may order onions and paneer. Rest we will check and then order",
+    "detected_items": [
+      "Fresh Paneer",
+      "Onions"
+    ]
+  },
+  {
+    "timestamp": "13/04/26, 7:30:11 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Onions are required for tomorrow morning",
+    "detected_items": [
+      "Onions"
+    ]
+  },
+  {
+    "timestamp": "14/04/26, 4:10:01 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Dania patta, Frozen green peas, Paneer,",
+    "detected_items": [
+      "Coriander (Dhaniya Patta)",
+      "Fresh Paneer",
+      "Frozen Green Peas",
+      "Green Peas"
+    ]
+  },
+  {
+    "timestamp": "16/04/26, 8:18:56 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Cashew nuts, French beans, Carrots, Cucumber, Baby tomatoes, Toilet roll,",
+    "detected_items": [
+      "Beans",
+      "Carrots",
+      "Cherry / Baby Tomatoes",
+      "Cucumber",
+      "French Beans",
+      "Toilet Paper Roll",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "16/04/26, 6:08:07 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Meo-Delite cat food, Dania patta, Paneer",
+    "detected_items": [
+      "Cat Food",
+      "Coriander (Dhaniya Patta)",
+      "Fresh Paneer",
+      "Me-O Delite Cat Food"
+    ]
+  },
+  {
+    "timestamp": "18/04/26, 1:09:48 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd, Amul butter, Potatoes, Onions, Green chilli,",
+    "detected_items": [
+      "Amul Butter",
+      "Curd (Dahi)",
+      "Green Chillies",
+      "Onions",
+      "Potatoes"
+    ]
+  },
+  {
+    "timestamp": "19/04/26, 9:02:00 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Marie Biscuits, Monaco Biscuits, Besan Mixtures,",
+    "detected_items": [
+      "Besan (Gram Flour)",
+      "Biscuits",
+      "Marie Biscuits",
+      "Monaco Biscuits"
+    ]
+  },
+  {
+    "timestamp": "24/04/26, 3:53:11 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs, Paneer, Cauliflower, Bindi, Thori, Palak, Brinjal,",
+    "detected_items": [
+      "Brinjal (Baingan)",
+      "Cauliflower (Gobi)",
+      "Eggs",
+      "Fresh Paneer",
+      "Lady Finger (Bhindi)",
+      "Ridge Gourd (Tori)",
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "26/04/26, 11:40:37 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Garlic, Rajma, white chana, Ghee,",
+    "detected_items": [
+      "Desi Ghee",
+      "Garlic (Lahsun)",
+      "Rajma",
+      "White Chana (Kabuli)"
+    ]
+  },
+  {
+    "timestamp": "27/04/26, 11:03:43 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Rohan can you please order curd. I have to prepare curd rice for Rudy",
+    "detected_items": [
+      "Curd (Dahi)",
+      "Rice"
+    ]
+  },
+  {
+    "timestamp": "27/04/26, 12:08:21 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Baigan, capsicum,  karela, Thori, Paneer, Milk Tetra Pack, frozen green peas, carrots, French beans.",
+    "detected_items": [
+      "Beans",
+      "Bitter Gourd (Karela)",
+      "Brinjal (Baingan)",
+      "Capsicum / Bell Peppers",
+      "Carrots",
+      "French Beans",
+      "Fresh Paneer",
+      "Frozen Green Peas",
+      "Green Peas",
+      "Milk",
+      "Milk (Tetra Pack)",
+      "Ridge Gourd (Tori)"
+    ]
+  },
+  {
+    "timestamp": "27/04/26, 12:08:43 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Received curd, cabbage and cauliflower",
+    "detected_items": [
+      "Cabbage (Patta Gobi)",
+      "Cauliflower (Gobi)",
+      "Curd (Dahi)"
+    ]
+  },
+  {
+    "timestamp": "29/04/26, 9:44:48 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Amul Butter, salt, Green chilli, jaggery powder, Ghee,",
+    "detected_items": [
+      "Amul Butter",
+      "Desi Ghee",
+      "Green Chillies",
+      "Jaggery Powder",
+      "Salt"
+    ]
+  },
+  {
+    "timestamp": "30/04/26, 2:26:11 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Require Curd",
+    "detected_items": [
+      "Curd (Dahi)"
+    ]
+  },
+  {
+    "timestamp": "01/05/26, 3:02:30 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Noodles, spring onions, french beans, carrots require by this evening so that the cook can prepare tomorrow early morning",
+    "detected_items": [
+      "Beans",
+      "Carrots",
+      "French Beans",
+      "Noodles",
+      "Onions",
+      "Spring Onions"
+    ]
+  },
+  {
+    "timestamp": "01/05/26, 3:14:17 PM",
+    "sender": "Rohan",
+    "raw_message": "Don't you need cabbage",
+    "detected_items": [
+      "Cabbage (Patta Gobi)"
+    ]
+  },
+  {
+    "timestamp": "01/05/26, 3:14:53 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Cabbage for noodles?",
+    "detected_items": [
+      "Cabbage (Patta Gobi)",
+      "Noodles"
+    ]
+  },
+  {
+    "timestamp": "01/05/26, 3:15:35 PM",
+    "sender": "Lira Suri",
+    "raw_message": "We are making chilli paneer with noodles",
+    "detected_items": [
+      "Fresh Paneer",
+      "Noodles"
+    ]
+  },
+  {
+    "timestamp": "03/05/26, 2:33:02 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Low carb flour, Eggs, Curd, Groundnuts, Suji,  Masoor (Red) Dal, Mung (yellow) dal",
+    "detected_items": [
+      "Curd (Dahi)",
+      "Eggs",
+      "Low Carb / Keto Atta",
+      "Peanuts / Groundnuts",
+      "Suji (Semolina)"
+    ]
+  },
+  {
+    "timestamp": "04/05/26, 10:19:01 AM",
+    "sender": "Rohan",
+    "raw_message": "2 packs of milk",
+    "detected_items": [
+      "Milk"
+    ]
+  },
+  {
+    "timestamp": "07/05/26, 12:34:13 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Keto bread, Amul butter, Tomatoes, Ghea, Thori, Baigan, cauliflower, Bindi, cabbage, french beans,",
+    "detected_items": [
+      "Amul Butter",
+      "Beans",
+      "Bottle Gourd (Lauki / Ghea)",
+      "Bread",
+      "Brinjal (Baingan)",
+      "Cabbage (Patta Gobi)",
+      "Cauliflower (Gobi)",
+      "French Beans",
+      "Keto Bread",
+      "Lady Finger (Bhindi)",
+      "Ridge Gourd (Tori)",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "08/05/26, 10:20:48 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Rice, + Sona Masuri rice, lettuce, cucumber, Potatoes, onions, Green chilli, Ginger,",
+    "detected_items": [
+      "Cucumber",
+      "Ginger (Adrak)",
+      "Green Chillies",
+      "Lettuce",
+      "Onions",
+      "Potatoes",
+      "Rice"
+    ]
+  },
+  {
+    "timestamp": "09/05/26, 9:23:16 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Wet wipes,  Garlic,  Apple, Panner,  Dosa Batter,  Curd,",
+    "detected_items": [
+      "Apples",
+      "Curd (Dahi)",
+      "Garlic (Lahsun)",
+      "Wet Wipes",
+      "iD Dosa Batter"
+    ]
+  },
+  {
+    "timestamp": "11/05/26, 10:08:05 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Atta, Besan, fine quality Daliya,",
+    "detected_items": [
+      "Atta (Wheat Flour)",
+      "Besan (Gram Flour)",
+      "Daliya"
+    ]
+  },
+  {
+    "timestamp": "14/05/26, 7:43:40 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Feta cheese, Exo Soap for cleaning Milo Simba 's plates,",
+    "detected_items": [
+      "Cheese",
+      "Feta Cheese",
+      "Mysore Sandal Soap"
+    ]
+  },
+  {
+    "timestamp": "14/05/26, 7:45:51 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Onions",
+    "detected_items": [
+      "Onions"
+    ]
+  },
+  {
+    "timestamp": "15/05/26, 5:58:46 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Sheeba - Tuna n chicken cat food, Normal Bread, sugar, tea leaves, Paneer,",
+    "detected_items": [
+      "Bread",
+      "Cat Food",
+      "Fresh Paneer",
+      "Normal Bread",
+      "Sugar",
+      "Tea Leaves"
+    ]
+  },
+  {
+    "timestamp": "15/05/26, 6:00:02 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Frozen green peas",
+    "detected_items": [
+      "Frozen Green Peas",
+      "Green Peas"
+    ]
+  },
+  {
+    "timestamp": "18/05/26, 9:38:06 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs, Potatoes,",
+    "detected_items": [
+      "Eggs",
+      "Potatoes"
+    ]
+  },
+  {
+    "timestamp": "18/05/26, 5:16:22 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Need eggs for tomorrow morning",
+    "detected_items": [
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "20/05/26, 7:22:54 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Lettuce, cucumber, Baby tomatoes, Tomatoes, Dania Patta, Nimbu,",
+    "detected_items": [
+      "Cherry / Baby Tomatoes",
+      "Coriander (Dhaniya Patta)",
+      "Cucumber",
+      "Lemons (Nimbu)",
+      "Lettuce",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "21/05/26, 6:31:59 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Bundi for Raita,",
+    "detected_items": [
+      "Boondi for Raita"
+    ]
+  },
+  {
+    "timestamp": "22/05/26, 9:27:35 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd, Carrots, French beans,  cauliflower, cabbage, bindi, Paneer, Palak, Capsicum",
+    "detected_items": [
+      "Beans",
+      "Cabbage (Patta Gobi)",
+      "Capsicum / Bell Peppers",
+      "Carrots",
+      "Cauliflower (Gobi)",
+      "Curd (Dahi)",
+      "French Beans",
+      "Fresh Paneer",
+      "Lady Finger (Bhindi)",
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "23/05/26, 8:26:54 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Rohan can you please order one kg of chocolate peanut butter. I want to gift it to Maxi tomorrow",
+    "detected_items": [
+      "Amul Butter",
+      "Peanuts"
+    ]
+  },
+  {
+    "timestamp": "23/05/26, 7:35:31 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Rohan can you please let me know the cost of peanut butter",
+    "detected_items": [
+      "Amul Butter",
+      "Peanuts"
+    ]
+  },
+  {
+    "timestamp": "24/05/26, 6:33:24 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs and bread required",
+    "detected_items": [
+      "Bread",
+      "Eggs"
+    ]
+  },
+  {
+    "timestamp": "26/05/26, 12:38:05 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Keto bread, Amul butter, Black chana, Tomatoes, Potatoes,",
+    "detected_items": [
+      "Amul Butter",
+      "Black Chana",
+      "Bread",
+      "Keto Bread",
+      "Potatoes",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "27/05/26, 9:16:51 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Poha, Suji, groundnuts,",
+    "detected_items": [
+      "Peanuts / Groundnuts",
+      "Poha",
+      "Suji (Semolina)"
+    ]
+  },
+  {
+    "timestamp": "27/05/26, 9:17:12 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Need Amul butter, it's over",
+    "detected_items": [
+      "Amul Butter"
+    ]
+  },
+  {
+    "timestamp": "27/05/26, 10:09:31 AM",
+    "sender": "Rohan",
+    "raw_message": "Ill order again the tomatoes and potatoes",
+    "detected_items": [
+      "Potatoes",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "27/05/26, 10:11:44 AM",
+    "sender": "Lira Suri",
+    "raw_message": "From hand pick you may order little more Palak. Yesterday that was delivered was less to make palak paneer. Also you can order bell peppers and spring onions",
+    "detected_items": [
+      "Capsicum / Bell Peppers",
+      "Fresh Paneer",
+      "Onions",
+      "Spinach (Palak)",
+      "Spring Onions"
+    ]
+  },
+  {
+    "timestamp": "28/05/26, 9:15:14 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Milk bread, Normal Bread, green chillies, Frozen green peas, Paneer,",
+    "detected_items": [
+      "Bread",
+      "Fresh Paneer",
+      "Frozen Green Peas",
+      "Green Chillies",
+      "Green Peas",
+      "Milk",
+      "Milk Bread",
+      "Normal Bread"
+    ]
+  },
+  {
+    "timestamp": "30/05/26, 3:42:33 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Milk Tetra Pack, Red chilli sauce",
+    "detected_items": [
+      "Chilli Sauce",
+      "Milk",
+      "Milk (Tetra Pack)",
+      "Sauce"
+    ]
+  },
+  {
+    "timestamp": "30/05/26, 3:47:13 PM",
+    "sender": "Rohan",
+    "raw_message": "The one she adds which cooking noodles",
+    "detected_items": [
+      "Noodles"
+    ]
+  },
+  {
+    "timestamp": "30/05/26, 3:47:36 PM",
+    "sender": "Lira Suri",
+    "raw_message": "The one she puts in the noodles",
+    "detected_items": [
+      "Noodles"
+    ]
+  },
+  {
+    "timestamp": "01/06/26, 5:03:13 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Lettuce, cucumber, Baby tomatoes, Murmura",
+    "detected_items": [
+      "Cherry / Baby Tomatoes",
+      "Cucumber",
+      "Lettuce",
+      "Murmura (Puffed Rice)",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "02/06/26, 5:30:06 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Dosa batter, Eggs, Curd, Onions, Cauliflower, Cabbage, Bindi, Carrots, French beans, Brinjal, Ghea, Thori,",
+    "detected_items": [
+      "Beans",
+      "Bottle Gourd (Lauki / Ghea)",
+      "Brinjal (Baingan)",
+      "Cabbage (Patta Gobi)",
+      "Carrots",
+      "Cauliflower (Gobi)",
+      "Curd (Dahi)",
+      "Eggs",
+      "French Beans",
+      "Lady Finger (Bhindi)",
+      "Onions",
+      "Ridge Gourd (Tori)",
+      "iD Dosa Batter"
+    ]
+  },
+  {
+    "timestamp": "03/06/26, 8:21:52 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Bread ( both),   Paneer, Chana Dal, Moong yellow dal, Red Masoor dal,",
+    "detected_items": [
+      "Bread",
+      "Chana Dal",
+      "Fresh Paneer",
+      "Masoor Dal (Red)"
+    ]
+  },
+  {
+    "timestamp": "03/06/26, 8:22:24 PM",
+    "sender": "Lira Suri",
+    "raw_message": "For dinner there is Bindi, Rajma and Roti in the fridge",
+    "detected_items": [
+      "Lady Finger (Bhindi)",
+      "Rajma"
+    ]
+  },
+  {
+    "timestamp": "04/06/26, 6:52:46 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Feta cheese, lettuce, baby tomatoes, cucumber",
+    "detected_items": [
+      "Cheese",
+      "Cherry / Baby Tomatoes",
+      "Cucumber",
+      "Feta Cheese",
+      "Lettuce",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "04/06/26, 6:53:55 AM",
+    "sender": "Rohan",
+    "raw_message": "Didn't the Lettuce and cucumber come yesterday",
+    "detected_items": [
+      "Cucumber",
+      "Lettuce"
+    ]
+  },
+  {
+    "timestamp": "04/06/26, 6:56:26 AM",
+    "sender": "Lira Suri",
+    "raw_message": "It did come but a very small lettuce plus only 3 cucumber. It was sufficient for 4 times. 2 times are done. Today I have made for another two days, today and tomorrow and every thing is over. For day after tomorrow I don't have",
+    "detected_items": [
+      "Cucumber",
+      "Lettuce"
+    ]
+  },
+  {
+    "timestamp": "06/06/26, 9:23:06 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Atta, Keto atta, Potatoes, Dania patta, nimbu,",
+    "detected_items": [
+      "Atta (Wheat Flour)",
+      "Coriander (Dhaniya Patta)",
+      "Lemons (Nimbu)",
+      "Low Carb / Keto Atta",
+      "Potatoes"
+    ]
+  },
+  {
+    "timestamp": "08/06/26, 11:14:13 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd, Marie biscuits, Monako biscuits, some Namkeen,",
+    "detected_items": [
+      "Biscuits",
+      "Curd (Dahi)",
+      "Marie Biscuits",
+      "Namkeen"
+    ]
+  },
+  {
+    "timestamp": "08/06/26, 6:50:51 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Milk tetra pack and curd",
+    "detected_items": [
+      "Curd (Dahi)",
+      "Milk",
+      "Milk (Tetra Pack)"
+    ]
+  },
+  {
+    "timestamp": "11/06/26, 6:12:27 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs, milk, curd",
+    "detected_items": [
+      "Curd (Dahi)",
+      "Eggs",
+      "Milk"
+    ]
+  },
+  {
+    "timestamp": "11/06/26, 9:36:47 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Palak, Methi, Green chilli, Spring onions, Bell Peppers - 3 colours, Cabbage, cauliflower, Bindi, Carrots, French beans, Onions and Potatoes",
+    "detected_items": [
+      "Beans",
+      "Cabbage (Patta Gobi)",
+      "Capsicum / Bell Peppers",
+      "Carrots",
+      "Cauliflower (Gobi)",
+      "Fenugreek (Methi)",
+      "French Beans",
+      "Green Chillies",
+      "Lady Finger (Bhindi)",
+      "Onions",
+      "Potatoes",
+      "Spinach (Palak)",
+      "Spring Onions"
+    ]
+  },
+  {
+    "timestamp": "12/06/26, 11:25:42 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Bread, Frozen Green peas,",
+    "detected_items": [
+      "Bread",
+      "Frozen Green Peas",
+      "Green Peas"
+    ]
+  },
+  {
+    "timestamp": "12/06/26, 11:32:53 AM",
+    "sender": "Rohan",
+    "raw_message": "Dahi",
+    "detected_items": [
+      "Curd (Dahi)"
+    ]
+  },
+  {
+    "timestamp": "12/06/26, 11:47:18 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Yes curd is also required",
+    "detected_items": [
+      "Curd (Dahi)"
+    ]
+  },
+  {
+    "timestamp": "15/06/26, 4:51:50 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Ginger, Garlic, Potatoes, Onions, Dosa batter, Green chilli sauce, Poha, Suji, Murmura, Peanuts,",
+    "detected_items": [
+      "Chilli Sauce",
+      "Garlic (Lahsun)",
+      "Ginger (Adrak)",
+      "Green Chillies",
+      "Murmura (Puffed Rice)",
+      "Onions",
+      "Peanuts",
+      "Poha",
+      "Potatoes",
+      "Sauce",
+      "Suji (Semolina)",
+      "iD Dosa Batter"
+    ]
+  },
+  {
+    "timestamp": "16/06/26, 3:05:24 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd and Feta cheese",
+    "detected_items": [
+      "Cheese",
+      "Curd (Dahi)",
+      "Feta Cheese"
+    ]
+  },
+  {
+    "timestamp": "18/06/26, 5:03:17 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Capsicum Paneer and 50 gms coriander leaves",
+    "detected_items": [
+      "Capsicum / Bell Peppers",
+      "Fresh Paneer"
+    ]
+  },
+  {
+    "timestamp": "20/06/26, 9:10:47 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs, Lettuce, Cucumber, Baby Tomatoes,",
+    "detected_items": [
+      "Cherry / Baby Tomatoes",
+      "Cucumber",
+      "Eggs",
+      "Lettuce",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "20/06/26, 6:44:34 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Cheese slices for Omlette",
+    "detected_items": [
+      "Cheese"
+    ]
+  },
+  {
+    "timestamp": "20/06/26, 6:44:47 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Keto bread",
+    "detected_items": [
+      "Bread",
+      "Keto Bread"
+    ]
+  },
+  {
+    "timestamp": "23/06/26, 1:16:04 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Cat food - Sheba with tuna, pumpkin and carrot in Gravy. Me-O delite - tuna with Bonito in jelly",
+    "detected_items": [
+      "Carrots",
+      "Cat Food",
+      "Me-O Delite Cat Food",
+      "Pumpkin (Kaddu)",
+      "Sheba Cat Food (Tuna & Chicken)"
+    ]
+  },
+  {
+    "timestamp": "23/06/26, 4:48:25 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Low carb wheat flour, Ginger, Garlic, French beans, Carrots, Palak, Methi, Karela,  Ghea, Thori,  cauliflower, Tomatoes, Potatoes,",
+    "detected_items": [
+      "Beans",
+      "Bitter Gourd (Karela)",
+      "Bottle Gourd (Lauki / Ghea)",
+      "Carrots",
+      "Cauliflower (Gobi)",
+      "Fenugreek (Methi)",
+      "French Beans",
+      "Garlic (Lahsun)",
+      "Ginger (Adrak)",
+      "Potatoes",
+      "Ridge Gourd (Tori)",
+      "Spinach (Palak)",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "25/06/26, 10:08:43 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Bundi for Raita, Masoor Dal, Green Moong, White chana, Suji, Sambhar dal(Aharar dal)",
+    "detected_items": [
+      "Boondi for Raita",
+      "Green Moong Dal",
+      "Masoor Dal (Red)",
+      "Suji (Semolina)",
+      "Toor / Arhar Dal (Sambhar)",
+      "White Chana (Kabuli)"
+    ]
+  },
+  {
+    "timestamp": "25/06/26, 10:10:11 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Also Bread",
+    "detected_items": [
+      "Bread"
+    ]
+  },
+  {
+    "timestamp": "25/06/26, 10:24:34 AM",
+    "sender": "Rohan",
+    "raw_message": "Which bread ?",
+    "detected_items": [
+      "Bread"
+    ]
+  },
+  {
+    "timestamp": "25/06/26, 10:45:18 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Normal bread which I eat",
+    "detected_items": [
+      "Bread",
+      "Normal Bread"
+    ]
+  },
+  {
+    "timestamp": "26/06/26, 7:14:30 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Paneer, Dahi, Banana, Apple",
+    "detected_items": [
+      "Apples",
+      "Bananas",
+      "Curd (Dahi)",
+      "Fresh Paneer"
+    ]
+  },
+  {
+    "timestamp": "28/06/26, 12:49:08 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Butter, Rice, also sona masoori rice,",
+    "detected_items": [
+      "Amul Butter",
+      "Rice",
+      "Sona Masoori Rice"
+    ]
+  },
+  {
+    "timestamp": "30/06/26, 6:29:12 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Feta cheese, Baby tomatoes, Tea leaves, Rice, Rajma, Black Urad,",
+    "detected_items": [
+      "Black Urad Dal",
+      "Cheese",
+      "Cherry / Baby Tomatoes",
+      "Feta Cheese",
+      "Rajma",
+      "Rice",
+      "Tea Leaves",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "30/06/26, 8:40:36 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Rajma was not delivered",
+    "detected_items": [
+      "Rajma"
+    ]
+  },
+  {
+    "timestamp": "01/07/26, 2:47:13 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Curd, Palak, Cabbage, Cauliflower, Bindi, Brinjal, Thori, Green chilli, Capsicum, Lettuce,",
+    "detected_items": [
+      "Brinjal (Baingan)",
+      "Cabbage (Patta Gobi)",
+      "Capsicum / Bell Peppers",
+      "Cauliflower (Gobi)",
+      "Curd (Dahi)",
+      "Green Chillies",
+      "Lady Finger (Bhindi)",
+      "Lettuce",
+      "Ridge Gourd (Tori)",
+      "Spinach (Palak)"
+    ]
+  },
+  {
+    "timestamp": "02/07/26, 7:42:57 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Tomatoes,  Potatoes, Onion, grated cheese",
+    "detected_items": [
+      "Cheese",
+      "Onions",
+      "Potatoes",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "02/07/26, 2:35:51 PM",
+    "sender": "Lira Suri",
+    "raw_message": "I had sent a list of vegetables+ curd yesterday. In addition today I have sent another list.",
+    "detected_items": [
+      "Curd (Dahi)"
+    ]
+  },
+  {
+    "timestamp": "02/07/26, 4:24:41 PM",
+    "sender": "Rohan",
+    "raw_message": "do we need orange or apple or banana",
+    "detected_items": [
+      "Apples",
+      "Bananas",
+      "Oranges"
+    ]
+  },
+  {
+    "timestamp": "02/07/26, 4:25:08 PM",
+    "sender": "Rohan",
+    "raw_message": "beans , methi , bell pepper cucumber",
+    "detected_items": [
+      "Beans",
+      "Capsicum / Bell Peppers",
+      "Cucumber",
+      "Fenugreek (Methi)"
+    ]
+  },
+  {
+    "timestamp": "02/07/26, 4:27:07 PM",
+    "sender": "Rohan",
+    "raw_message": "beetroot carrot muchroom",
+    "detected_items": [
+      "Carrots"
+    ]
+  },
+  {
+    "timestamp": "02/07/26, 4:28:12 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Yes. Need oranges, Apple and banana",
+    "detected_items": [
+      "Apples",
+      "Bananas"
+    ]
+  },
+  {
+    "timestamp": "02/07/26, 4:28:40 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Mushroom, beetroot and methi",
+    "detected_items": [
+      "Fenugreek (Methi)",
+      "Mushroom"
+    ]
+  },
+  {
+    "timestamp": "03/07/26, 9:47:41 AM",
+    "sender": "Lira Suri",
+    "raw_message": "Eggs,   Milk Tetra pack, Milk-Bread, Garam Masala Powder, Amchur Powder, Kasmiri mirch powder",
+    "detected_items": [
+      "Amchur Powder",
+      "Bread",
+      "Eggs",
+      "Garam Masala",
+      "Milk",
+      "Milk (Tetra Pack)"
+    ]
+  },
+  {
+    "timestamp": "07/07/26, 1:19:53 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Feta cheese, Lettuce, Cucumber, baby tomatoes, Frozen Green peas, Tomatoes, Paneer, French beans, Carrot,",
+    "detected_items": [
+      "Beans",
+      "Carrots",
+      "Cheese",
+      "Cherry / Baby Tomatoes",
+      "Cucumber",
+      "Feta Cheese",
+      "French Beans",
+      "Fresh Paneer",
+      "Frozen Green Peas",
+      "Green Peas",
+      "Lettuce",
+      "Tomatoes"
+    ]
+  },
+  {
+    "timestamp": "10/07/26, 3:48:15 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Maggie Hot n Sweet sauce, Sugar, Salt, Milk Tetra pack,",
+    "detected_items": [
+      "Milk",
+      "Milk (Tetra Pack)",
+      "Salt",
+      "Sauce",
+      "Sugar"
+    ]
+  },
+  {
+    "timestamp": "29/07/26, 1:15:09 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Rohan can you please order for me : Coconut oil, Colgate toothpaste, Mysore sandal soap, Half kg Almonds and Half kg groundnuts.",
+    "detected_items": [
+      "Coconut Oil",
+      "Colgate Toothpaste",
+      "Mysore Sandal Soap",
+      "Peanuts / Groundnuts"
+    ]
+  },
+  {
+    "timestamp": "29/07/26, 1:19:56 PM",
+    "sender": "Lira Suri",
+    "raw_message": "Mysore sandal soap which is a rectangular box with 3 or 4 soaps in it",
+    "detected_items": [
+      "Mysore Sandal Soap"
+    ]
+  }
+]

@@ -1,0 +1,434 @@
+[
+  {
+    "item": "Fresh Paneer",
+    "chat_mentions": 37
+  },
+  {
+    "item": "Eggs",
+    "chat_mentions": 34
+  },
+  {
+    "item": "Tomatoes",
+    "chat_mentions": 33
+  },
+  {
+    "item": "Bread",
+    "chat_mentions": 33
+  },
+  {
+    "item": "Curd (Dahi)",
+    "chat_mentions": 33
+  },
+  {
+    "item": "Milk",
+    "chat_mentions": 30
+  },
+  {
+    "item": "Onions",
+    "chat_mentions": 29
+  },
+  {
+    "item": "Carrots",
+    "chat_mentions": 24
+  },
+  {
+    "item": "Potatoes",
+    "chat_mentions": 24
+  },
+  {
+    "item": "Spinach (Palak)",
+    "chat_mentions": 23
+  },
+  {
+    "item": "Beans",
+    "chat_mentions": 23
+  },
+  {
+    "item": "Cauliflower (Gobi)",
+    "chat_mentions": 20
+  },
+  {
+    "item": "Cabbage (Patta Gobi)",
+    "chat_mentions": 18
+  },
+  {
+    "item": "Lady Finger (Bhindi)",
+    "chat_mentions": 18
+  },
+  {
+    "item": "French Beans",
+    "chat_mentions": 18
+  },
+  {
+    "item": "Lettuce",
+    "chat_mentions": 18
+  },
+  {
+    "item": "Cheese",
+    "chat_mentions": 17
+  },
+  {
+    "item": "Capsicum / Bell Peppers",
+    "chat_mentions": 17
+  },
+  {
+    "item": "Cucumber",
+    "chat_mentions": 17
+  },
+  {
+    "item": "Apples",
+    "chat_mentions": 16
+  },
+  {
+    "item": "Amul Butter",
+    "chat_mentions": 16
+  },
+  {
+    "item": "Milk (Tetra Pack)",
+    "chat_mentions": 15
+  },
+  {
+    "item": "Garlic (Lahsun)",
+    "chat_mentions": 15
+  },
+  {
+    "item": "Green Chillies",
+    "chat_mentions": 14
+  },
+  {
+    "item": "Ridge Gourd (Tori)",
+    "chat_mentions": 13
+  },
+  {
+    "item": "Cherry / Baby Tomatoes",
+    "chat_mentions": 13
+  },
+  {
+    "item": "Fenugreek (Methi)",
+    "chat_mentions": 12
+  },
+  {
+    "item": "Milk Bread",
+    "chat_mentions": 11
+  },
+  {
+    "item": "Ginger (Adrak)",
+    "chat_mentions": 11
+  },
+  {
+    "item": "Bottle Gourd (Lauki / Ghea)",
+    "chat_mentions": 11
+  },
+  {
+    "item": "Brinjal (Baingan)",
+    "chat_mentions": 11
+  },
+  {
+    "item": "Green Peas",
+    "chat_mentions": 10
+  },
+  {
+    "item": "Feta Cheese",
+    "chat_mentions": 10
+  },
+  {
+    "item": "Frozen Green Peas",
+    "chat_mentions": 9
+  },
+  {
+    "item": "Rice",
+    "chat_mentions": 9
+  },
+  {
+    "item": "Keto Bread",
+    "chat_mentions": 9
+  },
+  {
+    "item": "Bananas",
+    "chat_mentions": 9
+  },
+  {
+    "item": "Coriander (Dhaniya Patta)",
+    "chat_mentions": 9
+  },
+  {
+    "item": "Poha",
+    "chat_mentions": 8
+  },
+  {
+    "item": "Suji (Semolina)",
+    "chat_mentions": 8
+  },
+  {
+    "item": "iD Dosa Batter",
+    "chat_mentions": 8
+  },
+  {
+    "item": "Peanuts",
+    "chat_mentions": 8
+  },
+  {
+    "item": "Sauce",
+    "chat_mentions": 7
+  },
+  {
+    "item": "Rajma",
+    "chat_mentions": 7
+  },
+  {
+    "item": "Normal Bread",
+    "chat_mentions": 7
+  },
+  {
+    "item": "Cat Food",
+    "chat_mentions": 6
+  },
+  {
+    "item": "Atta (Wheat Flour)",
+    "chat_mentions": 6
+  },
+  {
+    "item": "Biscuits",
+    "chat_mentions": 6
+  },
+  {
+    "item": "Tea Leaves",
+    "chat_mentions": 6
+  },
+  {
+    "item": "Desi Ghee",
+    "chat_mentions": 5
+  },
+  {
+    "item": "Besan (Gram Flour)",
+    "chat_mentions": 5
+  },
+  {
+    "item": "Lemons (Nimbu)",
+    "chat_mentions": 5
+  },
+  {
+    "item": "Low Carb / Keto Atta",
+    "chat_mentions": 5
+  },
+  {
+    "item": "Noodles",
+    "chat_mentions": 5
+  },
+  {
+    "item": "Me-O Delite Cat Food",
+    "chat_mentions": 4
+  },
+  {
+    "item": "Mushroom",
+    "chat_mentions": 4
+  },
+  {
+    "item": "Jaggery Powder",
+    "chat_mentions": 4
+  },
+  {
+    "item": "Murmura (Puffed Rice)",
+    "chat_mentions": 4
+  },
+  {
+    "item": "Mysore Sandal Soap",
+    "chat_mentions": 4
+  },
+  {
+    "item": "Marie Biscuits",
+    "chat_mentions": 4
+  },
+  {
+    "item": "Boondi for Raita",
+    "chat_mentions": 4
+  },
+  {
+    "item": "Peanuts / Groundnuts",
+    "chat_mentions": 4
+  },
+  {
+    "item": "Spring Onions",
+    "chat_mentions": 4
+  },
+  {
+    "item": "Sugar",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Broccoli",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Oranges",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Bitter Gourd (Karela)",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Sona Masoori Rice",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Jeera Powder",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Masoor Dal (Red)",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Vinegar",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Monaco Biscuits",
+    "chat_mentions": 3
+  },
+  {
+    "item": "White Chana (Kabuli)",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Salt",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Chilli Sauce",
+    "chat_mentions": 3
+  },
+  {
+    "item": "Cheese Cubes",
+    "chat_mentions": 2
+  },
+  {
+    "item": "iD Idli Batter",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Lobia",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Pomegranate (Anaar)",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Moong Dal (Yellow)",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Chana Dal",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Black Urad Dal",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Black Chana",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Namkeen",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Sheba Cat Food (Tuna & Chicken)",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Stevia Sweetener",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Green Moong Dal",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Pumpkin (Kaddu)",
+    "chat_mentions": 2
+  },
+  {
+    "item": "Haldi (Turmeric Powder)",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Sambhar Powder",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Milk Pouch",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Thin Poha",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Asparagus",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Sarson ka Saag",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Agar Agar Powder (Gummies)",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Strawberries",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Pet Poop Bags",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Kulcha",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Colin Glass Cleaner",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Kashmiri Mirch Powder",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Toilet Paper Roll",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Wet Wipes",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Daliya",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Toor / Arhar Dal (Sambhar)",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Garam Masala",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Amchur Powder",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Coconut Oil",
+    "chat_mentions": 1
+  },
+  {
+    "item": "Colgate Toothpaste",
+    "chat_mentions": 1
+  }
+]

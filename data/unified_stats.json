@@ -1,0 +1,13 @@
+{
+  "total_orders": 822,
+  "zepto_orders": 406,
+  "swiggy_orders": 365,
+  "handpickd_orders": 51,
+  "zepto_spent": 310585.49,
+  "swiggy_spent": 222235.53,
+  "handpickd_spent": 25391.0,
+  "total_spent": 558212.02,
+  "total_unique_products": 1812,
+  "earliest_order": "2022-05-15",
+  "latest_order": "2026-09-11"
+}

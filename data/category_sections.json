@@ -1,0 +1,662 @@
+[
+  {
+    "id": "fruits-vegetables",
+    "name": "Fruits & Vegetables",
+    "icon": "\ud83e\udd66",
+    "badge": "Fresh Daily",
+    "description": "Fresh produce, greens & fruits",
+    "itemCount": 24,
+    "items": [
+      {
+        "name": "Tomatoes",
+        "icon": "\ud83c\udf45",
+        "orderCount": 162
+      },
+      {
+        "name": "Onions",
+        "icon": "\ud83e\uddc5",
+        "orderCount": 113
+      },
+      {
+        "name": "Bananas",
+        "icon": "\ud83c\udf4c",
+        "orderCount": 103
+      },
+      {
+        "name": "Potatoes",
+        "icon": "\ud83e\udd54",
+        "orderCount": 93
+      },
+      {
+        "name": "Cauliflower (Gobi)",
+        "icon": "\ud83e\udd66",
+        "orderCount": 92
+      },
+      {
+        "name": "Carrots",
+        "icon": "\ud83e\udd55",
+        "orderCount": 89
+      },
+      {
+        "name": "Cucumber",
+        "icon": "\ud83e\udd52",
+        "orderCount": 83
+      },
+      {
+        "name": "Palak / Spinach",
+        "icon": "\ud83e\udd6c",
+        "orderCount": 80
+      },
+      {
+        "name": "Lemons (Nimbu)",
+        "icon": "\ud83c\udf4b",
+        "orderCount": 78
+      },
+      {
+        "name": "Coriander (Dhaniya)",
+        "icon": "\ud83c\udf3f",
+        "orderCount": 61
+      },
+      {
+        "name": "Garlic (Lehsun)",
+        "icon": "\ud83e\uddc4",
+        "orderCount": 61
+      },
+      {
+        "name": "Apples",
+        "icon": "\ud83c\udf4e",
+        "orderCount": 56
+      },
+      {
+        "name": "Lettuce / Salad Leaves",
+        "icon": "\ud83e\udd57",
+        "orderCount": 56
+      },
+      {
+        "name": "Ginger (Adrak)",
+        "icon": "\ud83e\udeda",
+        "orderCount": 52
+      },
+      {
+        "name": "Capsicum",
+        "icon": "\ud83e\uded1",
+        "orderCount": 50
+      },
+      {
+        "name": "Cabbage",
+        "icon": "\ud83e\udd6c",
+        "orderCount": 50
+      },
+      {
+        "name": "Lady Finger (Bhindi)",
+        "icon": "\ud83e\udd6c",
+        "orderCount": 48
+      },
+      {
+        "name": "Ridge Gourd (Tori)",
+        "icon": "\ud83e\udd52",
+        "orderCount": 42
+      },
+      {
+        "name": "Lauki / Bottle Gourd",
+        "icon": "\ud83e\udd52",
+        "orderCount": 40
+      },
+      {
+        "name": "Broccoli",
+        "icon": "\ud83e\udd66",
+        "orderCount": 34
+      },
+      {
+        "name": "Mushrooms",
+        "icon": "\ud83c\udf44",
+        "orderCount": 30
+      },
+      {
+        "name": "Green Chillies",
+        "icon": "\ud83c\udf36\ufe0f",
+        "orderCount": 29
+      },
+      {
+        "name": "French Beans",
+        "icon": "\ud83e\udedb",
+        "orderCount": 24
+      },
+      {
+        "name": "Pomegranate (Anar)",
+        "icon": "\ud83c\udf4e",
+        "orderCount": 11
+      }
+    ]
+  },
+  {
+    "id": "dairy-bread-eggs",
+    "name": "Dairy, Bread & Eggs",
+    "icon": "\ud83e\udd5b",
+    "badge": "Daily Needs",
+    "description": "Milk, paneer, eggs, curd & breads",
+    "itemCount": 15,
+    "items": [
+      {
+        "name": "Paneer",
+        "icon": "\ud83e\uddc0",
+        "orderCount": 186
+      },
+      {
+        "name": "Curd / Dahi",
+        "icon": "\ud83e\udd63",
+        "orderCount": 124
+      },
+      {
+        "name": "Eggs",
+        "icon": "\ud83e\udd5a",
+        "orderCount": 112
+      },
+      {
+        "name": "Milk Tetrapack",
+        "icon": "\ud83e\uddc3",
+        "orderCount": 107
+      },
+      {
+        "name": "Regular / Brown Bread",
+        "icon": "\ud83c\udf5e",
+        "orderCount": 106
+      },
+      {
+        "name": "Fresh Milk (Pouch / Cow)",
+        "icon": "\ud83e\udd5b",
+        "orderCount": 93
+      },
+      {
+        "name": "Fresh Cream",
+        "icon": "\ud83e\udd5b",
+        "orderCount": 86
+      },
+      {
+        "name": "White Bread",
+        "icon": "\ud83c\udf5e",
+        "orderCount": 77
+      },
+      {
+        "name": "Butter",
+        "icon": "\ud83e\uddc8",
+        "orderCount": 59
+      },
+      {
+        "name": "Chaas / Buttermilk",
+        "icon": "\ud83e\udd64",
+        "orderCount": 54
+      },
+      {
+        "name": "Idli & Dosa Batter",
+        "icon": "\ud83e\udd5e",
+        "orderCount": 47
+      },
+      {
+        "name": "Cheddar Cheese Slices",
+        "icon": "\ud83e\uddc0",
+        "orderCount": 27
+      },
+      {
+        "name": "Greek Yogurt",
+        "icon": "\ud83e\udd63",
+        "orderCount": 26
+      },
+      {
+        "name": "Keto Bread",
+        "icon": "\ud83e\udd56",
+        "orderCount": 12
+      },
+      {
+        "name": "Shredded Cheese",
+        "icon": "\ud83e\uddc0",
+        "orderCount": 10
+      }
+    ]
+  },
+  {
+    "id": "atta-rice-dals",
+    "name": "Atta, Rice, Oil & Dals",
+    "icon": "\ud83c\udf3e",
+    "badge": "Pantry Staples",
+    "description": "Flours, grains, lentils & cooking oils",
+    "itemCount": 19,
+    "items": [
+      {
+        "name": "Cooking Oil",
+        "icon": "\ud83c\udf7e",
+        "orderCount": 140
+      },
+      {
+        "name": "Maida",
+        "icon": "\ud83c\udf3e",
+        "orderCount": 126
+      },
+      {
+        "name": "Desi Ghee",
+        "icon": "\ud83c\udffa",
+        "orderCount": 32
+      },
+      {
+        "name": "Regular Atta (Wheat)",
+        "icon": "\ud83c\udf3e",
+        "orderCount": 29
+      },
+      {
+        "name": "Suji / Rava",
+        "icon": "\ud83c\udf3e",
+        "orderCount": 21
+      },
+      {
+        "name": "Poha",
+        "icon": "\ud83e\udd63",
+        "orderCount": 16
+      },
+      {
+        "name": "Masoor Dal",
+        "icon": "\ud83e\udd63",
+        "orderCount": 13
+      },
+      {
+        "name": "Basmati Rice",
+        "icon": "\ud83c\udf5a",
+        "orderCount": 12
+      },
+      {
+        "name": "Yellow Moong Dal (Dhuli)",
+        "icon": "\ud83e\udd63",
+        "orderCount": 12
+      },
+      {
+        "name": "Chana Dal",
+        "icon": "\ud83e\udd63",
+        "orderCount": 11
+      },
+      {
+        "name": "Daliya",
+        "icon": "\ud83c\udf3e",
+        "orderCount": 11
+      },
+      {
+        "name": "Rajma",
+        "icon": "\ud83e\uded8",
+        "orderCount": 10
+      },
+      {
+        "name": "Besan",
+        "icon": "\ud83c\udf3e",
+        "orderCount": 10
+      },
+      {
+        "name": "Urad Dal",
+        "icon": "\ud83e\udd63",
+        "orderCount": 8
+      },
+      {
+        "name": "Chole / Kabuli Chana",
+        "icon": "\ud83e\uded8",
+        "orderCount": 7
+      },
+      {
+        "name": "Keto Atta / Low Carb Flour",
+        "icon": "\ud83c\udf3e",
+        "orderCount": 6
+      },
+      {
+        "name": "Green Moong Dal (Chilka / Whole)",
+        "icon": "\ud83e\udd63",
+        "orderCount": 6
+      },
+      {
+        "name": "Sona Masoori Rice",
+        "icon": "\ud83c\udf5a",
+        "orderCount": 5
+      },
+      {
+        "name": "Toor / Arhar Dal",
+        "icon": "\ud83e\udd63",
+        "orderCount": 2
+      }
+    ]
+  },
+  {
+    "id": "masala-dryfruits",
+    "name": "Masala & Dry Fruits",
+    "icon": "\ud83c\udf36\ufe0f",
+    "badge": "Kitchen Essentials",
+    "description": "Spices, sugar, jaggery, nuts & dry fruits",
+    "itemCount": 21,
+    "items": [
+      {
+        "name": "Sugar",
+        "icon": "\ud83c\udf6c",
+        "orderCount": 129
+      },
+      {
+        "name": "Peanuts",
+        "icon": "\ud83e\udd5c",
+        "orderCount": 122
+      },
+      {
+        "name": "Salt",
+        "icon": "\ud83e\uddc2",
+        "orderCount": 36
+      },
+      {
+        "name": "Almonds (Badam)",
+        "icon": "\ud83c\udf30",
+        "orderCount": 20
+      },
+      {
+        "name": "Jeera Whole (Cumin Seeds)",
+        "icon": "\ud83e\uddc2",
+        "orderCount": 19
+      },
+      {
+        "name": "Cardamom (Elaichi)",
+        "icon": "\ud83c\udf3f",
+        "orderCount": 18
+      },
+      {
+        "name": "Dhaniya Powder",
+        "icon": "\ud83c\udf3f",
+        "orderCount": 14
+      },
+      {
+        "name": "Jaggery (Gur)",
+        "icon": "\ud83c\udf6f",
+        "orderCount": 12
+      },
+      {
+        "name": "Cashews (Kaju)",
+        "icon": "\ud83e\udd5c",
+        "orderCount": 12
+      },
+      {
+        "name": "Jeera Powder",
+        "icon": "\ud83e\uddc2",
+        "orderCount": 9
+      },
+      {
+        "name": "Garam Masala",
+        "icon": "\ud83e\udd58",
+        "orderCount": 8
+      },
+      {
+        "name": "Kasuri Methi",
+        "icon": "\ud83c\udf3f",
+        "orderCount": 8
+      },
+      {
+        "name": "Chaat Masala",
+        "icon": "\ud83e\uddc2",
+        "orderCount": 8
+      },
+      {
+        "name": "Black Pepper",
+        "icon": "\ud83e\uddc2",
+        "orderCount": 7
+      },
+      {
+        "name": "Haldi (Turmeric)",
+        "icon": "\ud83d\udfe1",
+        "orderCount": 6
+      },
+      {
+        "name": "Kashmiri Chilli Powder",
+        "icon": "\ud83c\udf36\ufe0f",
+        "orderCount": 6
+      },
+      {
+        "name": "Walnuts (Akhrot)",
+        "icon": "\ud83c\udf30",
+        "orderCount": 6
+      },
+      {
+        "name": "Teekha Red Chilli Powder",
+        "icon": "\ud83c\udf36\ufe0f",
+        "orderCount": 3
+      },
+      {
+        "name": "Hing",
+        "icon": "\ud83e\uddc2",
+        "orderCount": 3
+      },
+      {
+        "name": "Raisins (Kishmish)",
+        "icon": "\ud83c\udf47",
+        "orderCount": 2
+      },
+      {
+        "name": "Mustard Seeds (Rai)",
+        "icon": "\ud83e\uddc2",
+        "orderCount": 1
+      }
+    ]
+  },
+  {
+    "id": "breakfast-sauces",
+    "name": "Breakfast & Sauces",
+    "icon": "\ud83e\udd63",
+    "badge": "Morning Routine",
+    "description": "Oats, honey, spreads & condiments",
+    "itemCount": 11,
+    "items": [
+      {
+        "name": "Oats",
+        "icon": "\ud83e\udd63",
+        "orderCount": 37
+      },
+      {
+        "name": "Soya & Chilli Sauces",
+        "icon": "\ud83c\udf76",
+        "orderCount": 17
+      },
+      {
+        "name": "Peanut Butter",
+        "icon": "\ud83e\udd5c",
+        "orderCount": 11
+      },
+      {
+        "name": "Honey",
+        "icon": "\ud83c\udf6f",
+        "orderCount": 10
+      },
+      {
+        "name": "Fruit Jam",
+        "icon": "\ud83c\udf53",
+        "orderCount": 8
+      },
+      {
+        "name": "Vermicelli (Semiya)",
+        "icon": "\ud83c\udf5d",
+        "orderCount": 8
+      },
+      {
+        "name": "Tomato Ketchup",
+        "icon": "\ud83c\udf45",
+        "orderCount": 3
+      },
+      {
+        "name": "Pasta Sauce",
+        "icon": "\ud83c\udf5d",
+        "orderCount": 3
+      },
+      {
+        "name": "Corn Flakes",
+        "icon": "\ud83e\udd63",
+        "orderCount": 1
+      },
+      {
+        "name": "Muesli / Granola",
+        "icon": "\ud83e\udd63",
+        "orderCount": 1
+      },
+      {
+        "name": "Mayonnaise",
+        "icon": "\ud83c\udf76",
+        "orderCount": 1
+      }
+    ]
+  },
+  {
+    "id": "tea-coffee-beverages",
+    "name": "Tea, Coffee & Drinks",
+    "icon": "\u2615",
+    "badge": "Beverages",
+    "description": "Chai, coffee, juices & coconut water",
+    "itemCount": 6,
+    "items": [
+      {
+        "name": "Soda / Soft Drinks",
+        "icon": "\ud83e\udd64",
+        "orderCount": 60
+      },
+      {
+        "name": "Tea / Chai Leaves",
+        "icon": "\ud83e\uded6",
+        "orderCount": 39
+      },
+      {
+        "name": "Coffee",
+        "icon": "\u2615",
+        "orderCount": 29
+      },
+      {
+        "name": "Green Tea",
+        "icon": "\ud83c\udf75",
+        "orderCount": 3
+      },
+      {
+        "name": "Tender Coconut Water",
+        "icon": "\ud83e\udd65",
+        "orderCount": 3
+      },
+      {
+        "name": "Fruit Juice",
+        "icon": "\ud83e\uddc3",
+        "orderCount": 3
+      }
+    ]
+  },
+  {
+    "id": "munchies-snacks",
+    "name": "Munchies & Biscuits",
+    "icon": "\ud83c\udf6a",
+    "badge": "Snacks",
+    "description": "Snacks, biscuits, namkeen & chocolates",
+    "itemCount": 9,
+    "items": [
+      {
+        "name": "Chocolates",
+        "icon": "\ud83c\udf6b",
+        "orderCount": 100
+      },
+      {
+        "name": "Chips & Crisps",
+        "icon": "\ud83e\udd54",
+        "orderCount": 83
+      },
+      {
+        "name": "Masala / Roasted Peanuts",
+        "icon": "\ud83e\udd5c",
+        "orderCount": 73
+      },
+      {
+        "name": "Biscuits & Cookies",
+        "icon": "\ud83c\udf6a",
+        "orderCount": 60
+      },
+      {
+        "name": "Namkeen & Bhujia",
+        "icon": "\ud83e\udd68",
+        "orderCount": 60
+      },
+      {
+        "name": "Noodles & Pasta",
+        "icon": "\ud83c\udf5c",
+        "orderCount": 44
+      },
+      {
+        "name": "Makhana (Fox Nuts)",
+        "icon": "\ud83c\udf7f",
+        "orderCount": 39
+      },
+      {
+        "name": "Murmura (Puffed Rice)",
+        "icon": "\ud83e\udd63",
+        "orderCount": 10
+      },
+      {
+        "name": "Khakhra",
+        "icon": "\ud83e\uded3",
+        "orderCount": 8
+      }
+    ]
+  },
+  {
+    "id": "household-petcare",
+    "name": "Pet Care & Household",
+    "icon": "\ud83d\udc3e",
+    "badge": "Cats & Cleaning",
+    "description": "Cat care (Samba & Milo), rolls & cleaning supplies",
+    "itemCount": 11,
+    "items": [
+      {
+        "name": "Kitchen Towels / Rolls",
+        "icon": "\ud83e\uddfb",
+        "orderCount": 12
+      },
+      {
+        "name": "Dishwash Liquid / Gel",
+        "icon": "\ud83e\uddfc",
+        "orderCount": 12
+      },
+      {
+        "name": "Floor & Toilet Cleaner",
+        "icon": "\ud83e\uddf9",
+        "orderCount": 11
+      },
+      {
+        "name": "Cat Food (Wet & Dry)",
+        "icon": "\ud83d\udc31",
+        "orderCount": 9
+      },
+      {
+        "name": "Facial Tissues",
+        "icon": "\ud83e\uddfb",
+        "orderCount": 6
+      },
+      {
+        "name": "Laundry Detergent",
+        "icon": "\ud83e\uddfa",
+        "orderCount": 6
+      },
+      {
+        "name": "Wet Wipes",
+        "icon": "\ud83e\uddfb",
+        "orderCount": 6
+      },
+      {
+        "name": "Toilet Rolls",
+        "icon": "\ud83e\uddfb",
+        "orderCount": 3
+      },
+      {
+        "name": "Pet Poop Bags & Litter",
+        "icon": "\ud83d\udc3e",
+        "orderCount": 2
+      },
+      {
+        "name": "Garbage Bags",
+        "icon": "\ud83d\uddd1\ufe0f",
+        "orderCount": 2
+      },
+      {
+        "name": "Aluminium Foil",
+        "icon": "\ud83c\udf73",
+        "orderCount": 1
+      }
+    ]
+  }
+]

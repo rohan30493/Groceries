@@ -1,0 +1,2146 @@
+{
+  "companions": {
+    "Eggs": [
+      {
+        "companion": "Milk",
+        "co_count": 61,
+        "confidence": 0.48
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 32,
+        "confidence": 0.25
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 29,
+        "confidence": 0.23
+      },
+      {
+        "companion": "Bread",
+        "co_count": 29,
+        "confidence": 0.23
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 22,
+        "confidence": 0.17
+      }
+    ],
+    "Sugar": [
+      {
+        "companion": "Milk",
+        "co_count": 60,
+        "confidence": 0.39
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 28,
+        "confidence": 0.18
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 27,
+        "confidence": 0.18
+      },
+      {
+        "companion": "Lemons (Nimbu)",
+        "co_count": 26,
+        "confidence": 0.17
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 23,
+        "confidence": 0.15
+      }
+    ],
+    "Milk": [
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 106,
+        "confidence": 0.2
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 89,
+        "confidence": 0.17
+      }
+    ],
+    "Roasted Peanuts": [
+      {
+        "companion": "Milk",
+        "co_count": 89,
+        "confidence": 0.33
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 48,
+        "confidence": 0.18
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 43,
+        "confidence": 0.16
+      }
+    ],
+    "Cucumber": [
+      {
+        "companion": "Tomatoes",
+        "co_count": 59,
+        "confidence": 0.61
+      },
+      {
+        "companion": "Lettuce",
+        "co_count": 46,
+        "confidence": 0.48
+      },
+      {
+        "companion": "Milk",
+        "co_count": 38,
+        "confidence": 0.4
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 37,
+        "confidence": 0.39
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 29,
+        "confidence": 0.3
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 22,
+        "confidence": 0.23
+      }
+    ],
+    "Lettuce": [
+      {
+        "companion": "Tomatoes",
+        "co_count": 48,
+        "confidence": 0.68
+      },
+      {
+        "companion": "Cucumber",
+        "co_count": 46,
+        "confidence": 0.65
+      },
+      {
+        "companion": "Milk",
+        "co_count": 28,
+        "confidence": 0.39
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 25,
+        "confidence": 0.35
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 15,
+        "confidence": 0.21
+      },
+      {
+        "companion": "Potatoes",
+        "co_count": 14,
+        "confidence": 0.2
+      }
+    ],
+    "Tomatoes": [
+      {
+        "companion": "Milk",
+        "co_count": 63,
+        "confidence": 0.28
+      },
+      {
+        "companion": "Cucumber",
+        "co_count": 59,
+        "confidence": 0.26
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 58,
+        "confidence": 0.26
+      },
+      {
+        "companion": "Onions",
+        "co_count": 54,
+        "confidence": 0.24
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 49,
+        "confidence": 0.22
+      },
+      {
+        "companion": "Lettuce",
+        "co_count": 48,
+        "confidence": 0.21
+      }
+    ],
+    "Fresh Paneer": [
+      {
+        "companion": "Milk",
+        "co_count": 106,
+        "confidence": 0.5
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 58,
+        "confidence": 0.27
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 48,
+        "confidence": 0.23
+      },
+      {
+        "companion": "Onions",
+        "co_count": 48,
+        "confidence": 0.23
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 48,
+        "confidence": 0.23
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 43,
+        "confidence": 0.2
+      }
+    ],
+    "Cauliflower": [
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 51,
+        "confidence": 0.47
+      },
+      {
+        "companion": "Lady Finger (Bhindi)",
+        "co_count": 46,
+        "confidence": 0.42
+      },
+      {
+        "companion": "Cabbage",
+        "co_count": 44,
+        "confidence": 0.4
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 43,
+        "confidence": 0.39
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 41,
+        "confidence": 0.38
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 41,
+        "confidence": 0.38
+      }
+    ],
+    "Potatoes": [
+      {
+        "companion": "Onions",
+        "co_count": 53,
+        "confidence": 0.5
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 48,
+        "confidence": 0.45
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 38,
+        "confidence": 0.36
+      },
+      {
+        "companion": "Milk",
+        "co_count": 38,
+        "confidence": 0.36
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 27,
+        "confidence": 0.25
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 26,
+        "confidence": 0.25
+      }
+    ],
+    "Spinach (Palak)": [
+      {
+        "companion": "Cauliflower",
+        "co_count": 51,
+        "confidence": 0.52
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 48,
+        "confidence": 0.49
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 41,
+        "confidence": 0.42
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 37,
+        "confidence": 0.38
+      },
+      {
+        "companion": "Lady Finger (Bhindi)",
+        "co_count": 36,
+        "confidence": 0.37
+      },
+      {
+        "companion": "Cabbage",
+        "co_count": 32,
+        "confidence": 0.33
+      }
+    ],
+    "Pesticide-FREE Insert Card": [
+      {
+        "companion": "Tomatoes",
+        "co_count": 21,
+        "confidence": 0.57
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 19,
+        "confidence": 0.51
+      },
+      {
+        "companion": "Lady Finger (Bhindi)",
+        "co_count": 19,
+        "confidence": 0.51
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 18,
+        "confidence": 0.49
+      },
+      {
+        "companion": "Onions",
+        "co_count": 17,
+        "confidence": 0.46
+      },
+      {
+        "companion": "Brinjal (Baingan)",
+        "co_count": 17,
+        "confidence": 0.46
+      }
+    ],
+    "Onions": [
+      {
+        "companion": "Tomatoes",
+        "co_count": 54,
+        "confidence": 0.36
+      },
+      {
+        "companion": "Potatoes",
+        "co_count": 53,
+        "confidence": 0.35
+      },
+      {
+        "companion": "Milk",
+        "co_count": 53,
+        "confidence": 0.35
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 48,
+        "confidence": 0.32
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 35,
+        "confidence": 0.23
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 34,
+        "confidence": 0.22
+      }
+    ],
+    "Orange Mini Mandarin": [
+      {
+        "companion": "Pesticide-FREE Insert Card",
+        "co_count": 9,
+        "confidence": 1.0
+      }
+    ],
+    "Bread": [
+      {
+        "companion": "Milk",
+        "co_count": 70,
+        "confidence": 0.47
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 39,
+        "confidence": 0.26
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 30,
+        "confidence": 0.2
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 30,
+        "confidence": 0.2
+      },
+      {
+        "companion": "Eggs",
+        "co_count": 29,
+        "confidence": 0.19
+      }
+    ],
+    "Coriander (Dhaniya)": [
+      {
+        "companion": "Milk",
+        "co_count": 29,
+        "confidence": 0.44
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 27,
+        "confidence": 0.41
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 25,
+        "confidence": 0.38
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 18,
+        "confidence": 0.27
+      },
+      {
+        "companion": "Cucumber",
+        "co_count": 17,
+        "confidence": 0.26
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 16,
+        "confidence": 0.24
+      }
+    ],
+    "Rice": [
+      {
+        "companion": "Milk",
+        "co_count": 12,
+        "confidence": 0.32
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 9,
+        "confidence": 0.24
+      }
+    ],
+    "Tea Leaves": [
+      {
+        "companion": "Milk",
+        "co_count": 20,
+        "confidence": 0.51
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 13,
+        "confidence": 0.33
+      },
+      {
+        "companion": "Sugar",
+        "co_count": 12,
+        "confidence": 0.31
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 12,
+        "confidence": 0.31
+      },
+      {
+        "companion": "Lemons (Nimbu)",
+        "co_count": 11,
+        "confidence": 0.28
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 9,
+        "confidence": 0.23
+      }
+    ],
+    "Garlic": [
+      {
+        "companion": "Ginger",
+        "co_count": 25,
+        "confidence": 0.36
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 25,
+        "confidence": 0.36
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 23,
+        "confidence": 0.33
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 22,
+        "confidence": 0.32
+      },
+      {
+        "companion": "Milk",
+        "co_count": 22,
+        "confidence": 0.32
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 21,
+        "confidence": 0.3
+      }
+    ],
+    "Ginger": [
+      {
+        "companion": "Garlic",
+        "co_count": 25,
+        "confidence": 0.4
+      },
+      {
+        "companion": "Milk",
+        "co_count": 22,
+        "confidence": 0.35
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 21,
+        "confidence": 0.33
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 17,
+        "confidence": 0.27
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 15,
+        "confidence": 0.24
+      },
+      {
+        "companion": "Onions",
+        "co_count": 14,
+        "confidence": 0.22
+      }
+    ],
+    "Carrots": [
+      {
+        "companion": "Beans",
+        "co_count": 65,
+        "confidence": 0.6
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 49,
+        "confidence": 0.45
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 48,
+        "confidence": 0.44
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 41,
+        "confidence": 0.38
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 37,
+        "confidence": 0.34
+      },
+      {
+        "companion": "Onions",
+        "co_count": 35,
+        "confidence": 0.32
+      }
+    ],
+    "Chilli Green": [
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 10,
+        "confidence": 0.5
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 8,
+        "confidence": 0.4
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 8,
+        "confidence": 0.4
+      },
+      {
+        "companion": "Lady Finger (Bhindi)",
+        "co_count": 8,
+        "confidence": 0.4
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 8,
+        "confidence": 0.4
+      },
+      {
+        "companion": "Potatoes",
+        "co_count": 8,
+        "confidence": 0.4
+      }
+    ],
+    "Cabbage": [
+      {
+        "companion": "Cauliflower",
+        "co_count": 44,
+        "confidence": 0.72
+      },
+      {
+        "companion": "Lady Finger (Bhindi)",
+        "co_count": 34,
+        "confidence": 0.56
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 32,
+        "confidence": 0.52
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 28,
+        "confidence": 0.46
+      },
+      {
+        "companion": "Brinjal (Baingan)",
+        "co_count": 28,
+        "confidence": 0.46
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 26,
+        "confidence": 0.43
+      }
+    ],
+    "Bottle Gourd (Lauki)": [
+      {
+        "companion": "Cauliflower",
+        "co_count": 35,
+        "confidence": 0.69
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 29,
+        "confidence": 0.57
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 26,
+        "confidence": 0.51
+      },
+      {
+        "companion": "Ridge Gourd (Tori)",
+        "co_count": 26,
+        "confidence": 0.51
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 23,
+        "confidence": 0.45
+      },
+      {
+        "companion": "Brinjal (Baingan)",
+        "co_count": 23,
+        "confidence": 0.45
+      }
+    ],
+    "Capsicum / Bell Peppers": [
+      {
+        "companion": "Cauliflower",
+        "co_count": 35,
+        "confidence": 0.43
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 30,
+        "confidence": 0.37
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 30,
+        "confidence": 0.37
+      },
+      {
+        "companion": "Lady Finger (Bhindi)",
+        "co_count": 24,
+        "confidence": 0.29
+      },
+      {
+        "companion": "Cabbage",
+        "co_count": 23,
+        "confidence": 0.28
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 21,
+        "confidence": 0.26
+      }
+    ],
+    "Ridge Gourd (Tori)": [
+      {
+        "companion": "Cauliflower",
+        "co_count": 40,
+        "confidence": 0.73
+      },
+      {
+        "companion": "Brinjal (Baingan)",
+        "co_count": 33,
+        "confidence": 0.6
+      },
+      {
+        "companion": "Lady Finger (Bhindi)",
+        "co_count": 32,
+        "confidence": 0.58
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 31,
+        "confidence": 0.56
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 27,
+        "confidence": 0.49
+      },
+      {
+        "companion": "Bottle Gourd (Lauki)",
+        "co_count": 26,
+        "confidence": 0.47
+      }
+    ],
+    "Lady Finger (Bhindi)": [
+      {
+        "companion": "Cauliflower",
+        "co_count": 46,
+        "confidence": 0.71
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 36,
+        "confidence": 0.55
+      },
+      {
+        "companion": "Brinjal (Baingan)",
+        "co_count": 36,
+        "confidence": 0.55
+      },
+      {
+        "companion": "Cabbage",
+        "co_count": 34,
+        "confidence": 0.52
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 33,
+        "confidence": 0.51
+      },
+      {
+        "companion": "Ridge Gourd (Tori)",
+        "co_count": 32,
+        "confidence": 0.49
+      }
+    ],
+    "Beans": [
+      {
+        "companion": "Carrots",
+        "co_count": 65,
+        "confidence": 0.78
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 36,
+        "confidence": 0.43
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 35,
+        "confidence": 0.42
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 31,
+        "confidence": 0.37
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 28,
+        "confidence": 0.34
+      },
+      {
+        "companion": "Lady Finger (Bhindi)",
+        "co_count": 27,
+        "confidence": 0.33
+      }
+    ],
+    "Brinjal (Baingan)": [
+      {
+        "companion": "Cauliflower",
+        "co_count": 39,
+        "confidence": 0.66
+      },
+      {
+        "companion": "Lady Finger (Bhindi)",
+        "co_count": 36,
+        "confidence": 0.61
+      },
+      {
+        "companion": "Ridge Gourd (Tori)",
+        "co_count": 33,
+        "confidence": 0.56
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 32,
+        "confidence": 0.54
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 31,
+        "confidence": 0.53
+      },
+      {
+        "companion": "Cabbage",
+        "co_count": 28,
+        "confidence": 0.47
+      }
+    ],
+    "Biscuits": [
+      {
+        "companion": "Milk",
+        "co_count": 15,
+        "confidence": 0.38
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 10,
+        "confidence": 0.25
+      },
+      {
+        "companion": "Salt",
+        "co_count": 8,
+        "confidence": 0.2
+      }
+    ],
+    "Salt": [
+      {
+        "companion": "Milk",
+        "co_count": 36,
+        "confidence": 0.5
+      },
+      {
+        "companion": "Sugar",
+        "co_count": 19,
+        "confidence": 0.26
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 17,
+        "confidence": 0.24
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 15,
+        "confidence": 0.21
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 15,
+        "confidence": 0.21
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 13,
+        "confidence": 0.18
+      }
+    ],
+    "Lemons (Nimbu)": [
+      {
+        "companion": "Milk",
+        "co_count": 39,
+        "confidence": 0.45
+      },
+      {
+        "companion": "Sugar",
+        "co_count": 26,
+        "confidence": 0.3
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 23,
+        "confidence": 0.27
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 23,
+        "confidence": 0.27
+      },
+      {
+        "companion": "Bread",
+        "co_count": 22,
+        "confidence": 0.26
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 21,
+        "confidence": 0.24
+      }
+    ],
+    "Cheese": [
+      {
+        "companion": "Milk",
+        "co_count": 34,
+        "confidence": 0.34
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 27,
+        "confidence": 0.27
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 22,
+        "confidence": 0.22
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 20,
+        "confidence": 0.2
+      },
+      {
+        "companion": "Sugar",
+        "co_count": 20,
+        "confidence": 0.2
+      },
+      {
+        "companion": "Bread",
+        "co_count": 16,
+        "confidence": 0.16
+      }
+    ],
+    "Green Peas": [
+      {
+        "companion": "Milk",
+        "co_count": 15,
+        "confidence": 0.33
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 15,
+        "confidence": 0.33
+      },
+      {
+        "companion": "Bread",
+        "co_count": 13,
+        "confidence": 0.29
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 10,
+        "confidence": 0.22
+      },
+      {
+        "companion": "Onions",
+        "co_count": 9,
+        "confidence": 0.2
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 8,
+        "confidence": 0.18
+      }
+    ],
+    "Coffee": [
+      {
+        "companion": "Milk",
+        "co_count": 10,
+        "confidence": 0.43
+      }
+    ],
+    "Fenugreek (Methi)": [
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 30,
+        "confidence": 0.67
+      },
+      {
+        "companion": "Lady Finger (Bhindi)",
+        "co_count": 28,
+        "confidence": 0.62
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 27,
+        "confidence": 0.6
+      },
+      {
+        "companion": "Ridge Gourd (Tori)",
+        "co_count": 23,
+        "confidence": 0.51
+      },
+      {
+        "companion": "Brinjal (Baingan)",
+        "co_count": 21,
+        "confidence": 0.47
+      },
+      {
+        "companion": "Cabbage",
+        "co_count": 20,
+        "confidence": 0.44
+      }
+    ],
+    "Namkeen / Mixture": [
+      {
+        "companion": "Milk",
+        "co_count": 15,
+        "confidence": 0.43
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 9,
+        "confidence": 0.26
+      }
+    ],
+    "Dosa & Idli Batter": [
+      {
+        "companion": "Milk",
+        "co_count": 25,
+        "confidence": 0.49
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 15,
+        "confidence": 0.29
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 14,
+        "confidence": 0.27
+      },
+      {
+        "companion": "Onions",
+        "co_count": 10,
+        "confidence": 0.2
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 10,
+        "confidence": 0.2
+      },
+      {
+        "companion": "Potatoes",
+        "co_count": 9,
+        "confidence": 0.18
+      }
+    ],
+    "Butter": [
+      {
+        "companion": "Milk",
+        "co_count": 23,
+        "confidence": 0.34
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 21,
+        "confidence": 0.31
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 15,
+        "confidence": 0.22
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 14,
+        "confidence": 0.21
+      },
+      {
+        "companion": "Lemons (Nimbu)",
+        "co_count": 11,
+        "confidence": 0.16
+      },
+      {
+        "companion": "Sugar",
+        "co_count": 11,
+        "confidence": 0.16
+      }
+    ],
+    "Mushroom": [
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 15,
+        "confidence": 0.42
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 15,
+        "confidence": 0.42
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 14,
+        "confidence": 0.39
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 13,
+        "confidence": 0.36
+      },
+      {
+        "companion": "Broccoli",
+        "co_count": 13,
+        "confidence": 0.36
+      },
+      {
+        "companion": "Milk",
+        "co_count": 13,
+        "confidence": 0.36
+      }
+    ],
+    "Broccoli": [
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 17,
+        "confidence": 0.47
+      },
+      {
+        "companion": "Milk",
+        "co_count": 17,
+        "confidence": 0.47
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 15,
+        "confidence": 0.42
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 14,
+        "confidence": 0.39
+      },
+      {
+        "companion": "Carrots",
+        "co_count": 13,
+        "confidence": 0.36
+      },
+      {
+        "companion": "Cucumber",
+        "co_count": 13,
+        "confidence": 0.36
+      }
+    ],
+    "Curd (Dahi)": [
+      {
+        "companion": "Milk",
+        "co_count": 24,
+        "confidence": 0.32
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 17,
+        "confidence": 0.22
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 17,
+        "confidence": 0.22
+      },
+      {
+        "companion": "Eggs",
+        "co_count": 16,
+        "confidence": 0.21
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 16,
+        "confidence": 0.21
+      },
+      {
+        "companion": "Potatoes",
+        "co_count": 13,
+        "confidence": 0.17
+      }
+    ],
+    "Poha": [
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 12,
+        "confidence": 0.48
+      },
+      {
+        "companion": "Milk",
+        "co_count": 11,
+        "confidence": 0.44
+      },
+      {
+        "companion": "Onions",
+        "co_count": 9,
+        "confidence": 0.36
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 8,
+        "confidence": 0.32
+      }
+    ],
+    "Peanuts": [
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 21,
+        "confidence": 0.72
+      },
+      {
+        "companion": "Milk",
+        "co_count": 16,
+        "confidence": 0.55
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 11,
+        "confidence": 0.38
+      },
+      {
+        "companion": "Lemons (Nimbu)",
+        "co_count": 9,
+        "confidence": 0.31
+      },
+      {
+        "companion": "Sugar",
+        "co_count": 9,
+        "confidence": 0.31
+      },
+      {
+        "companion": "Potatoes",
+        "co_count": 9,
+        "confidence": 0.31
+      }
+    ],
+    "Green Chillies": [
+      {
+        "companion": "Milk",
+        "co_count": 16,
+        "confidence": 0.39
+      },
+      {
+        "companion": "Onions",
+        "co_count": 13,
+        "confidence": 0.32
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 12,
+        "confidence": 0.29
+      },
+      {
+        "companion": "Potatoes",
+        "co_count": 11,
+        "confidence": 0.27
+      },
+      {
+        "companion": "Garlic",
+        "co_count": 10,
+        "confidence": 0.24
+      },
+      {
+        "companion": "Ginger",
+        "co_count": 10,
+        "confidence": 0.24
+      }
+    ],
+    "Suji / Semolina": [
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 9,
+        "confidence": 0.5
+      }
+    ],
+    "Masoor Dal": [
+      {
+        "companion": "Milk",
+        "co_count": 10,
+        "confidence": 0.62
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 9,
+        "confidence": 0.56
+      },
+      {
+        "companion": "Moong Dal",
+        "co_count": 9,
+        "confidence": 0.56
+      }
+    ],
+    "Moong Dal": [
+      {
+        "companion": "Masoor Dal",
+        "co_count": 9,
+        "confidence": 0.56
+      },
+      {
+        "companion": "Milk",
+        "co_count": 8,
+        "confidence": 0.5
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 8,
+        "confidence": 0.5
+      }
+    ],
+    "Feta Cheese": [
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 20,
+        "confidence": 0.48
+      },
+      {
+        "companion": "Milk",
+        "co_count": 19,
+        "confidence": 0.45
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 18,
+        "confidence": 0.43
+      },
+      {
+        "companion": "Cheese",
+        "co_count": 15,
+        "confidence": 0.36
+      },
+      {
+        "companion": "Cucumber",
+        "co_count": 13,
+        "confidence": 0.31
+      },
+      {
+        "companion": "Lettuce",
+        "co_count": 12,
+        "confidence": 0.29
+      }
+    ],
+    "Robusta Banana": [
+      {
+        "companion": "Milk",
+        "co_count": 8,
+        "confidence": 0.5
+      }
+    ],
+    "Jamun": [
+      {
+        "companion": "Milk",
+        "co_count": 14,
+        "confidence": 0.4
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 12,
+        "confidence": 0.34
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 12,
+        "confidence": 0.34
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 11,
+        "confidence": 0.31
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 8,
+        "confidence": 0.23
+      }
+    ],
+    "Ghee": [
+      {
+        "companion": "Milk",
+        "co_count": 14,
+        "confidence": 0.42
+      },
+      {
+        "companion": "Sugar",
+        "co_count": 8,
+        "confidence": 0.24
+      },
+      {
+        "companion": "Bread",
+        "co_count": 8,
+        "confidence": 0.24
+      }
+    ],
+    "Wheat Flour (Atta)": [
+      {
+        "companion": "Potatoes",
+        "co_count": 10,
+        "confidence": 0.29
+      },
+      {
+        "companion": "Eggs",
+        "co_count": 8,
+        "confidence": 0.23
+      },
+      {
+        "companion": "Bread",
+        "co_count": 8,
+        "confidence": 0.23
+      }
+    ],
+    "Grapes Black Seedless": [
+      {
+        "companion": "Milk",
+        "co_count": 11,
+        "confidence": 0.55
+      }
+    ],
+    "Banana Robusta": [
+      {
+        "companion": "Milk",
+        "co_count": 12,
+        "confidence": 0.6
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 9,
+        "confidence": 0.45
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 9,
+        "confidence": 0.45
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 8,
+        "confidence": 0.4
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 8,
+        "confidence": 0.4
+      }
+    ],
+    "French Beans": [
+      {
+        "companion": "Carrots",
+        "co_count": 22,
+        "confidence": 0.81
+      },
+      {
+        "companion": "Beans",
+        "co_count": 18,
+        "confidence": 0.67
+      },
+      {
+        "companion": "Cabbage",
+        "co_count": 12,
+        "confidence": 0.44
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 12,
+        "confidence": 0.44
+      },
+      {
+        "companion": "Spinach (Palak)",
+        "co_count": 12,
+        "confidence": 0.44
+      },
+      {
+        "companion": "Cauliflower",
+        "co_count": 12,
+        "confidence": 0.44
+      }
+    ],
+    "Lady's Finger": [
+      {
+        "companion": "Cauliflower",
+        "co_count": 8,
+        "confidence": 0.5
+      },
+      {
+        "companion": "Fresh Paneer",
+        "co_count": 8,
+        "confidence": 0.5
+      }
+    ],
+    "Strawberry": [
+      {
+        "companion": "Milk",
+        "co_count": 16,
+        "confidence": 0.57
+      },
+      {
+        "companion": "Tomatoes",
+        "co_count": 11,
+        "confidence": 0.39
+      },
+      {
+        "companion": "Roasted Peanuts",
+        "co_count": 11,
+        "confidence": 0.39
+      }
+    ],
+    "Premium Guava": [
+      {
+        "companion": "Milk",
+        "co_count": 9,
+        "confidence": 0.6
+      }
+    ],
+    "Yellaki Banana": [
+      {
+        "companion": "Milk",
+        "co_count": 8,
+        "confidence": 0.89
+      }
+    ]
+  },
+  "staple_intervals": {
+    "Sugar": {
+      "total_purchases": 152,
+      "typical_interval_days": 5,
+      "last_ordered": "2026-09-11"
+    },
+    "Eggs": {
+      "total_purchases": 127,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-09-11"
+    },
+    "Milk": {
+      "total_purchases": 530,
+      "typical_interval_days": 3,
+      "last_ordered": "2026-09-11"
+    },
+    "Roasted Peanuts": {
+      "total_purchases": 269,
+      "typical_interval_days": 4,
+      "last_ordered": "2026-09-10"
+    },
+    "Cucumber": {
+      "total_purchases": 96,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-09-10"
+    },
+    "Lettuce": {
+      "total_purchases": 71,
+      "typical_interval_days": 10,
+      "last_ordered": "2026-09-10"
+    },
+    "Tomatoes": {
+      "total_purchases": 224,
+      "typical_interval_days": 6,
+      "last_ordered": "2026-09-10"
+    },
+    "Fresh Paneer": {
+      "total_purchases": 211,
+      "typical_interval_days": 4,
+      "last_ordered": "2026-09-08"
+    },
+    "Orange Mini Mandarin": {
+      "total_purchases": 9,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-09-07"
+    },
+    "Onions": {
+      "total_purchases": 152,
+      "typical_interval_days": 8,
+      "last_ordered": "2026-09-07"
+    },
+    "Cauliflower": {
+      "total_purchases": 109,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-09-07"
+    },
+    "Spinach (Palak)": {
+      "total_purchases": 98,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-09-07"
+    },
+    "Potatoes": {
+      "total_purchases": 106,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-09-07"
+    },
+    "Pesticide-FREE Insert Card": {
+      "total_purchases": 37,
+      "typical_interval_days": 6,
+      "last_ordered": "2026-09-07"
+    },
+    "Bread": {
+      "total_purchases": 150,
+      "typical_interval_days": 7,
+      "last_ordered": "2026-09-06"
+    },
+    "Carrots": {
+      "total_purchases": 108,
+      "typical_interval_days": 10,
+      "last_ordered": "2026-09-06"
+    },
+    "Coriander (Dhaniya)": {
+      "total_purchases": 66,
+      "typical_interval_days": 14,
+      "last_ordered": "2026-09-05"
+    },
+    "Rice": {
+      "total_purchases": 38,
+      "typical_interval_days": 11,
+      "last_ordered": "2026-09-02"
+    },
+    "Tea Leaves": {
+      "total_purchases": 39,
+      "typical_interval_days": 20,
+      "last_ordered": "2026-09-02"
+    },
+    "Garlic": {
+      "total_purchases": 69,
+      "typical_interval_days": 14,
+      "last_ordered": "2026-08-31"
+    },
+    "Ginger": {
+      "total_purchases": 63,
+      "typical_interval_days": 14,
+      "last_ordered": "2026-08-31"
+    },
+    "Chilli Green": {
+      "total_purchases": 20,
+      "typical_interval_days": 12,
+      "last_ordered": "2026-08-31"
+    },
+    "Brinjal (Baingan)": {
+      "total_purchases": 59,
+      "typical_interval_days": 13,
+      "last_ordered": "2026-08-31"
+    },
+    "Cabbage": {
+      "total_purchases": 61,
+      "typical_interval_days": 14,
+      "last_ordered": "2026-08-31"
+    },
+    "Lady Finger (Bhindi)": {
+      "total_purchases": 65,
+      "typical_interval_days": 10,
+      "last_ordered": "2026-08-31"
+    },
+    "Ridge Gourd (Tori)": {
+      "total_purchases": 55,
+      "typical_interval_days": 13,
+      "last_ordered": "2026-08-31"
+    },
+    "Bottle Gourd (Lauki)": {
+      "total_purchases": 51,
+      "typical_interval_days": 18,
+      "last_ordered": "2026-08-31"
+    },
+    "Capsicum / Bell Peppers": {
+      "total_purchases": 82,
+      "typical_interval_days": 13,
+      "last_ordered": "2026-08-31"
+    },
+    "Beans": {
+      "total_purchases": 83,
+      "typical_interval_days": 12,
+      "last_ordered": "2026-08-31"
+    },
+    "Banana Yelakki": {
+      "total_purchases": 7,
+      "typical_interval_days": 15,
+      "last_ordered": "2026-08-31"
+    },
+    "Salt": {
+      "total_purchases": 72,
+      "typical_interval_days": 5,
+      "last_ordered": "2026-08-30"
+    },
+    "Biscuits": {
+      "total_purchases": 40,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-08-30"
+    },
+    "Schweppes Tonic Water | Premium Mixer | Tonic Water | The Coca-Cola Company": {
+      "total_purchases": 7,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-08-29"
+    },
+    "Cheese": {
+      "total_purchases": 99,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-08-28"
+    },
+    "Lemons (Nimbu)": {
+      "total_purchases": 86,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-08-28"
+    },
+    "Coffee": {
+      "total_purchases": 23,
+      "typical_interval_days": 16,
+      "last_ordered": "2026-08-20"
+    },
+    "Green Peas": {
+      "total_purchases": 45,
+      "typical_interval_days": 27,
+      "last_ordered": "2026-08-20"
+    },
+    "Fenugreek (Methi)": {
+      "total_purchases": 45,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-08-19"
+    },
+    "Robusta Banana": {
+      "total_purchases": 16,
+      "typical_interval_days": 19,
+      "last_ordered": "2026-08-16"
+    },
+    "Namkeen / Mixture": {
+      "total_purchases": 35,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-08-16"
+    },
+    "Wheat Flour (Atta)": {
+      "total_purchases": 35,
+      "typical_interval_days": 24,
+      "last_ordered": "2026-08-16"
+    },
+    "Baby Orange": {
+      "total_purchases": 9,
+      "typical_interval_days": 6,
+      "last_ordered": "2026-08-15"
+    },
+    "Dosa & Idli Batter": {
+      "total_purchases": 51,
+      "typical_interval_days": 17,
+      "last_ordered": "2026-08-15"
+    },
+    "Butter": {
+      "total_purchases": 68,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-08-13"
+    },
+    "Broccoli": {
+      "total_purchases": 36,
+      "typical_interval_days": 17,
+      "last_ordered": "2026-08-10"
+    },
+    "Mushroom": {
+      "total_purchases": 36,
+      "typical_interval_days": 15,
+      "last_ordered": "2026-08-10"
+    },
+    "Guava Thai": {
+      "total_purchases": 8,
+      "typical_interval_days": 8,
+      "last_ordered": "2026-08-10"
+    },
+    "Curd (Dahi)": {
+      "total_purchases": 76,
+      "typical_interval_days": 12,
+      "last_ordered": "2026-08-09"
+    },
+    "Poha": {
+      "total_purchases": 25,
+      "typical_interval_days": 21,
+      "last_ordered": "2026-08-08"
+    },
+    "Peanuts": {
+      "total_purchases": 29,
+      "typical_interval_days": 6,
+      "last_ordered": "2026-08-06"
+    },
+    "Green Chillies": {
+      "total_purchases": 41,
+      "typical_interval_days": 13,
+      "last_ordered": "2026-08-06"
+    },
+    "Safal Frozen Sweet Corn": {
+      "total_purchases": 12,
+      "typical_interval_days": 25,
+      "last_ordered": "2026-08-03"
+    },
+    "Suji / Semolina": {
+      "total_purchases": 18,
+      "typical_interval_days": 29,
+      "last_ordered": "2026-08-03"
+    },
+    "Masoor Dal": {
+      "total_purchases": 16,
+      "typical_interval_days": 22,
+      "last_ordered": "2026-07-25"
+    },
+    "Moong Dal": {
+      "total_purchases": 16,
+      "typical_interval_days": 33,
+      "last_ordered": "2026-07-25"
+    },
+    "Farmley Peri Peri  Makhana Roasted In Olive Oil Healthy Snacks": {
+      "total_purchases": 6,
+      "typical_interval_days": 10,
+      "last_ordered": "2026-07-25"
+    },
+    "Feta Cheese": {
+      "total_purchases": 42,
+      "typical_interval_days": 12,
+      "last_ordered": "2026-07-23"
+    },
+    "Classic Connect Cigarette": {
+      "total_purchases": 10,
+      "typical_interval_days": 13,
+      "last_ordered": "2026-07-20"
+    },
+    "iD Fresh Freshly Frozen Mango Pulp": {
+      "total_purchases": 5,
+      "typical_interval_days": 21,
+      "last_ordered": "2026-07-15"
+    },
+    "Schweppes Indian Tonic Water Can": {
+      "total_purchases": 8,
+      "typical_interval_days": 8,
+      "last_ordered": "2026-07-11"
+    },
+    "Jamun": {
+      "total_purchases": 35,
+      "typical_interval_days": 4,
+      "last_ordered": "2026-07-10"
+    },
+    "Ghee": {
+      "total_purchases": 33,
+      "typical_interval_days": 24,
+      "last_ordered": "2026-07-06"
+    },
+    "Grapes Black Seedless": {
+      "total_purchases": 20,
+      "typical_interval_days": 8,
+      "last_ordered": "2026-05-07"
+    },
+    "Banana Robusta": {
+      "total_purchases": 20,
+      "typical_interval_days": 9,
+      "last_ordered": "2026-04-12"
+    },
+    "Muskmelon": {
+      "total_purchases": 9,
+      "typical_interval_days": 14,
+      "last_ordered": "2026-04-11"
+    },
+    "French Beans": {
+      "total_purchases": 27,
+      "typical_interval_days": 11,
+      "last_ordered": "2026-03-17"
+    },
+    "Fenugreek - Without Roots": {
+      "total_purchases": 10,
+      "typical_interval_days": 16,
+      "last_ordered": "2026-03-05"
+    },
+    "Lady's Finger": {
+      "total_purchases": 16,
+      "typical_interval_days": 15,
+      "last_ordered": "2026-03-05"
+    },
+    "Strawberry": {
+      "total_purchases": 28,
+      "typical_interval_days": 4,
+      "last_ordered": "2026-03-04"
+    },
+    "Pomegranate": {
+      "total_purchases": 11,
+      "typical_interval_days": 39,
+      "last_ordered": "2025-12-15"
+    },
+    "Premium Guava": {
+      "total_purchases": 15,
+      "typical_interval_days": 9,
+      "last_ordered": "2025-09-16"
+    },
+    "Pumpkin Cut by Urban Harvest": {
+      "total_purchases": 9,
+      "typical_interval_days": 28,
+      "last_ordered": "2025-08-01"
+    },
+    "Imported Daily Apple": {
+      "total_purchases": 8,
+      "typical_interval_days": 13,
+      "last_ordered": "2025-07-27"
+    },
+    "Yellaki Banana": {
+      "total_purchases": 9,
+      "typical_interval_days": 11,
+      "last_ordered": "2025-06-21"
+    },
+    "White Radish": {
+      "total_purchases": 7,
+      "typical_interval_days": 27,
+      "last_ordered": "2025-06-15"
+    },
+    "Banganapalli Mango": {
+      "total_purchases": 7,
+      "typical_interval_days": 14,
+      "last_ordered": "2025-06-06"
+    },
+    "Classic Ice Burst Fresh Mint Cigarettes": {
+      "total_purchases": 9,
+      "typical_interval_days": 19,
+      "last_ordered": "2025-05-17"
+    },
+    "Striped Muskmelon": {
+      "total_purchases": 5,
+      "typical_interval_days": 12,
+      "last_ordered": "2025-05-03"
+    },
+    "Medium Watermelon": {
+      "total_purchases": 6,
+      "typical_interval_days": 6,
+      "last_ordered": "2025-04-18"
+    },
+    "Mamypoko Extra Absorb Pant Style Diaper | XL | 40 pcs": {
+      "total_purchases": 5,
+      "typical_interval_days": 15,
+      "last_ordered": "2025-02-22"
+    },
+    "Namaskaram Beetroot Chips | Crunchy Snack": {
+      "total_purchases": 8,
+      "typical_interval_days": 8,
+      "last_ordered": "2024-12-01"
+    },
+    "Ready To Eat Banana": {
+      "total_purchases": 9,
+      "typical_interval_days": 31,
+      "last_ordered": "2024-09-25"
+    },
+    "Imported Hass Avocado by Abacate": {
+      "total_purchases": 8,
+      "typical_interval_days": 7,
+      "last_ordered": "2024-09-24"
+    },
+    "The Health Factory Zero Maida - Simply Whole Wheat": {
+      "total_purchases": 9,
+      "typical_interval_days": 9,
+      "last_ordered": "2024-05-04"
+    }
+  },
+  "top_staples": [
+    {
+      "name": "Milk",
+      "count": 530
+    },
+    {
+      "name": "Roasted Peanuts",
+      "count": 269
+    },
+    {
+      "name": "Tomatoes",
+      "count": 224
+    },
+    {
+      "name": "Fresh Paneer",
+      "count": 211
+    },
+    {
+      "name": "Sugar",
+      "count": 152
+    },
+    {
+      "name": "Onions",
+      "count": 152
+    },
+    {
+      "name": "Bread",
+      "count": 150
+    },
+    {
+      "name": "Eggs",
+      "count": 127
+    },
+    {
+      "name": "Cauliflower",
+      "count": 109
+    },
+    {
+      "name": "Carrots",
+      "count": 108
+    },
+    {
+      "name": "Potatoes",
+      "count": 106
+    },
+    {
+      "name": "Cheese",
+      "count": 99
+    },
+    {
+      "name": "Spinach (Palak)",
+      "count": 98
+    },
+    {
+      "name": "Cucumber",
+      "count": 96
+    },
+    {
+      "name": "Lemons (Nimbu)",
+      "count": 86
+    },
+    {
+      "name": "Beans",
+      "count": 83
+    },
+    {
+      "name": "Capsicum / Bell Peppers",
+      "count": 82
+    },
+    {
+      "name": "Curd (Dahi)",
+      "count": 76
+    },
+    {
+      "name": "Salt",
+      "count": 72
+    },
+    {
+      "name": "Lettuce",
+      "count": 71
+    },
+    {
+      "name": "Garlic",
+      "count": 69
+    },
+    {
+      "name": "Butter",
+      "count": 68
+    },
+    {
+      "name": "Coriander (Dhaniya)",
+      "count": 66
+    },
+    {
+      "name": "Lady Finger (Bhindi)",
+      "count": 65
+    },
+    {
+      "name": "Ginger",
+      "count": 63
+    },
+    {
+      "name": "Cabbage",
+      "count": 61
+    },
+    {
+      "name": "Brinjal (Baingan)",
+      "count": 59
+    },
+    {
+      "name": "Ridge Gourd (Tori)",
+      "count": 55
+    },
+    {
+      "name": "Bottle Gourd (Lauki)",
+      "count": 51
+    },
+    {
+      "name": "Dosa & Idli Batter",
+      "count": 51
+    }
+  ],
+  "category_items": {
+    "Dairy & Eggs": [
+      "Fresh Paneer",
+      "Milk",
+      "Curd (Dahi)",
+      "Eggs",
+      "Butter",
+      "Ghee",
+      "Feta Cheese",
+      "Buttermilk"
+    ],
+    "Fresh Produce": [
+      "Tomatoes",
+      "Onions",
+      "Potatoes",
+      "Spinach (Palak)",
+      "Cauliflower",
+      "Lady Finger (Bhindi)",
+      "French Beans",
+      "Carrots",
+      "Cucumber",
+      "Lettuce",
+      "Capsicum / Bell Peppers",
+      "Coriander (Dhaniya)",
+      "Green Chillies",
+      "Ginger",
+      "Garlic",
+      "Lemons (Nimbu)",
+      "Broccoli",
+      "Bottle Gourd (Lauki)",
+      "Ridge Gourd (Tori)",
+      "Green Peas"
+    ],
+    "Bakery & Breakfast": [
+      "Bread",
+      "Milk Bread",
+      "Keto / Health Bread",
+      "Dosa & Idli Batter",
+      "Poha",
+      "Suji / Semolina"
+    ],
+    "Pantry & Dals": [
+      "Wheat Flour (Atta)",
+      "Rice",
+      "Masoor Dal",
+      "Moong Dal",
+      "Toor / Arhar Dal",
+      "White Chana",
+      "Black Chana",
+      "Rajma",
+      "Tea Leaves",
+      "Coffee",
+      "Salt",
+      "Sugar"
+    ],
+    "Snacks": [
+      "Roasted Peanuts",
+      "Biscuits",
+      "Namkeen / Mixture"
+    ],
+    "Pet Care": [
+      "Cat Food (Sheba / Me-O)",
+      "Sheba Cat Food",
+      "Me-O Delite Cat Food",
+      "Dog Poop Bags"
+    ],
+    "Household": [
+      "Colin Glass Cleaner",
+      "Toothpaste",
+      "Bath Soap",
+      "Toilet Paper"
+    ]
+  }
+}
