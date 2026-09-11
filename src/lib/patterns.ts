@@ -30,6 +30,8 @@ export interface PatternRules {
 export interface CategoryItemDef {
   name: string;
   icon: string;
+  subtitle?: string;
+  imageUrl?: string;
   orderCount: number;
 }
 
@@ -94,36 +96,31 @@ export function detectCategory(itemName: string): string {
 // Comprehensive household vocabulary for multi-item continuous speech segmenting
 const GROCERY_VOCABULARY = [
   // Multi-word produce & staples (must match first)
-  "french beans", "lady finger", "bottle gourd", "ridge gourd", "baby tomatoes",
-  "cherry tomatoes", "spring onions", "green chillies", "green chilli", "green peas",
-  "frozen green peas", "feta cheese", "cheese cubes", "cheese slices", "cheddar cheese",
-  "shredded cheese", "dosa batter", "idli batter", "amul butter", "milk bread",
-  "white bread", "regular bread", "brown bread", "keto bread", "low carb flour",
-  "keto atta", "regular atta", "fresh milk", "milk tetrapack", "milk tetra pack",
-  "cat food", "poop bags", "cat litter", "toilet roll", "toilet rolls",
-  "kitchen roll", "kitchen rolls", "kitchen towel", "kitchen towels", "facial tissues",
-  "wet wipes", "tea leaves", "green tea", "sona masoori", "sona masuri", "basmati rice",
-  "masoor dal", "moong dal", "yellow moong dal", "green moong dal", "toor dal",
-  "arhar dal", "chana dal", "white chana", "black chana", "green moong", "agar agar",
-  "sarson ka saag", "fresh paneer", "malai paneer", "toned milk", "cow milk",
-  "set curd", "curd tub", "dahi", "amul butter", "desi ghee", "kashmiri chilli",
-  "teekha chilli", "jeera powder", "jeera whole", "cumin seeds", "coriander powder",
-  "dhaniya powder", "garam masala", "mustard seeds", "kasuri methi", "chaat masala",
-  "peanut butter", "tomato ketchup", "pasta sauce", "tender coconut water",
-  "coconut water", "soft drinks", "cold drinks",
+  "cherry tomatoes", "french beans", "lady finger", "bottle gourd", "ridge gourd",
+  "mandarin orange", "salad leaves", "green chillies", "feta cheese", "greek yogurt",
+  "fresh paneer", "fresh cream", "milk bread", "keto bread", "wheat flour",
+  "basmati rice", "sona masuri", "sona masoori", "masoor dal", "moong dal",
+  "toor dal", "arhar dal", "chana dal", "white chana", "black chana",
+  "cooking oil", "olive oil", "red chilli powder", "kashmiri chilli", "coriander powder",
+  "garam masala", "kitchen king masala", "black pepper", "chaat masala", "mustard seeds",
+  "cumin seeds", "dry fruits", "mixed dry fruits", "ginger garlic paste", "peanut butter",
+  "pasta sauce", "hot sauce", "soy sauce", "sleepy owl", "roasted peanuts",
+  "cat food", "cat poop bags", "toilet paper", "kitchen roll", "glass cleaner",
+  "laundry detergent", "floor cleaner", "handwash liquid", "facial tissues", "dosa batter",
+  "idli batter", "cheddar cheese", "shredded cheese",
 
   // Single word items
-  "paneer", "milk", "curd", "eggs", "egg", "butter", "ghee", "cheese",
-  "bread", "tomatoes", "tomato", "potatoes", "potato", "onions", "onion",
-  "cauliflower", "cabbage", "spinach", "palak", "methi", "carrots", "carrot",
-  "cucumber", "lettuce", "apples", "apple", "bananas", "banana", "oranges",
-  "orange", "pomegranate", "strawberries", "strawberry", "jamun", "broccoli",
-  "mushroom", "capsicum", "brinjal", "baingan", "baigan", "karela", "lauki",
-  "ghea", "tori", "thori", "pumpkin", "ginger", "garlic", "coriander",
-  "dhaniya", "dania", "lemons", "lemon", "nimbu", "atta", "flour", "rice",
-  "suji", "poha", "besan", "daliya", "noodles", "sugar", "salt", "tea",
-  "coffee", "peanuts", "peanut", "groundnuts", "groundnut", "biscuits",
-  "biscuit", "namkeen", "murmura", "kulcha", "stevia", "jaggery", "gur", "vinegar"
+  "tomatoes", "tomato", "onions", "onion", "bananas", "banana", "potatoes", "potato",
+  "cauliflower", "gobi", "carrots", "carrot", "cucumber", "palak", "spinach", "lemons",
+  "lemon", "coriander", "dhaniya", "garlic", "apples", "apple", "lettuce", "ginger",
+  "capsicum", "cabbage", "bhindi", "tori", "lauki", "broccoli", "mushrooms", "mushroom",
+  "pomegranate", "kiwi", "milk", "paneer", "curd", "dahi", "eggs", "egg", "butter",
+  "ghee", "buttermilk", "skyr", "cheese", "bread", "atta", "rice", "rajma", "besan",
+  "poha", "suji", "semolina", "vermicelli", "seviyan", "oats", "sugar", "salt",
+  "turmeric", "cumin", "jeera", "cardamom", "cinnamon", "cloves", "almonds", "cashews",
+  "walnuts", "raisins", "dates", "makhana", "foxnuts", "jam", "ketchup", "mayonnaise",
+  "chutney", "honey", "tea", "coffee", "stevia", "namkeen", "mixture", "biscuits",
+  "chips", "popcorn", "crackers", "dishwash", "tissues"
 ];
 
 // Sort descending by length for greedy longest match
@@ -194,20 +191,23 @@ function normalizeForCompanions(name: string): string {
   if (n.includes("paneer")) return "Fresh Paneer";
   if (n.includes("milk")) return "Milk";
   if (n.includes("egg")) return "Eggs";
+  if (n.includes("cherry tomato")) return "Cherry Tomatoes";
   if (n.includes("tomato")) return "Tomatoes";
   if (n.includes("cauliflower") || n.includes("gobi")) return "Cauliflower";
   if (n.includes("potato") || n.includes("aloo")) return "Potatoes";
   if (n.includes("onion")) return "Onions";
   if (n.includes("cucumber")) return "Cucumber";
-  if (n.includes("lettuce")) return "Lettuce";
-  if (n.includes("palak") || n.includes("spinach")) return "Spinach (Palak)";
-  if (n.includes("bhindi") || n.includes("lady finger")) return "Lady Finger";
-  if (n.includes("coriander") || n.includes("dhaniya")) return "Coriander (Dhaniya)";
+  if (n.includes("lettuce")) return "Lettuce / Salad Leaves";
+  if (n.includes("palak") || n.includes("spinach")) return "Palak / Spinach";
+  if (n.includes("bhindi") || n.includes("lady finger")) return "Lady Finger / Bhindi";
+  if (n.includes("coriander") || n.includes("dhaniya")) return "Coriander";
   if (n.includes("bread")) return "Bread";
-  if (n.includes("atta")) return "Atta";
+  if (n.includes("atta")) return "Wheat Flour / Atta";
   if (n.includes("rice")) return "Rice";
-  if (n.includes("tea")) return "Tea Leaves";
+  if (n.includes("tea")) return "Tea";
+  if (n.includes("coffee")) return "Coffee";
   if (n.includes("sugar")) return "Sugar";
+  if (n.includes("peanut")) return "Roasted Peanuts";
   return name;
 }
 
@@ -281,8 +281,8 @@ export function getMissingItemSuggestions(
     return cat === "Fruits & Vegetables" || cat === "Dairy, Bread & Eggs";
   });
   if (hasProduceOrDairy && !isAlreadyInList("Cat Food") && !isAlreadyInList("Sheba")) {
-    suggestionsMap.set("Cat Food (Sheba / Me-O)", {
-      item: "Cat Food (Sheba / Me-O)",
+    suggestionsMap.set("Cat Food", {
+      item: "Cat Food",
       triggeredBy: "Samba & Milo",
       reason: "Cat food reminder for Samba & Milo",
       confidence: 0.65

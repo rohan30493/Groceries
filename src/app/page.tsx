@@ -715,7 +715,27 @@ export default function GroceryAssistantApp() {
                           } ${isRecentlyClicked ? "ring-2 ring-emerald-500 scale-[1.02]" : ""}`}
                         >
                           <div className="flex items-start justify-between gap-1 mb-1.5">
-                            <span className="text-2xl">{it.icon}</span>
+                            <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
+                              {it.imageUrl ? (
+                                <img
+                                  src={it.imageUrl}
+                                  alt={it.name}
+                                  loading="lazy"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                    const fallback = e.currentTarget.parentElement?.querySelector(".emoji-fallback");
+                                    if (fallback) (fallback as HTMLElement).style.display = "inline-block";
+                                  }}
+                                />
+                              ) : null}
+                              <span
+                                className="text-2xl emoji-fallback"
+                                style={{ display: it.imageUrl ? "none" : "inline-block" }}
+                              >
+                                {it.icon}
+                              </span>
+                            </div>
                             {isAlreadyInList ? (
                               <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                                 <Check className="w-3 h-3 text-emerald-700" />
@@ -732,6 +752,11 @@ export default function GroceryAssistantApp() {
                             <h4 className="font-semibold text-slate-900 text-xs leading-snug group-hover:text-emerald-900">
                               {it.name}
                             </h4>
+                            {it.subtitle && (
+                              <p className="text-[10px] text-emerald-700/80 font-medium truncate mt-0.5">
+                                {it.subtitle}
+                              </p>
+                            )}
                             <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
                               <span>Ordered {it.orderCount}x</span>
                               <span className="text-slate-300">•</span>
@@ -760,7 +785,27 @@ export default function GroceryAssistantApp() {
                         } ${isRecentlyClicked ? "ring-2 ring-emerald-500 scale-[1.02]" : ""}`}
                       >
                         <div className="flex items-start justify-between gap-1 mb-1.5">
-                          <span className="text-2xl">{it.icon}</span>
+                          <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
+                            {it.imageUrl ? (
+                              <img
+                                src={it.imageUrl}
+                                alt={it.name}
+                                loading="lazy"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                  const fallback = e.currentTarget.parentElement?.querySelector(".emoji-fallback");
+                                  if (fallback) (fallback as HTMLElement).style.display = "inline-block";
+                                }}
+                              />
+                            ) : null}
+                            <span
+                              className="text-2xl emoji-fallback"
+                              style={{ display: it.imageUrl ? "none" : "inline-block" }}
+                            >
+                              {it.icon}
+                            </span>
+                          </div>
                           {isAlreadyInList ? (
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                               <Check className="w-3 h-3 text-emerald-700" />
@@ -777,6 +822,11 @@ export default function GroceryAssistantApp() {
                           <h4 className="font-semibold text-slate-900 text-xs leading-snug group-hover:text-emerald-900">
                             {it.name}
                           </h4>
+                          {it.subtitle && (
+                            <p className="text-[10px] text-emerald-700/80 font-medium truncate mt-0.5">
+                              {it.subtitle}
+                            </p>
+                          )}
                           <p className="text-[10px] text-slate-400 mt-1">
                             Ordered {it.orderCount} times
                           </p>

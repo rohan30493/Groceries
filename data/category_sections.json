@@ -2,660 +2,730 @@
   {
     "id": "fruits-vegetables",
     "name": "Fruits & Vegetables",
-    "icon": "\ud83e\udd66",
+    "icon": "🥦",
     "badge": "Fresh Daily",
     "description": "Fresh produce, greens & fruits",
-    "itemCount": 24,
+    "itemCount": 27,
     "items": [
       {
         "name": "Tomatoes",
-        "icon": "\ud83c\udf45",
-        "orderCount": 162
+        "icon": "🍅",
+        "orderCount": 162,
+        "imageUrl": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200&auto=format&fit=crop&q=80"
+      },
+      {
+        "name": "Cherry Tomatoes",
+        "icon": "🍅",
+        "orderCount": 162,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/6466c0ae-189e-4648-b37c-2e3fd6f3301e.jpeg"
       },
       {
         "name": "Onions",
-        "icon": "\ud83e\uddc5",
-        "orderCount": 113
+        "icon": "🧅",
+        "orderCount": 113,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/67e93080-1b79-4e17-89b5-a11cc3d0e527.jpeg"
       },
       {
         "name": "Bananas",
-        "icon": "\ud83c\udf4c",
-        "orderCount": 103
+        "icon": "🍌",
+        "orderCount": 103,
+        "subtitle": "Elaichi / Robusta",
+        "imageUrl": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=200&auto=format&fit=crop&q=80"
       },
       {
         "name": "Potatoes",
-        "icon": "\ud83e\udd54",
-        "orderCount": 93
+        "icon": "🥔",
+        "orderCount": 93,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/e2b3bc12-6cc8-40b1-92da-ebb6dfc7b890.jpeg"
       },
       {
-        "name": "Cauliflower (Gobi)",
-        "icon": "\ud83e\udd66",
-        "orderCount": 92
+        "name": "Cauliflower",
+        "icon": "🥦",
+        "orderCount": 95,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/7beb080b-a4d8-439a-bdc3-9add54424061.jpeg"
       },
       {
         "name": "Carrots",
-        "icon": "\ud83e\udd55",
-        "orderCount": 89
+        "icon": "🥕",
+        "orderCount": 89,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/322941bc-bb23-4601-83de-ee911328a280.jpeg"
       },
       {
         "name": "Cucumber",
-        "icon": "\ud83e\udd52",
-        "orderCount": 83
+        "icon": "🥒",
+        "orderCount": 83,
+        "imageUrl": "https://images.unsplash.com/photo-1604977042946-1eecc30f269e?w=200&auto=format&fit=crop&q=80"
       },
       {
         "name": "Palak / Spinach",
-        "icon": "\ud83e\udd6c",
-        "orderCount": 80
+        "icon": "🥬",
+        "orderCount": 80,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/267ab85f-24b7-4702-b304-4cb1d81e9bd2.jpeg"
       },
       {
-        "name": "Lemons (Nimbu)",
-        "icon": "\ud83c\udf4b",
-        "orderCount": 78
+        "name": "Lemons",
+        "icon": "🍋",
+        "orderCount": 78,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/44d6a352-73dc-4f41-9c0f-ef3cf3b06cf3.jpeg"
       },
       {
-        "name": "Coriander (Dhaniya)",
-        "icon": "\ud83c\udf3f",
-        "orderCount": 61
+        "name": "Coriander",
+        "icon": "🌿",
+        "orderCount": 61,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/8d42f6c5-4e11-436d-81c4-cc24a3b28bcc.jpeg"
       },
       {
-        "name": "Garlic (Lehsun)",
-        "icon": "\ud83e\uddc4",
-        "orderCount": 61
+        "name": "Garlic",
+        "icon": "🧄",
+        "orderCount": 61,
+        "subtitle": "Peeled / Normal",
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/e529c0db-68b5-4cca-ae95-301f21d58a29.jpeg"
       },
       {
         "name": "Apples",
-        "icon": "\ud83c\udf4e",
-        "orderCount": 56
+        "icon": "🍎",
+        "orderCount": 57,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/4425a1d5-7d40-421c-b796-38eb9b87e428.jpeg"
       },
       {
         "name": "Lettuce / Salad Leaves",
-        "icon": "\ud83e\udd57",
-        "orderCount": 56
+        "icon": "🥗",
+        "orderCount": 56,
+        "imageUrl": "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=200&auto=format&fit=crop&q=80"
       },
       {
-        "name": "Ginger (Adrak)",
-        "icon": "\ud83e\udeda",
-        "orderCount": 52
+        "name": "Ginger",
+        "icon": "🫚",
+        "orderCount": 52,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/64f4c142-1f4f-45f9-bbdf-310799d18585.jpeg"
       },
       {
         "name": "Capsicum",
-        "icon": "\ud83e\uded1",
-        "orderCount": 50
+        "icon": "🫑",
+        "orderCount": 60,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/b29ff46e-7a87-44ca-b9c8-5ff6797ee148.jpeg"
       },
       {
         "name": "Cabbage",
-        "icon": "\ud83e\udd6c",
-        "orderCount": 50
+        "icon": "🥬",
+        "orderCount": 51,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/651596f6-8e87-4025-82ab-659945269f47.jpeg"
       },
       {
-        "name": "Lady Finger (Bhindi)",
-        "icon": "\ud83e\udd6c",
-        "orderCount": 48
+        "name": "Lady Finger / Bhindi",
+        "icon": "🫛",
+        "orderCount": 67,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/f5ddc541-1eba-4f3a-97a4-f3942b765772.jpeg"
       },
       {
-        "name": "Ridge Gourd (Tori)",
-        "icon": "\ud83e\udd52",
-        "orderCount": 42
+        "name": "Ridge Gourd / Tori",
+        "icon": "🥒",
+        "orderCount": 42,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/d4c77ea6-7528-4ed3-a965-4fc67e4e4737.jpeg"
       },
       {
         "name": "Lauki / Bottle Gourd",
-        "icon": "\ud83e\udd52",
-        "orderCount": 40
+        "icon": "🍈",
+        "orderCount": 41,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/28492958-f4c6-4364-9e19-bb25bfbdcf29.jpeg"
       },
       {
         "name": "Broccoli",
-        "icon": "\ud83e\udd66",
-        "orderCount": 34
+        "icon": "🥦",
+        "orderCount": 34,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/0eed17d4-7713-41b1-a215-70243d3bfb23.jpeg"
       },
       {
         "name": "Mushrooms",
-        "icon": "\ud83c\udf44",
-        "orderCount": 30
+        "icon": "🍄",
+        "orderCount": 32,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/6900fabb-295e-4b88-898d-5a2cee7bc696.jpeg"
       },
       {
         "name": "Green Chillies",
-        "icon": "\ud83c\udf36\ufe0f",
-        "orderCount": 29
+        "icon": "🌶️",
+        "orderCount": 29,
+        "imageUrl": "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=200&auto=format&fit=crop&q=80"
       },
       {
         "name": "French Beans",
-        "icon": "\ud83e\udedb",
-        "orderCount": 24
+        "icon": "🫛",
+        "orderCount": 45,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/ea5c2e7c-c104-4e34-8f52-f74ce1d5e99a.jpeg"
       },
       {
-        "name": "Pomegranate (Anar)",
-        "icon": "\ud83c\udf4e",
-        "orderCount": 11
+        "name": "Pomegranate",
+        "icon": "🍒",
+        "orderCount": 12,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/777613b4-0f3c-4e5a-98dd-862e7559aba4.jpeg"
+      },
+      {
+        "name": "Mandarin Orange",
+        "icon": "🍊",
+        "orderCount": 14,
+        "imageUrl": "https://d69ugcdrlg41w.cloudfront.net/0e0f895a-663a-4968-8c70-965a13e03bf8.png"
+      },
+      {
+        "name": "Kiwi",
+        "icon": "🥝",
+        "orderCount": 3,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/bfa092fc-a1fe-4ac3-9e8a-41558650e414.jpeg"
       }
     ]
   },
   {
     "id": "dairy-bread-eggs",
     "name": "Dairy, Bread & Eggs",
-    "icon": "\ud83e\udd5b",
+    "icon": "🥛",
     "badge": "Daily Needs",
     "description": "Milk, paneer, eggs, curd & breads",
-    "itemCount": 15,
+    "itemCount": 13,
     "items": [
       {
-        "name": "Paneer",
-        "icon": "\ud83e\uddc0",
-        "orderCount": 186
+        "name": "Milk",
+        "icon": "🥛",
+        "orderCount": 395,
+        "subtitle": "Tetra Pack / Fresh Pouch",
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/d2e9065c-ca58-4e2d-97bb-c7dcda1beac1.png"
+      },
+      {
+        "name": "Fresh Paneer",
+        "icon": "🧀",
+        "orderCount": 190,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/c0a38dd0-f8df-43d2-99ae-36b5530b1482.jpeg"
       },
       {
         "name": "Curd / Dahi",
-        "icon": "\ud83e\udd63",
-        "orderCount": 124
+        "icon": "🥣",
+        "orderCount": 124,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/77ad647c-a016-4d41-97ed-65f00bab387f.jpeg"
       },
       {
         "name": "Eggs",
-        "icon": "\ud83e\udd5a",
-        "orderCount": 112
-      },
-      {
-        "name": "Milk Tetrapack",
-        "icon": "\ud83e\uddc3",
-        "orderCount": 107
-      },
-      {
-        "name": "Regular / Brown Bread",
-        "icon": "\ud83c\udf5e",
-        "orderCount": 106
-      },
-      {
-        "name": "Fresh Milk (Pouch / Cow)",
-        "icon": "\ud83e\udd5b",
-        "orderCount": 93
-      },
-      {
-        "name": "Fresh Cream",
-        "icon": "\ud83e\udd5b",
-        "orderCount": 86
-      },
-      {
-        "name": "White Bread",
-        "icon": "\ud83c\udf5e",
-        "orderCount": 77
+        "icon": "🥚",
+        "orderCount": 128,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/36b63d8a-1d5d-45ac-8110-7e247f086eb4.jpeg"
       },
       {
         "name": "Butter",
-        "icon": "\ud83e\uddc8",
-        "orderCount": 59
+        "icon": "🧈",
+        "orderCount": 59,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/a9d3d8d2-ffe9-48d9-90dd-c76defed76dd.jpeg"
       },
       {
-        "name": "Chaas / Buttermilk",
-        "icon": "\ud83e\udd64",
-        "orderCount": 54
+        "name": "Ghee",
+        "icon": "🏺",
+        "orderCount": 35,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/55c16480-0eae-4286-9464-2dc4e94d548d.jpeg"
       },
       {
-        "name": "Idli & Dosa Batter",
-        "icon": "\ud83e\udd5e",
-        "orderCount": 47
+        "name": "Feta Cheese",
+        "icon": "🧀",
+        "orderCount": 36,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/4d221c2a-378a-4782-bf41-f84f4d727bd1.jpeg"
       },
       {
-        "name": "Cheddar Cheese Slices",
-        "icon": "\ud83e\uddc0",
-        "orderCount": 27
+        "name": "Buttermilk",
+        "icon": "🥛",
+        "orderCount": 59,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/6cd145eb-e611-47a3-8898-221ef75d651a.jpg"
       },
       {
         "name": "Greek Yogurt",
-        "icon": "\ud83e\udd63",
-        "orderCount": 26
+        "icon": "🍶",
+        "orderCount": 26,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/060e7a62-dc32-4094-97bb-cbfebb4c6b5c.jpg"
       },
       {
-        "name": "Keto Bread",
-        "icon": "\ud83e\udd56",
-        "orderCount": 12
+        "name": "Skyr",
+        "icon": "🍶",
+        "orderCount": 24,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/aea43b6b-4706-4a7d-bfbc-a5c7e86b10bb.jpg"
       },
       {
-        "name": "Shredded Cheese",
-        "icon": "\ud83e\uddc0",
-        "orderCount": 10
+        "name": "Cheese",
+        "icon": "🧀",
+        "orderCount": 83,
+        "subtitle": "Shredded / Cheddar Slices",
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/de911d2f-48e2-4a7f-932e-e2bd36d38a0c.jpeg"
+      },
+      {
+        "name": "Bread",
+        "icon": "🍞",
+        "orderCount": 197,
+        "subtitle": "Milk Bread / Regular / Keto",
+        "imageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&auto=format&fit=crop&q=80"
+      },
+      {
+        "name": "Fresh Cream",
+        "icon": "🍨",
+        "orderCount": 86,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/2a89bb87-f1cd-46eb-9fc0-49741625eac2.jpeg"
       }
     ]
   },
   {
     "id": "atta-rice-dals",
     "name": "Atta, Rice, Oil & Dals",
-    "icon": "\ud83c\udf3e",
-    "badge": "Pantry Staples",
-    "description": "Flours, grains, lentils & cooking oils",
-    "itemCount": 19,
+    "icon": "🌾",
+    "badge": "Kitchen Staples",
+    "description": "Flours, rice, pulses & cooking oils",
+    "itemCount": 17,
     "items": [
       {
-        "name": "Cooking Oil",
-        "icon": "\ud83c\udf7e",
-        "orderCount": 140
+        "name": "Wheat Flour / Atta",
+        "icon": "🌾",
+        "orderCount": 26,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/7e16248b-1b48-4d3b-b436-77576f4cc778.jpeg"
       },
       {
-        "name": "Maida",
-        "icon": "\ud83c\udf3e",
-        "orderCount": 126
-      },
-      {
-        "name": "Desi Ghee",
-        "icon": "\ud83c\udffa",
-        "orderCount": 32
-      },
-      {
-        "name": "Regular Atta (Wheat)",
-        "icon": "\ud83c\udf3e",
-        "orderCount": 29
-      },
-      {
-        "name": "Suji / Rava",
-        "icon": "\ud83c\udf3e",
-        "orderCount": 21
-      },
-      {
-        "name": "Poha",
-        "icon": "\ud83e\udd63",
-        "orderCount": 16
+        "name": "Rice",
+        "icon": "🍚",
+        "orderCount": 17,
+        "subtitle": "Basmati / Sona Masuri",
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/24f15322-2b4a-4cd5-912c-4f100326865e.jpeg"
       },
       {
         "name": "Masoor Dal",
-        "icon": "\ud83e\udd63",
-        "orderCount": 13
+        "icon": "🍲",
+        "orderCount": 14,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/6d7dc600-f167-4346-a125-da9cce039a56.jpeg"
       },
       {
-        "name": "Basmati Rice",
-        "icon": "\ud83c\udf5a",
-        "orderCount": 12
-      },
-      {
-        "name": "Yellow Moong Dal (Dhuli)",
-        "icon": "\ud83e\udd63",
-        "orderCount": 12
-      },
-      {
-        "name": "Chana Dal",
-        "icon": "\ud83e\udd63",
-        "orderCount": 11
-      },
-      {
-        "name": "Daliya",
-        "icon": "\ud83c\udf3e",
-        "orderCount": 11
-      },
-      {
-        "name": "Rajma",
-        "icon": "\ud83e\uded8",
-        "orderCount": 10
-      },
-      {
-        "name": "Besan",
-        "icon": "\ud83c\udf3e",
-        "orderCount": 10
-      },
-      {
-        "name": "Urad Dal",
-        "icon": "\ud83e\udd63",
-        "orderCount": 8
-      },
-      {
-        "name": "Chole / Kabuli Chana",
-        "icon": "\ud83e\uded8",
-        "orderCount": 7
-      },
-      {
-        "name": "Keto Atta / Low Carb Flour",
-        "icon": "\ud83c\udf3e",
-        "orderCount": 6
-      },
-      {
-        "name": "Green Moong Dal (Chilka / Whole)",
-        "icon": "\ud83e\udd63",
-        "orderCount": 6
-      },
-      {
-        "name": "Sona Masoori Rice",
-        "icon": "\ud83c\udf5a",
-        "orderCount": 5
+        "name": "Moong Dal",
+        "icon": "🍲",
+        "orderCount": 30,
+        "subtitle": "Whole / Split",
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/dd2befa4-51d0-4ade-95d2-15578ddfbf2b.jpeg"
       },
       {
         "name": "Toor / Arhar Dal",
-        "icon": "\ud83e\udd63",
-        "orderCount": 2
+        "icon": "🍲",
+        "orderCount": 2,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/ce12ba81-499d-4e1b-ba32-8386612470d9.jpg"
+      },
+      {
+        "name": "Chana Dal",
+        "icon": "🍲",
+        "orderCount": 11,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/b448476c-4b05-4f98-aba8-f1b5795f871c.png"
+      },
+      {
+        "name": "White Chana",
+        "icon": "🧆",
+        "orderCount": 5,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/a1b9d0c2-9730-4d30-a80c-588c69e522e0.jpeg"
+      },
+      {
+        "name": "Black Chana",
+        "icon": "🧆",
+        "orderCount": 6,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/09c9b2e4-f355-4b95-b5c0-36db86a03c98.jpeg"
+      },
+      {
+        "name": "Rajma",
+        "icon": "🍛",
+        "orderCount": 13,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/053f6af7-b0ad-4b61-b995-875dec626a75.jpeg"
+      },
+      {
+        "name": "Besan",
+        "icon": "🌾",
+        "orderCount": 10,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/ce654304-0fa0-4787-a38b-492076a5d511.jpeg"
+      },
+      {
+        "name": "Cooking Oil",
+        "icon": "🍾",
+        "orderCount": 140,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/8ce8fd18-9988-4d09-b5c1-0706219df021.jpeg"
+      },
+      {
+        "name": "Olive Oil",
+        "icon": "🫒",
+        "orderCount": 6,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/3f4cbb1a-44f5-4b70-8990-cbbd772d7cf4.jpeg"
+      },
+      {
+        "name": "Poha",
+        "icon": "🥣",
+        "orderCount": 16,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/30c67490-1d4c-4aa6-b85a-0368dc59d80a.jpeg"
+      },
+      {
+        "name": "Suji / Semolina",
+        "icon": "🌾",
+        "orderCount": 21,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/952573fd-8bae-4fbe-a1ec-1cc8117a803d.jpg"
+      },
+      {
+        "name": "Vermicelli / Seviyan",
+        "icon": "🥢",
+        "orderCount": 3
+      },
+      {
+        "name": "Oats",
+        "icon": "🥣",
+        "orderCount": 37,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/66c11761-69ff-454e-a859-628fb51004bf.jpeg"
+      },
+      {
+        "name": "Sugar",
+        "icon": "🍬",
+        "orderCount": 129,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/d4419c0b-f573-4d4b-883e-b898e6b7f80f.jpg"
       }
     ]
   },
   {
     "id": "masala-dryfruits",
     "name": "Masala & Dry Fruits",
-    "icon": "\ud83c\udf36\ufe0f",
-    "badge": "Kitchen Essentials",
-    "description": "Spices, sugar, jaggery, nuts & dry fruits",
-    "itemCount": 21,
+    "icon": "🌶️",
+    "badge": "Spices & Nuts",
+    "description": "Spices, dry fruits & masalas",
+    "itemCount": 22,
     "items": [
       {
-        "name": "Sugar",
-        "icon": "\ud83c\udf6c",
-        "orderCount": 129
-      },
-      {
-        "name": "Peanuts",
-        "icon": "\ud83e\udd5c",
-        "orderCount": 122
-      },
-      {
         "name": "Salt",
-        "icon": "\ud83e\uddc2",
-        "orderCount": 36
+        "icon": "🧂",
+        "orderCount": 36,
+        "subtitle": "Rock / Crystal",
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/4bd08050-4040-40cd-8c09-ac619ec694eb.jpeg"
       },
       {
-        "name": "Almonds (Badam)",
-        "icon": "\ud83c\udf30",
-        "orderCount": 20
+        "name": "Turmeric",
+        "icon": "🟡",
+        "orderCount": 13,
+        "imageUrl": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=200&auto=format&fit=crop&q=80"
       },
       {
-        "name": "Jeera Whole (Cumin Seeds)",
-        "icon": "\ud83e\uddc2",
-        "orderCount": 19
+        "name": "Red Chilli Powder",
+        "icon": "🌶️",
+        "orderCount": 14,
+        "subtitle": "Regular / Kashmiri",
+        "imageUrl": "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=200&auto=format&fit=crop&q=80"
       },
       {
-        "name": "Cardamom (Elaichi)",
-        "icon": "\ud83c\udf3f",
-        "orderCount": 18
-      },
-      {
-        "name": "Dhaniya Powder",
-        "icon": "\ud83c\udf3f",
+        "name": "Coriander Powder",
+        "icon": "🌿",
         "orderCount": 14
       },
       {
-        "name": "Jaggery (Gur)",
-        "icon": "\ud83c\udf6f",
-        "orderCount": 12
-      },
-      {
-        "name": "Cashews (Kaju)",
-        "icon": "\ud83e\udd5c",
-        "orderCount": 12
-      },
-      {
-        "name": "Jeera Powder",
-        "icon": "\ud83e\uddc2",
-        "orderCount": 9
+        "name": "Cumin / Jeera",
+        "icon": "🌱",
+        "orderCount": 12,
+        "subtitle": "Whole / Powder",
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/552bbfbf-6bdc-4ef9-b712-b0e254ecd271.png"
       },
       {
         "name": "Garam Masala",
-        "icon": "\ud83e\udd58",
-        "orderCount": 8
+        "icon": "🥘",
+        "orderCount": 8,
+        "imageUrl": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=200&auto=format&fit=crop&q=80"
       },
       {
-        "name": "Kasuri Methi",
-        "icon": "\ud83c\udf3f",
-        "orderCount": 8
-      },
-      {
-        "name": "Chaat Masala",
-        "icon": "\ud83e\uddc2",
-        "orderCount": 8
+        "name": "Kitchen King Masala",
+        "icon": "🥘",
+        "orderCount": 3
       },
       {
         "name": "Black Pepper",
-        "icon": "\ud83e\uddc2",
-        "orderCount": 7
+        "icon": "🧂",
+        "orderCount": 7,
+        "subtitle": "Catch Sprinkler / Whole",
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/8337cbc8-45b9-46d2-9dba-025d59e2a987.jpg"
       },
       {
-        "name": "Haldi (Turmeric)",
-        "icon": "\ud83d\udfe1",
-        "orderCount": 6
+        "name": "Chaat Masala",
+        "icon": "🥘",
+        "orderCount": 8,
+        "imageUrl": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=200&auto=format&fit=crop&q=80"
       },
       {
-        "name": "Kashmiri Chilli Powder",
-        "icon": "\ud83c\udf36\ufe0f",
-        "orderCount": 6
+        "name": "Mustard Seeds",
+        "icon": "⚫",
+        "orderCount": 49,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/d6fd0701-61ac-40d5-948f-97d62e4df1c3.jpeg"
       },
       {
-        "name": "Walnuts (Akhrot)",
-        "icon": "\ud83c\udf30",
-        "orderCount": 6
+        "name": "Cumin Seeds",
+        "icon": "🌱",
+        "orderCount": 19,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/b3d0b86d-e032-4bf7-8e9a-15490ce9451f.webp"
       },
       {
-        "name": "Teekha Red Chilli Powder",
-        "icon": "\ud83c\udf36\ufe0f",
+        "name": "Cardamom",
+        "icon": "🟢",
+        "orderCount": 18,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/050d6119-cb3f-40b0-a9f3-2886e856c668.jpeg"
+      },
+      {
+        "name": "Cinnamon",
+        "icon": "🪵",
+        "orderCount": 1,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/e4ed84dd-46da-4cae-92bd-41f65d5fceeb.jpeg"
+      },
+      {
+        "name": "Cloves",
+        "icon": "🟤",
         "orderCount": 3
       },
       {
-        "name": "Hing",
-        "icon": "\ud83e\uddc2",
+        "name": "Almonds",
+        "icon": "🌰",
+        "orderCount": 23,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/418e4aa1-9a8f-4bf6-b3ff-f0a74474a693.jpeg"
+      },
+      {
+        "name": "Cashews",
+        "icon": "🥜",
+        "orderCount": 15,
+        "imageUrl": "https://images.unsplash.com/photo-1536591375315-1b838404a37b?w=200&auto=format&fit=crop&q=80"
+      },
+      {
+        "name": "Walnuts",
+        "icon": "🌰",
+        "orderCount": 7,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/6eab95f6-36f3-4f06-b2c1-6344b831416b.jpeg"
+      },
+      {
+        "name": "Raisins",
+        "icon": "🍇",
+        "orderCount": 4,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/76deeb73-b2a0-482d-b2d0-3fc3a770eb3a.jpeg"
+      },
+      {
+        "name": "Dates",
+        "icon": "🌴",
+        "orderCount": 6,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/1437e2d8-d5ee-454c-996c-30e03942d9cf.jpeg"
+      },
+      {
+        "name": "Mixed Dry Fruits",
+        "icon": "🥜",
         "orderCount": 3
       },
       {
-        "name": "Raisins (Kishmish)",
-        "icon": "\ud83c\udf47",
-        "orderCount": 2
+        "name": "Ginger-Garlic Paste",
+        "icon": "🫙",
+        "orderCount": 2,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/0278e4e6-80e6-41ca-9fad-3282e47adedb.jpeg"
       },
       {
-        "name": "Mustard Seeds (Rai)",
-        "icon": "\ud83e\uddc2",
-        "orderCount": 1
+        "name": "Foxnuts / Makhana",
+        "icon": "⚪",
+        "orderCount": 59,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/114ff0f0-d408-4825-a6da-5f4891c1a34f.jpeg"
       }
     ]
   },
   {
     "id": "breakfast-sauces",
     "name": "Breakfast & Sauces",
-    "icon": "\ud83e\udd63",
-    "badge": "Morning Routine",
-    "description": "Oats, honey, spreads & condiments",
-    "itemCount": 11,
+    "icon": "🥣",
+    "badge": "Morning & Condiments",
+    "description": "Batters, spreads, jams & culinary sauces",
+    "itemCount": 10,
     "items": [
       {
-        "name": "Oats",
-        "icon": "\ud83e\udd63",
-        "orderCount": 37
+        "name": "Dosa & Idli Batter",
+        "icon": "🍲",
+        "orderCount": 30,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/d878b438-e975-410d-85ba-6f0a524efc10.jpg"
       },
       {
-        "name": "Soya & Chilli Sauces",
-        "icon": "\ud83c\udf76",
-        "orderCount": 17
+        "name": "Jam",
+        "icon": "🍓",
+        "orderCount": 16,
+        "imageUrl": "https://images.unsplash.com/photo-1568909344668-6f14a07b56a0?w=200&auto=format&fit=crop&q=80"
       },
       {
         "name": "Peanut Butter",
-        "icon": "\ud83e\udd5c",
-        "orderCount": 11
+        "icon": "🥜",
+        "orderCount": 12,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/9dff0f30-f38b-47a3-ab4b-fe04edacc2bc.jpeg"
       },
       {
-        "name": "Honey",
-        "icon": "\ud83c\udf6f",
-        "orderCount": 10
-      },
-      {
-        "name": "Fruit Jam",
-        "icon": "\ud83c\udf53",
-        "orderCount": 8
-      },
-      {
-        "name": "Vermicelli (Semiya)",
-        "icon": "\ud83c\udf5d",
-        "orderCount": 8
-      },
-      {
-        "name": "Tomato Ketchup",
-        "icon": "\ud83c\udf45",
-        "orderCount": 3
-      },
-      {
-        "name": "Pasta Sauce",
-        "icon": "\ud83c\udf5d",
-        "orderCount": 3
-      },
-      {
-        "name": "Corn Flakes",
-        "icon": "\ud83e\udd63",
-        "orderCount": 1
-      },
-      {
-        "name": "Muesli / Granola",
-        "icon": "\ud83e\udd63",
-        "orderCount": 1
+        "name": "Ketchup",
+        "icon": "🍅",
+        "orderCount": 3,
+        "imageUrl": "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=200&auto=format&fit=crop&q=80"
       },
       {
         "name": "Mayonnaise",
-        "icon": "\ud83c\udf76",
-        "orderCount": 1
+        "icon": "🫙",
+        "orderCount": 1,
+        "imageUrl": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=200&auto=format&fit=crop&q=80"
+      },
+      {
+        "name": "Chutney",
+        "icon": "🥣",
+        "orderCount": 21,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/41a85a37-7446-42e5-a4e0-b01739f15f61.png"
+      },
+      {
+        "name": "Pasta Sauce",
+        "icon": "🍝",
+        "orderCount": 3,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/8cc41967-ee25-4af4-857e-0c18bcaa0830.jpeg"
+      },
+      {
+        "name": "Hot Sauce",
+        "icon": "🌶️",
+        "orderCount": 16,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/5ef84cd1-7a0f-4a5e-956d-7798e38e88c3.jpeg"
+      },
+      {
+        "name": "Soy Sauce",
+        "icon": "🍶",
+        "orderCount": 3
+      },
+      {
+        "name": "Honey",
+        "icon": "🍯",
+        "orderCount": 10,
+        "imageUrl": "https://d69ugcdrlg41w.cloudfront.net/b3f41c30-160f-4ec0-aeb7-658d8dcec0fb.png"
       }
     ]
   },
   {
     "id": "tea-coffee-beverages",
     "name": "Tea, Coffee & Drinks",
-    "icon": "\u2615",
-    "badge": "Beverages",
-    "description": "Chai, coffee, juices & coconut water",
-    "itemCount": 6,
+    "icon": "☕",
+    "badge": "Brews & Warm Drinks",
+    "description": "Tea, specialty coffee & natural sweeteners",
+    "itemCount": 3,
     "items": [
       {
-        "name": "Soda / Soft Drinks",
-        "icon": "\ud83e\udd64",
-        "orderCount": 60
-      },
-      {
-        "name": "Tea / Chai Leaves",
-        "icon": "\ud83e\uded6",
-        "orderCount": 39
+        "name": "Tea",
+        "icon": "🫖",
+        "orderCount": 39,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/0f7d5611-84a6-41f1-914c-2ae73adb8b37.jpg"
       },
       {
         "name": "Coffee",
-        "icon": "\u2615",
-        "orderCount": 29
+        "icon": "☕",
+        "orderCount": 30,
+        "subtitle": "Sleepy Owl Vanilla",
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/4a97923b-7420-467b-a872-948abff3c50e.jpeg"
       },
       {
-        "name": "Green Tea",
-        "icon": "\ud83c\udf75",
-        "orderCount": 3
-      },
-      {
-        "name": "Tender Coconut Water",
-        "icon": "\ud83e\udd65",
-        "orderCount": 3
-      },
-      {
-        "name": "Fruit Juice",
-        "icon": "\ud83e\uddc3",
-        "orderCount": 3
+        "name": "Stevia",
+        "icon": "🌿",
+        "orderCount": 9,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/61f60b94-0122-472b-996c-e1477736e347.webp"
       }
     ]
   },
   {
     "id": "munchies-snacks",
     "name": "Munchies & Biscuits",
-    "icon": "\ud83c\udf6a",
-    "badge": "Snacks",
-    "description": "Snacks, biscuits, namkeen & chocolates",
-    "itemCount": 9,
+    "icon": "🍿",
+    "badge": "Evening Snacks",
+    "description": "Savory snacks, nuts & biscuits",
+    "itemCount": 6,
     "items": [
       {
-        "name": "Chocolates",
-        "icon": "\ud83c\udf6b",
-        "orderCount": 100
+        "name": "Roasted Peanuts",
+        "icon": "🥜",
+        "orderCount": 138,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/75183717-56dc-49d0-9830-c7357efc383d.jpeg"
       },
       {
-        "name": "Chips & Crisps",
-        "icon": "\ud83e\udd54",
-        "orderCount": 83
+        "name": "Namkeen / Mixture",
+        "icon": "🥨",
+        "orderCount": 91
       },
       {
-        "name": "Masala / Roasted Peanuts",
-        "icon": "\ud83e\udd5c",
-        "orderCount": 73
+        "name": "Biscuits",
+        "icon": "🍪",
+        "orderCount": 78,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/5c41f3fa-51d1-40f0-b6fe-d7fb9a763538.jpg"
       },
       {
-        "name": "Biscuits & Cookies",
-        "icon": "\ud83c\udf6a",
-        "orderCount": 60
+        "name": "Chips",
+        "icon": "🥔",
+        "orderCount": 106,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/f51e4fc2-0c11-4d1e-a6bb-138fb7469906.jpeg"
       },
       {
-        "name": "Namkeen & Bhujia",
-        "icon": "\ud83e\udd68",
-        "orderCount": 60
-      },
-      {
-        "name": "Noodles & Pasta",
-        "icon": "\ud83c\udf5c",
+        "name": "Popcorn",
+        "icon": "🍿",
         "orderCount": 44
       },
       {
-        "name": "Makhana (Fox Nuts)",
-        "icon": "\ud83c\udf7f",
-        "orderCount": 39
-      },
-      {
-        "name": "Murmura (Puffed Rice)",
-        "icon": "\ud83e\udd63",
-        "orderCount": 10
-      },
-      {
-        "name": "Khakhra",
-        "icon": "\ud83e\uded3",
-        "orderCount": 8
+        "name": "Crackers",
+        "icon": "🍘",
+        "orderCount": 15,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/6fc8f0bc-308a-49bf-8584-e9ff80930f58.jpeg"
       }
     ]
   },
   {
     "id": "household-petcare",
     "name": "Pet Care & Household",
-    "icon": "\ud83d\udc3e",
-    "badge": "Cats & Cleaning",
-    "description": "Cat care (Samba & Milo), rolls & cleaning supplies",
-    "itemCount": 11,
+    "icon": "🐾",
+    "badge": "Home & Pets",
+    "description": "Cat care, cleaning & household paper",
+    "itemCount": 10,
     "items": [
       {
-        "name": "Kitchen Towels / Rolls",
-        "icon": "\ud83e\uddfb",
-        "orderCount": 12
+        "name": "Cat Food",
+        "icon": "🐱",
+        "orderCount": 14,
+        "subtitle": "Dry / Wet",
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/377628fe-22ee-4ac3-a073-365e7e9fc75e.jpg"
       },
       {
-        "name": "Dishwash Liquid / Gel",
-        "icon": "\ud83e\uddfc",
-        "orderCount": 12
+        "name": "Cat Poop Bags",
+        "icon": "🛍️",
+        "orderCount": 1
       },
       {
-        "name": "Floor & Toilet Cleaner",
-        "icon": "\ud83e\uddf9",
-        "orderCount": 11
+        "name": "Toilet Paper",
+        "icon": "🧻",
+        "orderCount": 6,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/34c59a3b-bf9f-4bda-9570-36341663bae1.jpg"
       },
       {
-        "name": "Cat Food (Wet & Dry)",
-        "icon": "\ud83d\udc31",
-        "orderCount": 9
+        "name": "Kitchen Roll",
+        "icon": "🗞️",
+        "orderCount": 3,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/0d9e871e-d924-4eff-b31a-01eede05e6fb.jpeg"
       },
       {
-        "name": "Facial Tissues",
-        "icon": "\ud83e\uddfb",
-        "orderCount": 6
-      },
-      {
-        "name": "Laundry Detergent",
-        "icon": "\ud83e\uddfa",
-        "orderCount": 6
-      },
-      {
-        "name": "Wet Wipes",
-        "icon": "\ud83e\uddfb",
-        "orderCount": 6
-      },
-      {
-        "name": "Toilet Rolls",
-        "icon": "\ud83e\uddfb",
+        "name": "Colin / Glass Cleaner",
+        "icon": "🪟",
         "orderCount": 3
       },
       {
-        "name": "Pet Poop Bags & Litter",
-        "icon": "\ud83d\udc3e",
-        "orderCount": 2
+        "name": "Dishwash",
+        "icon": "🍽️",
+        "orderCount": 12,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/1d2d596d-f182-4afe-ae9d-88b351b3ff10.jpeg"
       },
       {
-        "name": "Garbage Bags",
-        "icon": "\ud83d\uddd1\ufe0f",
-        "orderCount": 2
+        "name": "Laundry Detergent",
+        "icon": "🧺",
+        "orderCount": 7,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/07a0d24e-8381-4f5b-b504-c11614f0b009.png"
       },
       {
-        "name": "Aluminium Foil",
-        "icon": "\ud83c\udf73",
-        "orderCount": 1
+        "name": "Floor Cleaner",
+        "icon": "🧹",
+        "orderCount": 5
+      },
+      {
+        "name": "Handwash Liquid",
+        "icon": "🧴",
+        "orderCount": 4,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/03d5c4ac-4bf6-4aa3-b1f9-d9c90cd1371a.jpg"
+      },
+      {
+        "name": "Tissues",
+        "icon": "📦",
+        "orderCount": 6,
+        "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/255789f8-a475-4c7c-bcec-fe66221c621e.jpg"
       }
     ]
   }
