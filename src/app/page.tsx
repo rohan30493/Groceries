@@ -114,7 +114,11 @@ export default function GroceryAssistantApp() {
     // 3. Fetch dynamic category sections & rules from Supabase (continuous replenishment learning)
     fetchCategorySectionsDb().then((sections) => {
       if (sections && sections.length > 0) {
-        setCategorySections(sections as CategorySection[]);
+        const orderMap = new Map(DEFAULT_CATEGORY_SECTIONS.map((c, i) => [c.id, i]));
+        const sorted = [...sections].sort(
+          (a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999)
+        );
+        setCategorySections(sorted as CategorySection[]);
       }
     });
 
@@ -630,29 +634,50 @@ export default function GroceryAssistantApp() {
                 </div>
               </div>
 
-              {/* Category Pills Carousel (Zepto style) */}
+              {/* Category Grid (Compact 2-column mobile grid, 4-column responsive desktop) */}
               {!categorySearchQuery && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-3.5 scrollbar-thin">
+                <div
+                  role="tablist"
+                  aria-label="Grocery categories"
+                  className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3.5"
+                >
                   {categorySections.map((cat) => {
                     const isSelected = selectedCategoryId === cat.id;
+                    const count = cat.itemCount ?? cat.items?.length ?? 0;
                     return (
                       <button
                         key={cat.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={isSelected}
+                        aria-label={`${cat.name}, ${count} items`}
                         onClick={() => setSelectedCategoryId(cat.id)}
-                        className={`shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
+                        className={`group relative flex items-center justify-between gap-1.5 p-2 sm:p-2.5 rounded-xl text-left transition-all border min-h-[48px] ${
                           isSelected
-                            ? "bg-emerald-700 text-white border-emerald-700 shadow-xs"
-                            : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                            ? "bg-emerald-50/90 border-emerald-600 text-emerald-950 shadow-xs ring-1 ring-emerald-600/25"
+                            : "bg-slate-50/80 hover:bg-slate-100 text-slate-700 border-slate-200/90 hover:border-slate-300"
                         }`}
                       >
-                        <span className="text-sm">{cat.icon}</span>
-                        <span>{cat.name}</span>
+                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                          <span className="text-base sm:text-lg shrink-0 leading-none select-none">
+                            {cat.icon}
+                          </span>
+                          <span
+                            className={`text-[11px] sm:text-xs leading-tight break-words ${
+                              isSelected ? "font-bold text-emerald-950" : "font-semibold text-slate-800"
+                            }`}
+                          >
+                            {cat.name}
+                          </span>
+                        </div>
                         <span
-                          className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                            isSelected ? "bg-emerald-800 text-white" : "bg-slate-200/80 text-slate-600"
+                          className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-bold tabular-nums ${
+                            isSelected
+                              ? "bg-emerald-200/90 text-emerald-900"
+                              : "bg-slate-200/80 text-slate-600"
                           }`}
                         >
-                          {cat.itemCount}
+                          {count}
                         </span>
                       </button>
                     );
