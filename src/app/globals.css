@@ -11,6 +11,19 @@ body {
   background-color: #f8fafc;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+}
+
+/* Ensure snappy first-tap response across mobile devices without zoom delay */
+button,
+a,
+input,
+textarea,
+[role="button"],
+[role="tab"],
+.cursor-pointer {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Custom scrollbar */

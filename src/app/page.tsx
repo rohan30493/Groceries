@@ -680,8 +680,9 @@ export default function GroceryAssistantApp() {
 
           <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
             <button
+              type="button"
               onClick={() => setActiveTab("lira")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 ${
                 activeTab === "lira"
                   ? "bg-white text-emerald-800 shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
@@ -690,8 +691,9 @@ export default function GroceryAssistantApp() {
               Lira&apos;s View
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab("rohan")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1 ${
                 activeTab === "rohan"
                   ? "bg-emerald-600 text-white shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
@@ -709,8 +711,9 @@ export default function GroceryAssistantApp() {
               )}
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab("orders")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1.5 ${
                 activeTab === "orders"
                   ? "bg-white text-emerald-800 shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
@@ -776,8 +779,9 @@ export default function GroceryAssistantApp() {
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setActiveTab("rohan")}
-                    className="shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5"
+                    className="shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5"
                   >
                     <span>Switch to Rohan to Place Order &rarr;</span>
                   </button>
@@ -804,8 +808,9 @@ export default function GroceryAssistantApp() {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={handleLiraHandoff}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5 shrink-0"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 shrink-0"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Complete Basket &amp; Hand Off</span>
@@ -823,15 +828,17 @@ export default function GroceryAssistantApp() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => setActiveTab("orders")}
-                    className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-colors flex items-center gap-1"
+                    className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 active:scale-95 text-slate-700 font-semibold text-xs rounded-xl transition-all flex items-center gap-1"
                   >
                     <Clock className="w-3.5 h-3.5" />
                     <span>View Orders</span>
                   </button>
                   <button
+                    type="button"
                     onClick={handleStartNewBasket}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-colors"
+                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold text-xs rounded-xl transition-all"
                   >
                     Start New Basket
                   </button>
@@ -855,8 +862,9 @@ export default function GroceryAssistantApp() {
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={handleAutonomousAddAll}
-                    className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-2xs transition-colors flex items-center gap-1 shrink-0"
+                    className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1 shrink-0"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Auto-Add All ({autonomousRecs.length})</span>
@@ -883,8 +891,9 @@ export default function GroceryAssistantApp() {
                         </p>
                       </div>
                       <button
+                        type="button"
                         onClick={() => handleAddSingleItem(rec.name, "Lira")}
-                        className="bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 shrink-0"
+                        className="bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shrink-0"
                       >
                         <Plus className="w-3 h-3" />
                         <span>Add</span>
@@ -933,7 +942,7 @@ export default function GroceryAssistantApp() {
                 <button
                   type="button"
                   onClick={toggleVoiceInput}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition-all active:scale-95 ${
                     isListening
                       ? "bg-rose-50 border-rose-300 text-rose-700 animate-pulse"
                       : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
@@ -947,7 +956,7 @@ export default function GroceryAssistantApp() {
                   type="button"
                   onClick={() => handleAddItems(inputText, "Lira")}
                   disabled={!inputText.trim()}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2 text-base"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 text-base"
                 >
                   <Plus className="w-5 h-5" />
                   <span>
@@ -973,11 +982,12 @@ export default function GroceryAssistantApp() {
                     </span>
                   </div>
                   <button
+                    type="button"
                     onClick={() => {
                       patternSuggestions.forEach((s) => dismissedSuggestions.add(s.item.toLowerCase()));
                       setDismissedSuggestions(new Set(dismissedSuggestions));
                     }}
-                    className="text-xs text-amber-700 hover:text-amber-950 font-medium px-2 py-0.5 rounded-lg hover:bg-amber-100 transition-colors"
+                    className="text-xs text-amber-700 hover:text-amber-950 active:scale-95 font-medium px-2 py-0.5 rounded-lg hover:bg-amber-100 transition-all"
                   >
                     Dismiss
                   </button>
@@ -1026,21 +1036,23 @@ export default function GroceryAssistantApp() {
 
                       <div className="flex items-center gap-1.5">
                         <button
+                          type="button"
                           onClick={() => {
                             handleAddSingleItem(suggestion.item, "Pattern Suggestion");
                             setLastAddedItem(suggestion.item);
                             setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
                           }}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 shadow-2xs"
+                          className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 shadow-2xs"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           <span>Add</span>
                         </button>
                         <button
+                          type="button"
                           onClick={() => {
                             setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
                           }}
-                          className="text-slate-400 hover:text-slate-600 p-1"
+                          className="text-slate-400 hover:text-slate-600 active:scale-90 p-1 transition-transform"
                           title="Don't need today"
                         >
                           ✕
@@ -1111,7 +1123,7 @@ export default function GroceryAssistantApp() {
                         aria-selected={isSelected}
                         aria-label={`${cat.name}, ${count} items`}
                         onClick={() => setSelectedCategoryId(cat.id)}
-                        className={`group relative flex items-center justify-between gap-1.5 p-2 sm:p-2.5 rounded-xl text-left transition-all border min-h-[48px] ${
+                        className={`group relative flex items-center justify-between gap-1.5 p-2 sm:p-2.5 rounded-xl text-left transition-all border min-h-[48px] active:scale-95 ${
                           isSelected
                             ? "bg-emerald-50/90 border-emerald-600 text-emerald-950 shadow-xs ring-1 ring-emerald-600/25"
                             : "bg-slate-50/80 hover:bg-slate-100 text-slate-700 border-slate-200/90 hover:border-slate-300"
@@ -1192,10 +1204,10 @@ export default function GroceryAssistantApp() {
                         <div
                           key={it.name}
                           onClick={() => handleQuickAddCategoryItem(it.name)}
-                          className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none ${
+                          className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none active:scale-[0.98] ${
                             isAlreadyInList
                               ? "bg-emerald-50/70 border-emerald-300"
-                              : "bg-white hover:bg-slate-50 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
+                              : "bg-white hover:bg-slate-50 active:bg-emerald-50/40 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
                           } ${isRecentlyClicked ? "ring-2 ring-emerald-500 scale-[1.02]" : ""}`}
                         >
                           <div className="flex items-start justify-between gap-1 mb-1.5">
@@ -1262,10 +1274,10 @@ export default function GroceryAssistantApp() {
                       <div
                         key={it.name}
                         onClick={() => handleQuickAddCategoryItem(it.name)}
-                        className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none ${
+                        className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none active:scale-[0.98] ${
                           isAlreadyInList
                             ? "bg-emerald-50/70 border-emerald-300"
-                            : "bg-white hover:bg-slate-50 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
+                            : "bg-white hover:bg-slate-50 active:bg-emerald-50/40 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
                         } ${isRecentlyClicked ? "ring-2 ring-emerald-500 scale-[1.02]" : ""}`}
                       >
                         <div className="flex items-start justify-between gap-1 mb-1.5">
@@ -1355,8 +1367,9 @@ export default function GroceryAssistantApp() {
                         </div>
                       </div>
                       <button
+                        type="button"
                         onClick={() => deleteItem(it.id)}
-                        className="text-slate-300 hover:text-rose-500 p-1"
+                        className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all"
                         title="Remove"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -1377,8 +1390,9 @@ export default function GroceryAssistantApp() {
                       </span>
                     </div>
                     <button
+                      type="button"
                       onClick={() => setActiveTab("rohan")}
-                      className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1"
+                      className="text-xs font-bold text-emerald-700 hover:text-emerald-900 active:scale-95 transition-transform flex items-center gap-1"
                     >
                       <span>Go to Rohan&apos;s View to Place Order &rarr;</span>
                     </button>
@@ -1389,8 +1403,9 @@ export default function GroceryAssistantApp() {
                       Finished building the basket?
                     </span>
                     <button
+                      type="button"
                       onClick={handleLiraHandoff}
-                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-2xs transition-colors flex items-center gap-1.5"
+                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>Complete Basket &amp; Hand Off</span>
@@ -1433,8 +1448,9 @@ export default function GroceryAssistantApp() {
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={handlePlaceOrder}
-                    className="shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 ring-2 ring-emerald-500/40"
+                    className="shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 ring-2 ring-emerald-500/40"
                   >
                     <ShoppingCart className="w-4 h-4" />
                     <span>Place Order Now ({pendingItems.length})</span>
@@ -1466,8 +1482,9 @@ export default function GroceryAssistantApp() {
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setActiveTab("lira")}
-                    className="shrink-0 px-3.5 py-1.5 bg-white border border-amber-300 hover:bg-amber-50 text-amber-900 font-semibold text-xs rounded-xl transition-colors"
+                    className="shrink-0 px-3.5 py-1.5 bg-white border border-amber-300 hover:bg-amber-50 active:scale-95 text-amber-900 font-semibold text-xs rounded-xl transition-all"
                   >
                     View Lira&apos;s Basket &rarr;
                   </button>
@@ -1494,15 +1511,17 @@ export default function GroceryAssistantApp() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
+                      type="button"
                       onClick={() => setActiveTab("orders")}
-                      className="shrink-0 px-3.5 py-2 bg-white border border-emerald-300 hover:bg-emerald-50 text-emerald-800 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs"
+                      className="shrink-0 px-3.5 py-2 bg-white border border-emerald-300 hover:bg-emerald-50 active:scale-95 text-emerald-800 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 shadow-2xs"
                     >
                       <Clock className="w-3.5 h-3.5" />
                       <span>View Orders</span>
                     </button>
                     <button
+                      type="button"
                       onClick={handleStartNewBasket}
-                      className="shrink-0 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-colors"
+                      className="shrink-0 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold rounded-xl transition-all"
                     >
                       Start New Basket
                     </button>
@@ -1525,12 +1544,13 @@ export default function GroceryAssistantApp() {
 
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={handlePlaceOrder}
                     disabled={!canOrderResult.allowed}
                     title={canOrderResult.allowed ? "Place order with current items" : canOrderResult.reason}
                     className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all shadow-sm ${
                       canOrderResult.allowed
-                        ? "bg-emerald-600 hover:bg-emerald-700 text-white ring-2 ring-emerald-500/50 cursor-pointer"
+                        ? "bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white ring-2 ring-emerald-500/50 cursor-pointer"
                         : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
                     }`}
                   >
@@ -1539,8 +1559,9 @@ export default function GroceryAssistantApp() {
                   </button>
 
                   <button
+                    type="button"
                     onClick={handleCopyList}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-semibold rounded-xl transition-all"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>{copiedNotification ? "Copied!" : "Copy for WhatsApp"}</span>
@@ -1548,8 +1569,9 @@ export default function GroceryAssistantApp() {
 
                   {completedItems.length > 0 && (
                     <button
+                      type="button"
                       onClick={clearCompleted}
-                      className="flex items-center gap-1 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl transition-colors"
+                      className="flex items-center gap-1 px-3 py-2 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-700 text-xs font-semibold rounded-xl transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Clear Done ({completedItems.length})</span>
@@ -1571,9 +1593,10 @@ export default function GroceryAssistantApp() {
                   className="flex-1 text-sm px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <button
+                  type="button"
                   onClick={() => handleAddItems(inputText, "Rohan")}
                   disabled={!inputText.trim()}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-medium text-sm rounded-xl transition-colors flex items-center gap-1"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 text-white font-medium text-sm rounded-xl transition-all flex items-center gap-1"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add</span>
@@ -1592,8 +1615,9 @@ export default function GroceryAssistantApp() {
                   Everything requested has been bought or marked as done. Lira can add more items anytime.
                 </p>
                 <button
+                  type="button"
                   onClick={() => setActiveTab("lira")}
-                  className="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl"
+                  className="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold rounded-xl transition-all"
                 >
                   Add New Items
                 </button>
@@ -1617,18 +1641,20 @@ export default function GroceryAssistantApp() {
                           key={item.id}
                           className="px-4 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-colors group"
                         >
-                          <div
-                            onClick={() => toggleItemDone(item.id)}
-                            className="flex items-center gap-3 flex-1 cursor-pointer select-none"
-                          >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
                             <button
                               type="button"
-                              className="w-6 h-6 rounded-lg border-2 border-slate-300 group-hover:border-emerald-500 flex items-center justify-center transition-colors text-transparent hover:text-emerald-500"
+                              onClick={() => toggleItemDone(item.id)}
+                              aria-label={`Mark ${item.name} as done`}
+                              className="w-6 h-6 rounded-lg border-2 border-slate-300 hover:border-emerald-500 active:scale-90 flex items-center justify-center transition-all text-transparent hover:text-emerald-500 shrink-0"
                             >
                               <Check className="w-4 h-4" />
                             </button>
-                            <div>
-                              <p className="text-base font-medium text-slate-900">{item.name}</p>
+                            <div
+                              onClick={() => toggleItemDone(item.id)}
+                              className="flex-1 cursor-pointer select-none min-w-0"
+                            >
+                              <p className="text-base font-medium text-slate-900 leading-snug">{item.name}</p>
                               <div className="flex flex-wrap items-center gap-2 mt-0.5">
                                 <span className="text-[10px] text-slate-500 flex items-center gap-1">
                                   <Clock className="w-3 h-3 text-slate-400" />
@@ -1646,16 +1672,18 @@ export default function GroceryAssistantApp() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 shrink-0">
                             <button
+                              type="button"
                               onClick={() => toggleItemDone(item.id)}
-                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold text-xs rounded-lg transition-colors"
+                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-800 font-semibold text-xs rounded-lg transition-all"
                             >
                               Mark Done
                             </button>
                             <button
+                              type="button"
                               onClick={() => deleteItem(item.id)}
-                              className="text-slate-300 hover:text-rose-500 p-1.5"
+                              className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1679,14 +1707,19 @@ export default function GroceryAssistantApp() {
                 <div className="divide-y divide-slate-200/60">
                   {completedItems.map((item) => (
                     <div key={item.id} className="py-2.5 flex items-center justify-between">
-                      <div
-                        onClick={() => toggleItemDone(item.id)}
-                        className="flex items-center gap-2.5 cursor-pointer flex-1"
-                      >
-                        <div className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => toggleItemDone(item.id)}
+                          aria-label={`Unmark ${item.name}`}
+                          className="w-5 h-5 rounded-md bg-emerald-600 active:scale-90 text-white flex items-center justify-center shrink-0 transition-all"
+                        >
                           <Check className="w-3.5 h-3.5" />
-                        </div>
-                        <div>
+                        </button>
+                        <div
+                          onClick={() => toggleItemDone(item.id)}
+                          className="flex-1 cursor-pointer select-none min-w-0"
+                        >
                           <span className="text-sm line-through text-slate-500 font-medium block leading-snug">{item.name}</span>
                           <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
                             {item.purchasedAt ? (
@@ -1701,8 +1734,9 @@ export default function GroceryAssistantApp() {
                         </div>
                       </div>
                       <button
+                        type="button"
                         onClick={() => toggleItemDone(item.id)}
-                        className="text-xs text-slate-400 hover:text-slate-700 px-2 py-1 font-medium"
+                        className="text-xs text-slate-400 hover:text-slate-700 active:scale-95 px-2 py-1 font-medium transition-all shrink-0"
                         title="Restore to active list"
                       >
                         Undo
@@ -1757,12 +1791,13 @@ export default function GroceryAssistantApp() {
 
                   return (
                     <button
+                      type="button"
                       key={filter}
                       onClick={() => setOrdersFilter(filter)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all active:scale-95 ${
                         ordersFilter === filter
                           ? "bg-slate-900 text-white shadow-xs"
-                          : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                          : "bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-600"
                       }`}
                     >
                       {label} <span className="opacity-70 text-[10px] ml-1">({count})</span>
@@ -1813,9 +1848,11 @@ export default function GroceryAssistantApp() {
                       className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden transition-all hover:border-slate-300"
                     >
                       {/* Tap / Click Order Summary Header */}
-                      <div
+                      <button
+                        type="button"
                         onClick={() => toggleOrderExpanded(order.orderId)}
-                        className="p-4 cursor-pointer hover:bg-slate-50/70 transition-colors flex items-center justify-between gap-3 select-none"
+                        aria-expanded={isExpanded}
+                        className="w-full text-left p-4 cursor-pointer hover:bg-slate-50/70 active:bg-slate-100 transition-colors flex items-center justify-between gap-3 select-none"
                       >
                         <div className="min-w-0 flex-1">
                           {/* Sep 12 · ₹2,840 */}
@@ -1853,7 +1890,7 @@ export default function GroceryAssistantApp() {
                             <ChevronDown className="w-5 h-5" />
                           )}
                         </div>
-                      </div>
+                      </button>
 
                       {/* Tapped / Expanded Items List */}
                       {isExpanded && (
@@ -1916,24 +1953,26 @@ export default function GroceryAssistantApp() {
                                       <div className="flex items-center gap-1 ml-1">
                                         {!isDelivered && (
                                           <button
+                                            type="button"
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               handleUpdateItemOutcome(order.orderId, item.id, "DELIVERED");
                                             }}
                                             title="Mark item received"
-                                            className="px-2 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px] font-semibold"
+                                            className="px-2 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-700 border border-emerald-200 text-[11px] font-semibold transition-all"
                                           >
                                             Receive
                                           </button>
                                         )}
                                         {!isCancelled && (
                                           <button
+                                            type="button"
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               handleUpdateItemOutcome(order.orderId, item.id, "CANCELLED");
                                             }}
                                             title="Mark item cancelled"
-                                            className="px-2 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-semibold"
+                                            className="px-2 py-0.5 rounded bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-700 border border-rose-200 text-[11px] font-semibold transition-all"
                                           >
                                             Cancel
                                           </button>
@@ -1954,20 +1993,22 @@ export default function GroceryAssistantApp() {
                               </p>
                               <div className="flex items-center gap-2">
                                 <button
+                                  type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleUpdateOrderStatus(order.orderId, "CANCELLED");
                                   }}
-                                  className="px-3 py-1.5 bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 text-xs font-semibold rounded-xl transition-colors"
+                                  className="px-3 py-1.5 bg-white border border-rose-200 hover:bg-rose-50 active:scale-95 text-rose-700 text-xs font-semibold rounded-xl transition-all"
                                 >
                                   Cancel Order
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleUpdateOrderStatus(order.orderId, "DELIVERED");
                                   }}
-                                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1"
                                 >
                                   <Check className="w-3.5 h-3.5" />
                                   <span>Mark Delivered</span>
@@ -1986,8 +2027,9 @@ export default function GroceryAssistantApp() {
               {filteredOrders.length > ordersDisplayLimit && (
                 <div className="text-center pt-3">
                   <button
+                    type="button"
                     onClick={() => setOrdersDisplayLimit((prev) => prev + 30)}
-                    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition-colors shadow-2xs"
+                    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 active:scale-95 text-slate-700 text-xs font-semibold rounded-xl transition-all shadow-2xs"
                   >
                     Load More Orders ({filteredOrders.length - ordersDisplayLimit} remaining)
                   </button>
