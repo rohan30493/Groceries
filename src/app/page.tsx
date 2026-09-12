@@ -978,7 +978,7 @@ export default function GroceryAssistantApp() {
               </div>
             </div>
 
-            {/* Lira Handoff Status & Gate Banner */}
+            {/* Lira Status & Action Banner */}
             {handoffState.status === "ready_for_order" ? (
               <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm animate-fadeIn">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -989,17 +989,17 @@ export default function GroceryAssistantApp() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                          Lira Handoff Gate
+                          Lira is Done
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
-                          Handed Off to Rohan
+                          Ready for Review
                         </span>
                       </div>
                       <p className="text-base font-bold text-slate-900 mt-1 italic">
                         &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
                       </p>
                       <p className="text-xs text-slate-600 mt-0.5">
-                        Basket is complete with {pendingItems.length} items. Handed off to Rohan for ordering.
+                        Basket is ready with {pendingItems.length} items. Handed to Rohan to review and order.
                       </p>
                     </div>
                   </div>
@@ -1008,7 +1008,7 @@ export default function GroceryAssistantApp() {
                     onClick={() => setActiveTab("rohan")}
                     className="shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5"
                   >
-                    <span>Switch to Rohan to Place Order &rarr;</span>
+                    <span>Review Basket &amp; Order &rarr;</span>
                   </button>
                 </div>
               </div>
@@ -1021,14 +1021,14 @@ export default function GroceryAssistantApp() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-                        Basket Status: Building by Lira
+                        Basket in Progress
                       </span>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold">
                         {pendingItems.length} items
                       </span>
                     </div>
                     <p className="text-xs text-amber-800 mt-0.5">
-                      Refine or add what is needed. When finished, complete the basket to hand off to Rohan.
+                      Refine or add what is needed. When finished, notify Rohan to review and order.
                     </p>
                   </div>
                 </div>
@@ -1038,7 +1038,7 @@ export default function GroceryAssistantApp() {
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 shrink-0"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Complete Basket &amp; Hand Off</span>
+                  <span>Lira is Done</span>
                 </button>
               </div>
             ) : handoffState.status === "ordered" ? (
@@ -1698,14 +1698,14 @@ export default function GroceryAssistantApp() {
                 })
               )}
 
-              {/* Lira Handoff Callout at bottom of list */}
+              {/* Lira Ready Callout at bottom of list */}
               {pendingItems.length > 0 && (
                 handoffState.status === "ready_for_order" ? (
                   <div className="mt-3.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                       <span className="text-xs font-semibold text-emerald-950">
-                        Basket handed off: &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
+                        Basket ready: &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
                       </span>
                     </div>
                     <button
@@ -1713,7 +1713,7 @@ export default function GroceryAssistantApp() {
                       onClick={() => setActiveTab("rohan")}
                       className="text-xs font-bold text-emerald-700 hover:text-emerald-900 active:scale-95 transition-transform flex items-center gap-1"
                     >
-                      <span>Go to Rohan&apos;s View to Place Order &rarr;</span>
+                      <span>Review Basket &amp; Order &rarr;</span>
                     </button>
                   </div>
                 ) : (
@@ -1727,7 +1727,7 @@ export default function GroceryAssistantApp() {
                       className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Complete Basket &amp; Hand Off</span>
+                      <span>Lira is Done</span>
                     </button>
                   </div>
                 )
@@ -1741,7 +1741,7 @@ export default function GroceryAssistantApp() {
         {/* ========================================================================= */}
         {activeTab === "rohan" && (
           <div className="space-y-5">
-            {/* Lira Handoff Gate Status Banner in Rohan's View */}
+            {/* Basket Status Banner in Rohan's View */}
             {handoffState.status === "ready_for_order" ? (
               <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm animate-fadeIn">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1752,10 +1752,10 @@ export default function GroceryAssistantApp() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                          Lira Handoff Gate • Open
+                          Lira is Done
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-950 font-bold border border-emerald-300">
-                          Ready to Order
+                          Ready to Review &amp; Order
                         </span>
                       </div>
                       <p className="text-base font-bold text-slate-900 mt-1 italic">
@@ -1764,7 +1764,7 @@ export default function GroceryAssistantApp() {
                       <p className="text-xs text-slate-600 mt-0.5">
                         Lira has finalized the basket with {pendingItems.length} items
                         {estimateBasketValue(pendingItems) ? ` (Est. ₹${estimateBasketValue(pendingItems)})` : ""}.
-                        The ordering gate is open — you can now place the order.
+                        Please review items below and place the order.
                       </p>
                     </div>
                   </div>
@@ -1775,7 +1775,7 @@ export default function GroceryAssistantApp() {
                   >
                     <ShoppingCart className="w-4 h-4" />
                     <span>
-                      Place Order Now ({pendingItems.length})
+                      Review Basket &amp; Order ({pendingItems.length})
                       {estimateBasketValue(pendingItems) ? ` • ₹${estimateBasketValue(pendingItems)}` : ""}
                     </span>
                   </button>
@@ -1791,14 +1791,14 @@ export default function GroceryAssistantApp() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-                          Handoff Gate Locked • Basket in Progress
+                          Lira is Building the Basket
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold">
-                          Building by Lira
+                          In Progress
                         </span>
                       </div>
                       <p className="text-xs text-amber-900 font-medium mt-1">
-                        Lira is autonomously building and refining the basket ({pendingItems.length} items so far). Order placement is gated until Lira hands off with:
+                        Lira is autonomously building and refining the basket ({pendingItems.length} items so far). When finished, Lira will say:
                       </p>
                       <p className="text-xs font-bold text-amber-950 mt-0.5 italic">
                         &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
@@ -1871,7 +1871,7 @@ export default function GroceryAssistantApp() {
                     type="button"
                     onClick={handlePlaceOrder}
                     disabled={!canOrderResult.allowed}
-                    title={canOrderResult.allowed ? "Place order with current items" : canOrderResult.reason}
+                    title={canOrderResult.allowed ? "Review and place order with current items" : canOrderResult.reason}
                     className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all shadow-sm ${
                       canOrderResult.allowed
                         ? "bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white ring-2 ring-emerald-500/50 cursor-pointer"
@@ -1879,7 +1879,7 @@ export default function GroceryAssistantApp() {
                     }`}
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
-                    <span>{canOrderResult.allowed ? `Place Order (${pendingItems.length})` : "Place Order (Locked)"}</span>
+                    <span>{canOrderResult.allowed ? `Review Basket & Order (${pendingItems.length})` : "Ordering Locked (Lira Building)"}</span>
                   </button>
 
                   <button
