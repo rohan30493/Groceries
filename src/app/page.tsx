@@ -163,6 +163,7 @@ export default function GroceryAssistantApp() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("fruits-vegetables");
   const [categorySearchQuery, setCategorySearchQuery] = useState<string>("");
   const [recentlyAddedAnimation, setRecentlyAddedAnimation] = useState<string | null>(null);
+  const [deletingItemIds, setDeletingItemIds] = useState<Set<string>>(new Set());
   const [lastAddedItem, setLastAddedItem] = useState<string | null>(null);
   const [isCloudSynced, setIsCloudSynced] = useState<boolean>(false);
 
@@ -561,14 +562,27 @@ export default function GroceryAssistantApp() {
     }
   };
 
-  // Delete an item (sync to Supabase)
+  // Delete an item with prominent exit animation (sync to Supabase)
   const deleteItem = (id: string) => {
-    setItems((prev) => {
-      const next = prev.filter((it) => it.id !== id);
-      const remainingPending = next.filter((it) => !it.isDone).length;
-      setHandoffState((hPrev) => registerBasketActivity(hPrev, remainingPending));
-      return next;
-    });
+    // 1. Instantly mark as deleting to trigger CSS animation
+    setDeletingItemIds((prev) => new Set([...prev, id]));
+
+    // 2. Remove from active state after animation completes
+    setTimeout(() => {
+      setItems((prev) => {
+        const next = prev.filter((it) => it.id !== id);
+        const remainingPending = next.filter((it) => !it.isDone).length;
+        setHandoffState((hPrev) => registerBasketActivity(hPrev, remainingPending));
+        return next;
+      });
+      setDeletingItemIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 320);
+
+    // 3. Initiate cloud delete immediately in background
     deleteGroceryItemDb(id);
   };
 
@@ -1356,9 +1370,15 @@ export default function GroceryAssistantApp() {
                   List is empty! Add items above or tap quick staples.
                 </p>
               ) : (
-                <div className="divide-y divide-slate-100">
-                  {pendingItems.map((it) => (
-                    <div key={it.id} className="py-2.5 flex items-center justify-between">
+                pendingItems.map((it) => {
+                  const isDeleting = deletingItemIds.has(it.id);
+                  return (
+                    <div
+                      key={it.id}
+                      className={`py-2.5 flex items-center justify-between transition-all ${
+                        isDeleting ? "item-delete-exit" : ""
+                      }`}
+                    >
                       <div>
                         <span className="text-base font-medium text-slate-800">{it.name}</span>
                         <div className="flex items-center gap-2 mt-0.5">
@@ -1375,8 +1395,8 @@ export default function GroceryAssistantApp() {
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                  ))}
-                </div>
+                  );
+                })
               )}
 
               {/* Lira Handoff Callout at bottom of list */}
@@ -1636,11 +1656,15 @@ export default function GroceryAssistantApp() {
                     </div>
 
                     <div className="divide-y divide-slate-100">
-                      {catItems.map((item) => (
-                        <div
-                          key={item.id}
-                          className="px-4 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-colors group"
-                        >
+                      {catItems.map((item) => {
+                        const isDeleting = deletingItemIds.has(item.id);
+                        return (
+                          <div
+                            key={item.id}
+                            className={`px-4 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-colors group ${
+                              isDeleting ? "item-delete-exit" : ""
+                            }`}
+                          >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <button
                               type="button"
@@ -1690,8 +1714,9 @@ export default function GroceryAssistantApp() {
                             </button>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
+                  </div>
                   </div>
                 ))}
               </div>
