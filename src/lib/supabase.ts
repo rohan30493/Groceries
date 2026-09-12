@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { GroceryItem } from "./patterns";
 import { HouseholdOrder } from "./orderLifecycle";
 import { normalizeRawOrder } from "./purchaseMemory";
+import { BasketHandoffState } from "./handoff";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ymtzcoftaofshockhpck.supabase.co";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_iNliYMfe5w_0jDajihxS5Q_MYgrm5F3";
@@ -72,6 +73,7 @@ export async function fetchGroceryItems(): Promise<GroceryItem[]> {
     const { data, error } = await supabase
       .from("grocery_items")
       .select("*")
+      .neq("id", "__household_handoff_state__")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -120,10 +122,17 @@ export async function clearCompletedItemsDb() {
 export async function clearActiveBasketDb(itemIds?: string[]) {
   try {
     if (itemIds && itemIds.length > 0) {
-      const { error } = await supabase.from("grocery_items").delete().in("id", itemIds);
-      if (error) console.error("Error clearing basket items:", error.message);
+      const filtered = itemIds.filter((id) => id !== "__household_handoff_state__");
+      if (filtered.length > 0) {
+        const { error } = await supabase.from("grocery_items").delete().in("id", filtered);
+        if (error) console.error("Error clearing basket items:", error.message);
+      }
     } else {
-      const { error } = await supabase.from("grocery_items").delete().neq("id", "0");
+      const { error } = await supabase
+        .from("grocery_items")
+        .delete()
+        .neq("id", "__household_handoff_state__")
+        .eq("is_done", false);
       if (error) console.error("Error clearing basket items:", error.message);
     }
   } catch (err) {
@@ -253,3 +262,47 @@ export async function fetchPatternRulesDb() {
     return null;
   }
 }
+
+export const HANDOFF_RECORD_ID = "__household_handoff_state__";
+
+// Save basket handoff state to Supabase so it synchronizes across all devices
+export async function saveHandoffStateDb(handoffState: BasketHandoffState) {
+  try {
+    const payload = {
+      id: HANDOFF_RECORD_ID,
+      name: "__HANDOFF_STATE__",
+      category: "System",
+      added_by: "Lira",
+      added_at: handoffState.handoffAt || new Date().toISOString(),
+      is_done: handoffState.status === "ordered",
+      notes: JSON.stringify(handoffState),
+      updated_at: new Date().toISOString()
+    };
+    const { error } = await supabase.from("grocery_items").upsert(payload);
+    if (error) console.error("Error syncing handoff state to Supabase:", error.message);
+  } catch (err) {
+    console.warn("saveHandoffStateDb failed:", err);
+  }
+}
+
+// Fetch basket handoff state from Supabase
+export async function fetchHandoffStateDb(): Promise<BasketHandoffState | null> {
+  try {
+    const { data, error } = await supabase
+      .from("grocery_items")
+      .select("notes")
+      .eq("id", HANDOFF_RECORD_ID)
+      .single();
+
+    if (error || !data || !data.notes) return null;
+    const parsed = JSON.parse(data.notes);
+    if (parsed && parsed.status) {
+      return parsed as BasketHandoffState;
+    }
+    return null;
+  } catch (err) {
+    console.warn("fetchHandoffStateDb failed:", err);
+    return null;
+  }
+}
+

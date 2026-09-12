@@ -55,7 +55,10 @@ import {
   updateHouseholdOrder,
   clearActiveBasketDb,
   toGroceryItem,
-  DbGroceryItem
+  DbGroceryItem,
+  saveHandoffStateDb,
+  fetchHandoffStateDb,
+  HANDOFF_RECORD_ID
 } from "../lib/supabase";
 import {
   BasketHandoffState,
@@ -218,12 +221,18 @@ export default function GroceryAssistantApp() {
       console.error("Local load error", e);
     }
 
-    // 2. Fetch fresh items from Supabase
+    // 2. Fetch fresh items and handoff state from Supabase
     fetchGroceryItems().then((dbItems) => {
       if (dbItems && dbItems.length > 0) {
         setItems(dbItems);
       }
       setIsCloudSynced(true);
+    });
+
+    fetchHandoffStateDb().then((dbHandoff) => {
+      if (dbHandoff && dbHandoff.status) {
+        setHandoffState(dbHandoff);
+      }
     });
 
     // 3. Fetch dynamic category sections & rules from Supabase (continuous replenishment learning)
@@ -260,19 +269,33 @@ export default function GroceryAssistantApp() {
         "postgres_changes",
         { event: "*", schema: "public", table: "grocery_items" },
         (payload) => {
-          if (payload.eventType === "INSERT") {
-            const newItem = toGroceryItem(payload.new as DbGroceryItem);
-            setItems((prev) => {
-              if (prev.some((x) => x.id === newItem.id)) return prev;
-              return [newItem, ...prev];
-            });
-          } else if (payload.eventType === "UPDATE") {
-            const updated = toGroceryItem(payload.new as DbGroceryItem);
-            setItems((prev) =>
-              prev.map((x) => (x.id === updated.id ? updated : x))
-            );
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            const raw = payload.new as DbGroceryItem;
+            if (raw.id === HANDOFF_RECORD_ID) {
+              if (raw.notes) {
+                try {
+                  const parsed = JSON.parse(raw.notes);
+                  if (parsed && parsed.status) {
+                    setHandoffState(parsed);
+                  }
+                } catch {}
+              }
+              return;
+            }
+            const newItem = toGroceryItem(raw);
+            if (payload.eventType === "INSERT") {
+              setItems((prev) => {
+                if (prev.some((x) => x.id === newItem.id)) return prev;
+                return [newItem, ...prev];
+              });
+            } else {
+              setItems((prev) =>
+                prev.map((x) => (x.id === newItem.id ? newItem : x))
+              );
+            }
           } else if (payload.eventType === "DELETE") {
             const oldId = (payload.old as { id: string }).id;
+            if (oldId === HANDOFF_RECORD_ID) return;
             setItems((prev) => prev.filter((x) => x.id !== oldId));
           }
         }
@@ -325,13 +348,15 @@ export default function GroceryAssistantApp() {
     }
   }, [items]);
 
-  // Save handoff state to localStorage on change
+  // Save handoff state to localStorage and Supabase on change so all devices stay in sync
   useEffect(() => {
     try {
       localStorage.setItem("household_basket_handoff_state", JSON.stringify(handoffState));
     } catch (e) {
       console.error("Failed to save handoff state to localStorage", e);
     }
+    // Cloud sync handoff state to Supabase
+    saveHandoffStateDb(handoffState);
   }, [handoffState]);
 
   // Derived filtered subsets
