@@ -791,28 +791,34 @@ export default function GroceryAssistantApp() {
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-16">
       {/* Header Bar */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-sm font-bold">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+          {/* App Branding */}
+          <div className="flex items-center gap-2 min-w-0 shrink">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-sm font-bold text-sm sm:text-base shrink-0">
               🧺
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <h1 className="font-bold text-lg text-slate-900 leading-tight">D718 Groceries</h1>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <h1 className="font-bold text-base sm:text-lg text-slate-900 leading-tight truncate">
+                  D718 Groceries
+                </h1>
+                <span className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span>Cloud Synced</span>
+                  <span>Synced</span>
                 </span>
               </div>
-              <p className="text-xs text-slate-500">Smart Household Ordering Assistant</p>
+              <p className="text-[10px] sm:text-xs text-slate-500 truncate hidden xs:block sm:block">
+                Smart Household Assistant
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+          {/* Navigation View Tabs */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab("lira")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 whitespace-nowrap ${
                 activeTab === "lira"
                   ? "bg-white text-emerald-800 shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
@@ -823,7 +829,7 @@ export default function GroceryAssistantApp() {
             <button
               type="button"
               onClick={() => setActiveTab("rohan")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1.5 relative ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1 relative whitespace-nowrap ${
                 activeTab === "rohan"
                   ? "bg-emerald-600 text-white shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
@@ -838,7 +844,7 @@ export default function GroceryAssistantApp() {
               )}
               {pendingItems.length > 0 && (
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
                     activeTab === "rohan" ? "bg-emerald-700 text-white" : "bg-emerald-200 text-emerald-900"
                   }`}
                 >
@@ -849,13 +855,13 @@ export default function GroceryAssistantApp() {
             <button
               type="button"
               onClick={() => setActiveTab("orders")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1.5 ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1 whitespace-nowrap ${
                 activeTab === "orders"
                   ? "bg-white text-emerald-800 shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <Clock className="w-3.5 h-3.5" />
+              <Clock className="w-3.5 h-3.5 hidden sm:inline-block" />
               <span>Orders</span>
               {activeOrders.length > 0 && (
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-500 text-white animate-pulse">
