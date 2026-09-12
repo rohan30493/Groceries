@@ -192,8 +192,7 @@ export default function GroceryAssistantApp() {
   const [browserNotificationPermission, setBrowserNotificationPermission] = useState<NotificationPermissionStatus>("default");
 
   // Collapsible section states to minimize visual clutter in Lira's view
-  const [isAutonomousRecsExpanded, setIsAutonomousRecsExpanded] = useState<boolean>(false);
-  const [isCompanionSuggestionsExpanded, setIsCompanionSuggestionsExpanded] = useState<boolean>(false);
+  const [isRecommendationsExpanded, setIsRecommendationsExpanded] = useState<boolean>(true);
   const [isCategoryItemsExpanded, setIsCategoryItemsExpanded] = useState<boolean>(false);
 
   // Load from localStorage on mount & sync with Supabase in real time
@@ -823,13 +822,13 @@ export default function GroceryAssistantApp() {
             <button
               type="button"
               onClick={() => setActiveTab("lira")}
-              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 whitespace-nowrap ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 whitespace-nowrap flex items-center gap-1 ${
                 activeTab === "lira"
                   ? "bg-white text-emerald-800 shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Lira&apos;s View
+              <span>✨ Lira</span>
             </button>
             <button
               type="button"
@@ -840,7 +839,7 @@ export default function GroceryAssistantApp() {
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <span>🛒 Rohan</span>
+              <span>🛒 Basket</span>
               {handoffState.status === "ready_for_order" && (
                 <span
                   title="Basket is ready for order"
@@ -963,21 +962,6 @@ export default function GroceryAssistantApp() {
         {/* ========================================================================= */}
         {activeTab === "lira" && (
           <div className="space-y-5">
-            {/* Friendly Greeting Card */}
-            <div className="bg-gradient-to-r from-emerald-700 to-teal-800 text-white rounded-2xl p-5 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="inline-block px-2.5 py-1 bg-emerald-600/60 rounded-full text-xs font-medium text-emerald-100 mb-2">
-                    Hi Lira
-                  </span>
-                  <h2 className="text-xl font-bold tracking-tight">What do we need ordered?</h2>
-                  <p className="text-emerald-100 text-xs mt-1">
-                    Type items below, paste from WhatsApp, or use the mic. The app will remind you if anything is missing!
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* Lira Status & Action Banner */}
             {handoffState.status === "ready_for_order" ? (
               <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm animate-fadeIn">
@@ -1071,24 +1055,303 @@ export default function GroceryAssistantApp() {
               </div>
             ) : null}
 
-            {/* Input Card - Always on top for fast list creation */}
+            {/* ========================================================================= */}
+            {/* 1. PRIMARY FEATURE: UNIFIED LIRA'S RECOMMENDATIONS                       */}
+            {/* Autonomous Replenishment Staples + Companion Co-occurrence Suggestions    */}
+            {/* ========================================================================= */}
+            {(autonomousRecs.length > 0 || (pendingItems.length > 0 && patternSuggestions.length > 0)) && (
+              <div className="bg-gradient-to-br from-teal-50/90 to-emerald-50/70 border-2 border-teal-300/80 rounded-2xl p-4 sm:p-5 shadow-sm transition-all">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsRecommendationsExpanded((prev) => !prev)}
+                    className="flex items-center gap-2.5 text-left flex-1 min-w-0 group py-0.5"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-2xs font-bold">
+                      <Sparkles className="w-5 h-5 text-teal-100" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-bold text-teal-950 group-hover:text-teal-800 transition-colors tracking-tight">
+                          ✨ Lira&apos;s Recommendations
+                        </h3>
+                        <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-teal-200/90 text-teal-950 font-bold shadow-2xs">
+                          {autonomousRecs.length + (pendingItems.length > 0 ? patternSuggestions.length : 0)} items spotted
+                        </span>
+                      </div>
+                      <p className="text-xs text-teal-800 mt-0.5">
+                        I&apos;ve spotted a few things your household may need
+                      </p>
+                    </div>
+                  </button>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {autonomousRecs.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleAutonomousAddAll}
+                        className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1 shrink-0"
+                        title="Add all recommended items"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Auto-Add All</span>
+                        <span>({autonomousRecs.length})</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setIsRecommendationsExpanded((prev) => !prev)}
+                      className="p-1.5 text-teal-800 hover:bg-teal-100 rounded-lg transition-colors active:scale-90"
+                      aria-label={isRecommendationsExpanded ? "Collapse recommendations" : "Expand recommendations"}
+                    >
+                      {isRecommendationsExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {isRecommendationsExpanded && (
+                  <div className="mt-3.5 pt-3.5 border-t border-teal-200/80 space-y-4 animate-fadeIn">
+                    {/* Companion / Co-occurrence Suggestions (if any items in basket) */}
+                    {pendingItems.length > 0 && patternSuggestions.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                            <span>🤝</span>
+                            <span>
+                              {lastAddedItem
+                                ? `Pairs with "${lastAddedItem}"`
+                                : "Frequently Ordered Together"}
+                            </span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              patternSuggestions.forEach((s) => dismissedSuggestions.add(s.item.toLowerCase()));
+                              setDismissedSuggestions(new Set(dismissedSuggestions));
+                            }}
+                            className="text-[11px] text-amber-800 hover:text-amber-950 active:scale-95 font-medium px-2 py-0.5 rounded hover:bg-amber-100/80 transition-all"
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {patternSuggestions.map((suggestion) => (
+                            <div
+                              key={suggestion.item}
+                              className="bg-white/95 border border-amber-200/90 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-2xs hover:border-amber-400 transition-all"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <div className="font-bold text-slate-900 text-xs flex items-center gap-1.5 flex-wrap">
+                                  <span>{suggestion.item}</span>
+                                  {suggestion.dueText && (
+                                    <span
+                                      className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
+                                        suggestion.replenishmentStatus === "DUE_NOW"
+                                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                          : suggestion.replenishmentStatus === "APPROACHING_DUE"
+                                          ? "bg-amber-100 text-amber-900 border border-amber-300"
+                                          : "bg-slate-100 text-slate-600 border border-slate-200"
+                                      }`}
+                                    >
+                                      {suggestion.dueText}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                                  Often with {suggestion.triggeredBy} • {suggestion.reason}
+                                </p>
+                              </div>
+
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleAddSingleItem(suggestion.item, "Pattern Suggestion");
+                                    setLastAddedItem(suggestion.item);
+                                    setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
+                                  }}
+                                  className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shadow-2xs"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  <span>Add</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
+                                  }}
+                                  className="text-slate-400 hover:text-slate-600 active:scale-90 p-1 transition-transform"
+                                  title="Don't need today"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Autonomous Staple Replenishment Recommendations */}
+                    {autonomousRecs.length > 0 && (
+                      <div className="space-y-2">
+                        {pendingItems.length > 0 && patternSuggestions.length > 0 && (
+                          <div className="text-xs font-bold uppercase tracking-wider text-teal-900 flex items-center gap-1.5 pt-2 border-t border-teal-200/60">
+                            <span>📦</span>
+                            <span>Household Staples &amp; Replenishments</span>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {autonomousRecs.map((rec) => (
+                            <div
+                              key={rec.name}
+                              className="bg-white/95 border border-teal-100 rounded-xl p-2.5 flex items-center justify-between gap-2 hover:border-teal-300 transition-colors shadow-2xs"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-bold text-slate-900 truncate">
+                                    {rec.name}
+                                  </span>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800 font-medium shrink-0">
+                                    {rec.category}
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                                  {rec.reason}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleAddSingleItem(rec.name, "Lira")}
+                                className="bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shrink-0"
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>Add</span>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ========================================================================= */}
+            {/* 2. YOUR BASKET (Items currently in the basket)                           */}
+            {/* ========================================================================= */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Type or Paste Grocery List:
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span>Your Basket</span>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    {pendingItems.length} items
+                  </span>
+                </h3>
+                <button
+                  onClick={() => setActiveTab("rohan")}
+                  className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                >
+                  <span>Review Basket &rarr;</span>
+                </button>
+              </div>
+
+              {pendingItems.length === 0 ? (
+                <p className="text-sm text-slate-400 text-center py-6">
+                  Your basket is empty. Add recommended items above, type below, or browse staples.
+                </p>
+              ) : (
+                pendingItems.map((it) => {
+                  const isDeleting = deletingItemIds.has(it.id);
+                  return (
+                    <div
+                      key={it.id}
+                      className={`py-2.5 flex items-center justify-between transition-all ${
+                        isDeleting ? "item-delete-exit" : ""
+                      }`}
+                    >
+                      <div>
+                        <span className="text-base font-medium text-slate-800">{it.name}</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] text-slate-400">{it.category}</span>
+                          <span className="text-[10px] text-slate-400">• Added {formatEventTime(it.createdAt || it.addedAt)}</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => deleteItem(it.id)}
+                        className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all"
+                        title="Remove"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+
+              {/* Lira Ready Callout at bottom of basket */}
+              {pendingItems.length > 0 && (
+                handoffState.status === "ready_for_order" ? (
+                  <div className="mt-3.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span className="text-xs font-semibold text-emerald-950">
+                        Basket ready: &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("rohan")}
+                      className="text-xs font-bold text-emerald-700 hover:text-emerald-900 active:scale-95 transition-transform flex items-center gap-1"
+                    >
+                      <span>Review Basket &amp; Order &rarr;</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <span className="text-xs text-slate-500">
+                      Finished building the basket?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleLiraHandoff}
+                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Lira is Done</span>
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
+
+            {/* ========================================================================= */}
+            {/* 3. COMPACT MANUAL ENTRY: ADD TO BASKET                                   */}
+            {/* Reduced visual weight, concise labels, preserves typing/pasting/voice     */}
+            {/* ========================================================================= */}
+            <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-2xs border border-slate-200">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                Add to your basket:
               </label>
               <div className="relative">
                 <textarea
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  placeholder="e.g. Paneer, Tomatoes, Curd, Dania patta, Kulcha, Eggs..."
-                  rows={3}
-                  className="w-full text-base p-3.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent placeholder:text-slate-400"
+                  placeholder="Type or paste items (e.g. Paneer, Tomatoes, Curd, Eggs)..."
+                  rows={2}
+                  className="w-full text-sm p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent placeholder:text-slate-400 bg-slate-50/50 focus:bg-white transition-all"
                 />
               </div>
 
               {detectedPreview.length > 1 && (
-                <div className="mt-2.5 p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl animate-fadeIn">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 mb-1.5">
+                <div className="mt-2 p-2 bg-emerald-50/80 border border-emerald-200 rounded-xl animate-fadeIn">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 mb-1">
                     <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Recognized {detectedPreview.length} separate items:</span>
                   </div>
@@ -1096,7 +1359,7 @@ export default function GroceryAssistantApp() {
                     {detectedPreview.map((name) => (
                       <span
                         key={name}
-                        className="px-2.5 py-0.5 rounded-md bg-white text-emerald-900 text-xs font-semibold border border-emerald-300 shadow-2xs"
+                        className="px-2 py-0.5 rounded-md bg-white text-emerald-900 text-xs font-semibold border border-emerald-300 shadow-2xs"
                       >
                         {name}
                       </span>
@@ -1105,17 +1368,17 @@ export default function GroceryAssistantApp() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between gap-3 mt-3">
+              <div className="flex items-center justify-between gap-2.5 mt-2.5">
                 <button
                   type="button"
                   onClick={toggleVoiceInput}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition-all active:scale-95 ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-95 shrink-0 ${
                     isListening
                       ? "bg-rose-50 border-rose-300 text-rose-700 animate-pulse"
                       : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
                   }`}
                 >
-                  {isListening ? <MicOff className="w-4 h-4 text-rose-600" /> : <Mic className="w-4 h-4 text-slate-600" />}
+                  {isListening ? <MicOff className="w-3.5 h-3.5 text-rose-600" /> : <Mic className="w-3.5 h-3.5 text-slate-600" />}
                   <span>{isListening ? "Listening..." : "Speak items"}</span>
                 </button>
 
@@ -1123,234 +1386,21 @@ export default function GroceryAssistantApp() {
                   type="button"
                   onClick={() => handleAddItems(inputText, "Lira")}
                   disabled={!inputText.trim()}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 text-base"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5 text-xs sm:text-sm"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4" />
                   <span>
                     {detectedPreview.length > 1
                       ? `Add All ${detectedPreview.length} Items`
-                      : "Add to List"}
+                      : "Add to Basket"}
                   </span>
                 </button>
               </div>
             </div>
 
-            {/* Autonomous Basket Builder (Lira's Intelligent Staple & Replenishment Suggestions) - Minimized by default */}
-            {autonomousRecs.length > 0 && (
-              <div className="bg-teal-50/80 border border-teal-200 rounded-2xl p-3.5 shadow-2xs transition-all">
-                <div className="flex items-center justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsAutonomousRecsExpanded((prev) => !prev)}
-                    className="flex items-center gap-2 text-left flex-1 min-w-0 group py-0.5"
-                  >
-                    <Sparkles className="w-4 h-4 text-teal-700 shrink-0" />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-sm font-bold text-teal-950 group-hover:text-teal-800 transition-colors">
-                          Lira&apos;s Autonomous Recommendations
-                        </h3>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-200/80 text-teal-900 font-bold">
-                          {autonomousRecs.length} suggestions
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-teal-700 truncate mt-0.5">
-                        {isAutonomousRecsExpanded
-                          ? "Intelligent staples and co-occurrences needed for the household"
-                          : "Tap to view suggested household staples and replenishment items"}
-                      </p>
-                    </div>
-                  </button>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={handleAutonomousAddAll}
-                      className="px-2.5 py-1.5 bg-teal-700 hover:bg-teal-800 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1 shrink-0"
-                      title="Add all recommended items"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Auto-Add All</span>
-                      <span>({autonomousRecs.length})</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsAutonomousRecsExpanded((prev) => !prev)}
-                      className="p-1.5 text-teal-700 hover:bg-teal-100 rounded-lg transition-colors active:scale-90"
-                      aria-label={isAutonomousRecsExpanded ? "Collapse recommendations" : "Expand recommendations"}
-                    >
-                      {isAutonomousRecsExpanded ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {isAutonomousRecsExpanded && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-3 border-t border-teal-200/80 animate-fadeIn">
-                    {autonomousRecs.map((rec) => (
-                      <div
-                        key={rec.name}
-                        className="bg-white/95 border border-teal-100 rounded-xl p-2.5 flex items-center justify-between gap-2 hover:border-teal-300 transition-colors shadow-2xs"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-slate-800 truncate">
-                              {rec.name}
-                            </span>
-                            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800 font-medium">
-                              {rec.category}
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                            {rec.reason}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleAddSingleItem(rec.name, "Lira")}
-                          className="bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shrink-0"
-                        >
-                          <Plus className="w-3 h-3" />
-                          <span>Add</span>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* SMART PATTERN SUGGESTIONS ("Did you forget anything?") - Minimized by default */}
-            {pendingItems.length > 0 && patternSuggestions.length > 0 && (
-              <div className="bg-amber-50/95 border border-amber-300/90 rounded-2xl p-3.5 shadow-2xs animate-fadeIn transition-all">
-                <div className="flex items-center justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsCompanionSuggestionsExpanded((prev) => !prev)}
-                    className="flex items-center gap-2 text-left flex-1 min-w-0 group py-0.5"
-                  >
-                    <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-sm font-bold text-amber-950 group-hover:text-amber-850 transition-colors truncate">
-                          {lastAddedItem
-                            ? `Added "${lastAddedItem}" — Did you forget anything?`
-                            : "Did you forget any of these?"}
-                        </h3>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 font-bold">
-                          {patternSuggestions.length} items
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-amber-800 truncate mt-0.5">
-                        {isCompanionSuggestionsExpanded
-                          ? "Frequently ordered together based on 820+ past orders"
-                          : "Tap to view companion items frequently bought together"}
-                      </p>
-                    </div>
-                  </button>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        patternSuggestions.forEach((s) => dismissedSuggestions.add(s.item.toLowerCase()));
-                        setDismissedSuggestions(new Set(dismissedSuggestions));
-                      }}
-                      className="text-xs text-amber-700 hover:text-amber-950 active:scale-95 font-medium px-2 py-1 rounded-lg hover:bg-amber-100 transition-all"
-                    >
-                      Dismiss
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsCompanionSuggestionsExpanded((prev) => !prev)}
-                      className="p-1.5 text-amber-800 hover:bg-amber-100 rounded-lg transition-colors active:scale-90"
-                      aria-label={isCompanionSuggestionsExpanded ? "Collapse companion suggestions" : "Expand companion suggestions"}
-                    >
-                      {isCompanionSuggestionsExpanded ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {isCompanionSuggestionsExpanded && (
-                  <div className="space-y-2 mt-3 pt-3 border-t border-amber-200/80 animate-fadeIn">
-                    {patternSuggestions.map((suggestion) => (
-                      <div
-                        key={suggestion.item}
-                        className="bg-white/95 border border-amber-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-2xs hover:border-amber-300 transition-all"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <div className="font-semibold text-slate-900 text-sm flex items-center gap-1.5 flex-wrap">
-                            <span>{suggestion.item}</span>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">
-                              Usually with {suggestion.triggeredBy}
-                            </span>
-                            {suggestion.dueText && (
-                              <span
-                                className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                                  suggestion.replenishmentStatus === "DUE_NOW"
-                                    ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                                    : suggestion.replenishmentStatus === "APPROACHING_DUE"
-                                    ? "bg-amber-100 text-amber-900 border border-amber-300"
-                                    : "bg-slate-100 text-slate-600 border border-slate-200"
-                                }`}
-                              >
-                                {suggestion.dueText}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-slate-500 truncate mt-0.5">{suggestion.reason}</p>
-                          {suggestion.cadenceText ? (
-                            <p className="text-xs text-slate-600 font-medium mt-1">
-                              {suggestion.cadenceText}
-                            </p>
-                          ) : suggestion.lastOrderedText ? (
-                            <p className="text-xs text-slate-500 mt-1">
-                              {suggestion.lastOrderedText}
-                            </p>
-                          ) : null}
-                        </div>
-
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleAddSingleItem(suggestion.item, "Pattern Suggestion");
-                              setLastAddedItem(suggestion.item);
-                              setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
-                            }}
-                            className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 shadow-2xs"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>Add</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
-                            }}
-                            className="text-slate-400 hover:text-slate-600 active:scale-90 p-1 transition-transform"
-                            title="Don't need today"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* ========================================================================= */}
-            {/* SHOP BY CATEGORY (Zepto-style Sections & 1-Tap Quick Add)                 */}
-            {/* Category pills always visible; item list expands when category clicked   */}
+            {/* 4. BROWSE STAPLES (Zepto-style Sections & 1-Tap Quick Add)                */}
+            {/* Category pills visible; item list expands when category clicked           */}
             {/* ========================================================================= */}
             <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
@@ -1358,7 +1408,7 @@ export default function GroceryAssistantApp() {
                   <div className="flex items-center gap-2">
                     <span className="text-lg">🛍️</span>
                     <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                      Shop by Category
+                      Browse Staples
                     </h3>
                     <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                       {totalStaplesCount} Past Staples
@@ -1502,7 +1552,7 @@ export default function GroceryAssistantApp() {
                     {categoryBrowseData.isSearch ? (
                       categoryBrowseData.results.length === 0 ? (
                         <div className="col-span-full py-8 text-center text-slate-400 text-xs">
-                          No past items matching &ldquo;{categorySearchQuery}&rdquo;. Try typing it in the top input box to add!
+                          No past items matching &ldquo;{categorySearchQuery}&rdquo;. Try typing it in the input box above to add!
                         </div>
                       ) : (
                         categoryBrowseData.results.map(({ item: it, categoryName }) => {
@@ -1644,93 +1694,6 @@ export default function GroceryAssistantApp() {
                     )}
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Current Items Preview */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <span>Currently on the list</span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    {pendingItems.length} items
-                  </span>
-                </h3>
-                <button
-                  onClick={() => setActiveTab("rohan")}
-                  className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-                >
-                  <span>Switch to Rohan&apos;s Checklist &rarr;</span>
-                </button>
-              </div>
-
-              {pendingItems.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-6">
-                  List is empty! Add items above or tap quick staples.
-                </p>
-              ) : (
-                pendingItems.map((it) => {
-                  const isDeleting = deletingItemIds.has(it.id);
-                  return (
-                    <div
-                      key={it.id}
-                      className={`py-2.5 flex items-center justify-between transition-all ${
-                        isDeleting ? "item-delete-exit" : ""
-                      }`}
-                    >
-                      <div>
-                        <span className="text-base font-medium text-slate-800">{it.name}</span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-slate-400">{it.category}</span>
-                          <span className="text-[10px] text-slate-400">• Added {formatEventTime(it.createdAt || it.addedAt)}</span>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => deleteItem(it.id)}
-                        className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all"
-                        title="Remove"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                })
-              )}
-
-              {/* Lira Ready Callout at bottom of list */}
-              {pendingItems.length > 0 && (
-                handoffState.status === "ready_for_order" ? (
-                  <div className="mt-3.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="text-xs font-semibold text-emerald-950">
-                        Basket ready: &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("rohan")}
-                      className="text-xs font-bold text-emerald-700 hover:text-emerald-900 active:scale-95 transition-transform flex items-center gap-1"
-                    >
-                      <span>Review Basket &amp; Order &rarr;</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <span className="text-xs text-slate-500">
-                      Finished building the basket?
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleLiraHandoff}
-                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Lira is Done</span>
-                    </button>
-                  </div>
-                )
               )}
             </div>
           </div>
