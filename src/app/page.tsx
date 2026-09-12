@@ -25,7 +25,10 @@ import {
   Package,
   Truck,
   XCircle,
-  Clock
+  Clock,
+  Bell,
+  BellRing,
+  X
 } from "lucide-react";
 import {
   GroceryItem,
@@ -79,6 +82,18 @@ import {
   getCanonicalPurchaseMemory,
   isItemInActiveOrder
 } from "../lib/purchaseMemory";
+import {
+  evaluateHandoffNotification,
+  estimateBasketValue,
+  formatNotificationPreview,
+  HandoffNotification
+} from "../lib/handoffNotification";
+import {
+  getBrowserNotificationPermission,
+  requestNotificationPermission,
+  sendBrowserHandoffNotification,
+  NotificationPermissionStatus
+} from "../lib/pushNotifications";
 
 // Helper to format human-readable time (e.g., "9:15 AM" or "Yesterday, 8:40 PM")
 function formatEventTime(isoStringOrText?: string): string {
@@ -169,6 +184,8 @@ export default function GroceryAssistantApp() {
 
   // Gated order handoff state (Lira builds autonomously, then hands off with 'I’m done. Please proceed with order.')
   const [handoffState, setHandoffState] = useState<BasketHandoffState>(() => initHandoffState(0));
+  const [acknowledgedNotificationIds, setAcknowledgedNotificationIds] = useState<Set<string>>(new Set());
+  const [browserNotificationPermission, setBrowserNotificationPermission] = useState<NotificationPermissionStatus>("default");
 
   // Load from localStorage on mount & sync with Supabase in real time
   useEffect(() => {
@@ -188,6 +205,14 @@ export default function GroceryAssistantApp() {
           setHandoffState(parsedHandoff);
         }
       }
+      const savedAck = localStorage.getItem("household_ack_notifications");
+      if (savedAck) {
+        const parsedAck = JSON.parse(savedAck);
+        if (Array.isArray(parsedAck)) {
+          setAcknowledgedNotificationIds(new Set(parsedAck));
+        }
+      }
+      setBrowserNotificationPermission(getBrowserNotificationPermission());
     } catch (e) {
       console.error("Local load error", e);
     }
@@ -361,6 +386,48 @@ export default function GroceryAssistantApp() {
   const canOrderResult = useMemo(() => {
     return canPlaceOrder(handoffState, "Rohan", pendingItems.length);
   }, [handoffState, pendingItems.length]);
+
+  // Persistent Handoff Notification (idempotent, single source of truth from handoffState.status === 'ready_for_order')
+  const activeNotification = useMemo(() => {
+    return evaluateHandoffNotification(handoffState, pendingItems, acknowledgedNotificationIds);
+  }, [handoffState, pendingItems, acknowledgedNotificationIds]);
+
+  // Acknowledge/dismiss active notification without cancelling handoff
+  const handleAcknowledgeNotification = (notificationId: string) => {
+    setAcknowledgedNotificationIds((prev) => {
+      const next = new Set(prev);
+      next.add(notificationId);
+      try {
+        localStorage.setItem("household_ack_notifications", JSON.stringify(Array.from(next)));
+      } catch {}
+      return next;
+    });
+  };
+
+  // Explicit user opt-in for browser notifications
+  const handleEnablePushNotifications = async () => {
+    const status = await requestNotificationPermission();
+    setBrowserNotificationPermission(status);
+  };
+
+  // Trigger browser push notification once per unique handoff event if granted
+  useEffect(() => {
+    if (
+      handoffState.status === "ready_for_order" &&
+      handoffState.handoffAt &&
+      browserNotificationPermission === "granted"
+    ) {
+      const eventKey = `browser_push_sent_${handoffState.handoffAt}`;
+      if (!sessionStorage.getItem(eventKey)) {
+        sessionStorage.setItem(eventKey, "true");
+        sendBrowserHandoffNotification({
+          itemCount: pendingItems.length,
+          estimatedValue: estimateBasketValue(pendingItems),
+          onOpenBasket: () => setActiveTab("rohan")
+        });
+      }
+    }
+  }, [handoffState.status, handoffState.handoffAt, browserNotificationPermission, pendingItems]);
 
   // Add multiple items from input bar or speech
   const handleAddItems = (text: string, sender: "Lira" | "Rohan" = "Lira") => {
@@ -707,13 +774,19 @@ export default function GroceryAssistantApp() {
             <button
               type="button"
               onClick={() => setActiveTab("rohan")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1 ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1.5 relative ${
                 activeTab === "rohan"
                   ? "bg-emerald-600 text-white shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <span>🛒 Rohan</span>
+              {handoffState.status === "ready_for_order" && (
+                <span
+                  title="Basket is ready for order"
+                  className="w-2 h-2 rounded-full bg-amber-400 animate-ping absolute -top-0.5 -right-0.5"
+                />
+              )}
               {pendingItems.length > 0 && (
                 <span
                   className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
@@ -743,6 +816,84 @@ export default function GroceryAssistantApp() {
             </button>
           </div>
         </div>
+
+        {/* Global Persistent In-App Notification Banner for Lira Handoff */}
+        {activeNotification && !activeNotification.isAcknowledged && (
+          <div className="bg-amber-500 text-white px-4 py-2.5 shadow-sm border-t border-amber-600/30 animate-fadeIn">
+            <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
+              <div
+                onClick={() => setActiveTab("rohan")}
+                className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer select-none group"
+              >
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0 text-base">
+                  🛒
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold uppercase tracking-wider bg-white/25 px-1.5 py-0.2 rounded text-white">
+                      Basket Ready
+                    </span>
+                    <span className="text-xs font-semibold truncate">
+                      {activeNotification.itemCount} {activeNotification.itemCount === 1 ? "item" : "items"}
+                      {activeNotification.estimatedBasketValue ? ` • Est. ₹${activeNotification.estimatedBasketValue}` : ""}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-amber-100 truncate group-hover:underline">
+                    &ldquo;{activeNotification.message}&rdquo; — Tap to review &amp; order &rarr;
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("rohan")}
+                  className="px-3 py-1 bg-white text-amber-900 font-bold text-xs rounded-lg hover:bg-amber-50 active:scale-95 transition-all shadow-xs"
+                >
+                  Review
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAcknowledgeNotification(activeNotification.id)}
+                  className="p-1 rounded-lg hover:bg-white/20 text-white/80 hover:text-white transition-all"
+                  title="Dismiss alert"
+                  aria-label="Dismiss alert"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Browser Push Permission Opt-in Bar (Shown only if browser supports and user hasn't chosen yet) */}
+        {browserNotificationPermission === "default" && (
+          <div className="bg-slate-100 border-t border-slate-200/80 px-4 py-1.5">
+            <div className="max-w-2xl mx-auto flex items-center justify-between text-xs text-slate-600">
+              <div className="flex items-center gap-1.5">
+                <Bell className="w-3.5 h-3.5 text-slate-500" />
+                <span>Get notified when Lira finishes building your grocery basket?</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleEnablePushNotifications}
+                  className="font-semibold text-emerald-700 hover:text-emerald-800 underline active:scale-95"
+                >
+                  Enable notifications
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBrowserNotificationPermission("denied")}
+                  className="text-slate-400 hover:text-slate-600 p-0.5"
+                  title="Not now"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main Container */}
@@ -1463,7 +1614,9 @@ export default function GroceryAssistantApp() {
                         &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
                       </p>
                       <p className="text-xs text-slate-600 mt-0.5">
-                        Lira has finalized the basket with {pendingItems.length} items. The ordering gate is open — you can now place the order.
+                        Lira has finalized the basket with {pendingItems.length} items
+                        {estimateBasketValue(pendingItems) ? ` (Est. ₹${estimateBasketValue(pendingItems)})` : ""}.
+                        The ordering gate is open — you can now place the order.
                       </p>
                     </div>
                   </div>
@@ -1473,7 +1626,10 @@ export default function GroceryAssistantApp() {
                     className="shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 ring-2 ring-emerald-500/40"
                   >
                     <ShoppingCart className="w-4 h-4" />
-                    <span>Place Order Now ({pendingItems.length})</span>
+                    <span>
+                      Place Order Now ({pendingItems.length})
+                      {estimateBasketValue(pendingItems) ? ` • ₹${estimateBasketValue(pendingItems)}` : ""}
+                    </span>
                   </button>
                 </div>
               </div>
