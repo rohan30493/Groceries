@@ -191,6 +191,11 @@ export default function GroceryAssistantApp() {
   const [acknowledgedNotificationIds, setAcknowledgedNotificationIds] = useState<Set<string>>(new Set());
   const [browserNotificationPermission, setBrowserNotificationPermission] = useState<NotificationPermissionStatus>("default");
 
+  // Collapsible section states to minimize visual clutter in Lira's view
+  const [isAutonomousRecsExpanded, setIsAutonomousRecsExpanded] = useState<boolean>(false);
+  const [isCompanionSuggestionsExpanded, setIsCompanionSuggestionsExpanded] = useState<boolean>(false);
+  const [isCategoryItemsExpanded, setIsCategoryItemsExpanded] = useState<boolean>(false);
+
   // Load from localStorage on mount & sync with Supabase in real time
   useEffect(() => {
     // 1. Initial fast local load
@@ -1066,65 +1071,7 @@ export default function GroceryAssistantApp() {
               </div>
             ) : null}
 
-            {/* Autonomous Basket Builder (Lira's Intelligent Staple & Replenishment Suggestions) */}
-            {autonomousRecs.length > 0 && (
-              <div className="bg-teal-50/70 border border-teal-200 rounded-2xl p-4 shadow-sm">
-                <div className="flex items-center justify-between gap-2 mb-2.5">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-teal-700 shrink-0" />
-                    <div>
-                      <h3 className="text-sm font-bold text-teal-950">
-                        Lira&apos;s Autonomous Recommendations
-                      </h3>
-                      <p className="text-[11px] text-teal-700">
-                        Intelligent staples and co-occurrences needed for the household
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAutonomousAddAll}
-                    className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1 shrink-0"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Auto-Add All ({autonomousRecs.length})</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                  {autonomousRecs.map((rec) => (
-                    <div
-                      key={rec.name}
-                      className="bg-white/95 border border-teal-100 rounded-xl p-2.5 flex items-center justify-between gap-2 hover:border-teal-300 transition-colors shadow-2xs"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold text-slate-800 truncate">
-                            {rec.name}
-                          </span>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800 font-medium">
-                            {rec.category}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                          {rec.reason}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleAddSingleItem(rec.name, "Lira")}
-                        className="bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shrink-0"
-                      >
-                        <Plus className="w-3 h-3" />
-                        <span>Add</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Input Card */}
+            {/* Input Card - Always on top for fast list creation */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Type or Paste Grocery List:
@@ -1188,104 +1135,222 @@ export default function GroceryAssistantApp() {
               </div>
             </div>
 
-            {/* SMART PATTERN SUGGESTIONS ("Did you forget anything?") */}
-            {/* Only shown when items have actually been added to the list! */}
-            {pendingItems.length > 0 && patternSuggestions.length > 0 && (
-              <div className="bg-amber-50/95 border border-amber-300/90 rounded-2xl p-4 shadow-sm animate-fadeIn">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2 text-amber-900 font-bold text-base">
-                    <Sparkles className="w-5 h-5 text-amber-600 shrink-0" />
-                    <span>
-                      {lastAddedItem
-                        ? `Added "${lastAddedItem}" — Did you forget any of these?`
-                        : "Did you forget any of these?"}
-                    </span>
-                  </div>
+            {/* Autonomous Basket Builder (Lira's Intelligent Staple & Replenishment Suggestions) - Minimized by default */}
+            {autonomousRecs.length > 0 && (
+              <div className="bg-teal-50/80 border border-teal-200 rounded-2xl p-3.5 shadow-2xs transition-all">
+                <div className="flex items-center justify-between gap-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      patternSuggestions.forEach((s) => dismissedSuggestions.add(s.item.toLowerCase()));
-                      setDismissedSuggestions(new Set(dismissedSuggestions));
-                    }}
-                    className="text-xs text-amber-700 hover:text-amber-950 active:scale-95 font-medium px-2 py-0.5 rounded-lg hover:bg-amber-100 transition-all"
+                    onClick={() => setIsAutonomousRecsExpanded((prev) => !prev)}
+                    className="flex items-center gap-2 text-left flex-1 min-w-0 group py-0.5"
                   >
-                    Dismiss
-                  </button>
-                </div>
-                <p className="text-xs text-amber-800 mb-3">
-                  Based on 820+ past orders, these items are frequently ordered together with what you just added:
-                </p>
-
-                <div className="space-y-2">
-                  {patternSuggestions.map((suggestion) => (
-                    <div
-                      key={suggestion.item}
-                      className="bg-white/95 border border-amber-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-2xs hover:border-amber-300 transition-all"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-slate-900 text-sm flex items-center gap-1.5 flex-wrap">
-                          <span>{suggestion.item}</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">
-                            Usually with {suggestion.triggeredBy}
-                          </span>
-                          {suggestion.dueText && (
-                            <span
-                              className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                                suggestion.replenishmentStatus === "DUE_NOW"
-                                  ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                                  : suggestion.replenishmentStatus === "APPROACHING_DUE"
-                                  ? "bg-amber-100 text-amber-900 border border-amber-300"
-                                  : "bg-slate-100 text-slate-600 border border-slate-200"
-                              }`}
-                            >
-                              {suggestion.dueText}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-slate-500 truncate mt-0.5">{suggestion.reason}</p>
-                        {suggestion.cadenceText ? (
-                          <p className="text-xs text-slate-600 font-medium mt-1">
-                            {suggestion.cadenceText}
-                          </p>
-                        ) : suggestion.lastOrderedText ? (
-                          <p className="text-xs text-slate-500 mt-1">
-                            {suggestion.lastOrderedText}
-                          </p>
-                        ) : null}
+                    <Sparkles className="w-4 h-4 text-teal-700 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-sm font-bold text-teal-950 group-hover:text-teal-800 transition-colors">
+                          Lira&apos;s Autonomous Recommendations
+                        </h3>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-200/80 text-teal-900 font-bold">
+                          {autonomousRecs.length} suggestions
+                        </span>
                       </div>
+                      <p className="text-[11px] text-teal-700 truncate mt-0.5">
+                        {isAutonomousRecsExpanded
+                          ? "Intelligent staples and co-occurrences needed for the household"
+                          : "Tap to view suggested household staples and replenishment items"}
+                      </p>
+                    </div>
+                  </button>
 
-                      <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleAutonomousAddAll}
+                      className="px-2.5 py-1.5 bg-teal-700 hover:bg-teal-800 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1 shrink-0"
+                      title="Add all recommended items"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Auto-Add All</span>
+                      <span>({autonomousRecs.length})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsAutonomousRecsExpanded((prev) => !prev)}
+                      className="p-1.5 text-teal-700 hover:bg-teal-100 rounded-lg transition-colors active:scale-90"
+                      aria-label={isAutonomousRecsExpanded ? "Collapse recommendations" : "Expand recommendations"}
+                    >
+                      {isAutonomousRecsExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {isAutonomousRecsExpanded && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-3 border-t border-teal-200/80 animate-fadeIn">
+                    {autonomousRecs.map((rec) => (
+                      <div
+                        key={rec.name}
+                        className="bg-white/95 border border-teal-100 rounded-xl p-2.5 flex items-center justify-between gap-2 hover:border-teal-300 transition-colors shadow-2xs"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-slate-800 truncate">
+                              {rec.name}
+                            </span>
+                            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800 font-medium">
+                              {rec.category}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                            {rec.reason}
+                          </p>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => {
-                            handleAddSingleItem(suggestion.item, "Pattern Suggestion");
-                            setLastAddedItem(suggestion.item);
-                            setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
-                          }}
-                          className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 shadow-2xs"
+                          onClick={() => handleAddSingleItem(rec.name, "Lira")}
+                          className="bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shrink-0"
                         >
-                          <Plus className="w-3.5 h-3.5" />
+                          <Plus className="w-3 h-3" />
                           <span>Add</span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
-                          }}
-                          className="text-slate-400 hover:text-slate-600 active:scale-90 p-1 transition-transform"
-                          title="Don't need today"
-                        >
-                          ✕
-                        </button>
                       </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* SMART PATTERN SUGGESTIONS ("Did you forget anything?") - Minimized by default */}
+            {pendingItems.length > 0 && patternSuggestions.length > 0 && (
+              <div className="bg-amber-50/95 border border-amber-300/90 rounded-2xl p-3.5 shadow-2xs animate-fadeIn transition-all">
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsCompanionSuggestionsExpanded((prev) => !prev)}
+                    className="flex items-center gap-2 text-left flex-1 min-w-0 group py-0.5"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-sm font-bold text-amber-950 group-hover:text-amber-850 transition-colors truncate">
+                          {lastAddedItem
+                            ? `Added "${lastAddedItem}" — Did you forget anything?`
+                            : "Did you forget any of these?"}
+                        </h3>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 font-bold">
+                          {patternSuggestions.length} items
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-amber-800 truncate mt-0.5">
+                        {isCompanionSuggestionsExpanded
+                          ? "Frequently ordered together based on 820+ past orders"
+                          : "Tap to view companion items frequently bought together"}
+                      </p>
                     </div>
-                  ))}
+                  </button>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        patternSuggestions.forEach((s) => dismissedSuggestions.add(s.item.toLowerCase()));
+                        setDismissedSuggestions(new Set(dismissedSuggestions));
+                      }}
+                      className="text-xs text-amber-700 hover:text-amber-950 active:scale-95 font-medium px-2 py-1 rounded-lg hover:bg-amber-100 transition-all"
+                    >
+                      Dismiss
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsCompanionSuggestionsExpanded((prev) => !prev)}
+                      className="p-1.5 text-amber-800 hover:bg-amber-100 rounded-lg transition-colors active:scale-90"
+                      aria-label={isCompanionSuggestionsExpanded ? "Collapse companion suggestions" : "Expand companion suggestions"}
+                    >
+                      {isCompanionSuggestionsExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
+
+                {isCompanionSuggestionsExpanded && (
+                  <div className="space-y-2 mt-3 pt-3 border-t border-amber-200/80 animate-fadeIn">
+                    {patternSuggestions.map((suggestion) => (
+                      <div
+                        key={suggestion.item}
+                        className="bg-white/95 border border-amber-200 rounded-xl p-3 flex items-center justify-between gap-3 shadow-2xs hover:border-amber-300 transition-all"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-slate-900 text-sm flex items-center gap-1.5 flex-wrap">
+                            <span>{suggestion.item}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">
+                              Usually with {suggestion.triggeredBy}
+                            </span>
+                            {suggestion.dueText && (
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                  suggestion.replenishmentStatus === "DUE_NOW"
+                                    ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                    : suggestion.replenishmentStatus === "APPROACHING_DUE"
+                                    ? "bg-amber-100 text-amber-900 border border-amber-300"
+                                    : "bg-slate-100 text-slate-600 border border-slate-200"
+                                }`}
+                              >
+                                {suggestion.dueText}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 truncate mt-0.5">{suggestion.reason}</p>
+                          {suggestion.cadenceText ? (
+                            <p className="text-xs text-slate-600 font-medium mt-1">
+                              {suggestion.cadenceText}
+                            </p>
+                          ) : suggestion.lastOrderedText ? (
+                            <p className="text-xs text-slate-500 mt-1">
+                              {suggestion.lastOrderedText}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleAddSingleItem(suggestion.item, "Pattern Suggestion");
+                              setLastAddedItem(suggestion.item);
+                              setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 shadow-2xs"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Add</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
+                            }}
+                            className="text-slate-400 hover:text-slate-600 active:scale-90 p-1 transition-transform"
+                            title="Don't need today"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {/* ========================================================================= */}
             {/* SHOP BY CATEGORY (Zepto-style Sections & 1-Tap Quick Add)                 */}
+            {/* Category pills always visible; item list expands when category clicked   */}
             {/* ========================================================================= */}
             <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
@@ -1300,7 +1365,7 @@ export default function GroceryAssistantApp() {
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    1-Tap quick add from your 820+ past orders • Brand names consolidated
+                    1-Tap quick add from your 820+ past orders • Tap a category to view items
                   </p>
                 </div>
 
@@ -1310,7 +1375,12 @@ export default function GroceryAssistantApp() {
                   <input
                     type="text"
                     value={categorySearchQuery}
-                    onChange={(e) => setCategorySearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setCategorySearchQuery(e.target.value);
+                      if (e.target.value) {
+                        setIsCategoryItemsExpanded(true);
+                      }
+                    }}
                     placeholder="Search past items..."
                     className="w-full text-xs pl-8 pr-6 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-slate-50 focus:bg-white"
                   />
@@ -1333,7 +1403,7 @@ export default function GroceryAssistantApp() {
                   className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3.5"
                 >
                   {categorySections.map((cat) => {
-                    const isSelected = selectedCategoryId === cat.id;
+                    const isSelected = selectedCategoryId === cat.id && isCategoryItemsExpanded;
                     const count = cat.itemCount ?? cat.items?.length ?? 0;
                     return (
                       <button
@@ -1342,7 +1412,14 @@ export default function GroceryAssistantApp() {
                         role="tab"
                         aria-selected={isSelected}
                         aria-label={`${cat.name}, ${count} items`}
-                        onClick={() => setSelectedCategoryId(cat.id)}
+                        onClick={() => {
+                          if (selectedCategoryId === cat.id) {
+                            setIsCategoryItemsExpanded((prev) => !prev);
+                          } else {
+                            setSelectedCategoryId(cat.id);
+                            setIsCategoryItemsExpanded(true);
+                          }
+                        }}
                         className={`group relative flex items-center justify-between gap-1.5 p-2 sm:p-2.5 rounded-xl text-left transition-all border min-h-[48px] active:scale-95 ${
                           isSelected
                             ? "bg-emerald-50/90 border-emerald-600 text-emerald-950 shadow-xs ring-1 ring-emerald-600/25"
@@ -1376,182 +1453,198 @@ export default function GroceryAssistantApp() {
                 </div>
               )}
 
-              {/* Search Header or Category Header */}
-              {categoryBrowseData.isSearch ? (
-                <div className="flex items-center justify-between mb-3 text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-2 rounded-lg">
-                  <span>
-                    Search results for &ldquo;{categorySearchQuery}&rdquo; ({categoryBrowseData.results.length} items found)
-                  </span>
-                  <button
-                    onClick={() => setCategorySearchQuery("")}
-                    className="text-emerald-700 hover:underline"
-                  >
-                    Clear Search
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{categoryBrowseData.activeCategory?.icon}</span>
-                    <span className="text-sm font-bold text-slate-800">
-                      {categoryBrowseData.activeCategory?.name}
-                    </span>
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                      {categoryBrowseData.activeCategory?.badge}
-                    </span>
-                  </div>
-                  <span className="text-xs text-slate-400">
-                    {categoryBrowseData.activeCategory?.items.length} items ordered before
-                  </span>
-                </div>
-              )}
-
-              {/* Items Grid (Responsive 2 or 3 columns) */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
-                {categoryBrowseData.isSearch ? (
-                  categoryBrowseData.results.length === 0 ? (
-                    <div className="col-span-full py-8 text-center text-slate-400 text-xs">
-                      No past items matching &ldquo;{categorySearchQuery}&rdquo;. Try typing it in the top input box to add!
+              {/* Items Grid & Header (Visible when expanded or searching) */}
+              {(isCategoryItemsExpanded || categoryBrowseData.isSearch) && (
+                <div className="pt-2 border-t border-slate-100 animate-fadeIn">
+                  {/* Search Header or Category Header */}
+                  {categoryBrowseData.isSearch ? (
+                    <div className="flex items-center justify-between mb-3 text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-2 rounded-lg">
+                      <span>
+                        Search results for &ldquo;{categorySearchQuery}&rdquo; ({categoryBrowseData.results.length} items found)
+                      </span>
+                      <button
+                        onClick={() => setCategorySearchQuery("")}
+                        className="text-emerald-700 hover:underline"
+                      >
+                        Clear Search
+                      </button>
                     </div>
                   ) : (
-                    categoryBrowseData.results.map(({ item: it, categoryName }) => {
-                      const isAlreadyInList = items.some(
-                        (item) => !item.isDone && item.name.toLowerCase().trim() === it.name.toLowerCase().trim()
-                      );
-                      const isRecentlyClicked = recentlyAddedAnimation === it.name;
-
-                      return (
-                        <div
-                          key={it.name}
-                          onClick={() => handleQuickAddCategoryItem(it.name)}
-                          className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none active:scale-[0.98] ${
-                            isAlreadyInList
-                              ? "bg-emerald-50/70 border-emerald-300"
-                              : "bg-white hover:bg-slate-50 active:bg-emerald-50/40 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
-                          } ${isRecentlyClicked ? "ring-2 ring-emerald-500 scale-[1.02]" : ""}`}
-                        >
-                          <div className="flex items-start justify-between gap-1 mb-1.5">
-                            <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
-                              {it.imageUrl ? (
-                                <img
-                                  src={it.imageUrl}
-                                  alt={it.name}
-                                  loading="lazy"
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = "none";
-                                    const fallback = e.currentTarget.parentElement?.querySelector(".emoji-fallback");
-                                    if (fallback) (fallback as HTMLElement).style.display = "inline-block";
-                                  }}
-                                />
-                              ) : null}
-                              <span
-                                className="text-2xl emoji-fallback"
-                                style={{ display: it.imageUrl ? "none" : "inline-block" }}
-                              >
-                                {it.icon}
-                              </span>
-                            </div>
-                            {isAlreadyInList ? (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                <Check className="w-3 h-3 text-emerald-700" />
-                                <span>In List</span>
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                                <Plus className="w-3 h-3" />
-                                <span>Add</span>
-                              </span>
-                            )}
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-slate-900 text-xs leading-snug group-hover:text-emerald-900">
-                              {it.name}
-                            </h4>
-                            {it.subtitle && (
-                              <p className="text-[10px] text-emerald-700/80 font-medium truncate mt-0.5">
-                                {it.subtitle}
-                              </p>
-                            )}
-                            <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
-                              <span>Ordered {it.orderCount}x</span>
-                              <span className="text-slate-300">•</span>
-                              <span className="truncate max-w-[70px]">{categoryName}</span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )
-                ) : (
-                  categoryBrowseData.activeCategory?.items.map((it) => {
-                    const isAlreadyInList = items.some(
-                      (item) => !item.isDone && item.name.toLowerCase().trim() === it.name.toLowerCase().trim()
-                    );
-                    const isRecentlyClicked = recentlyAddedAnimation === it.name;
-
-                    return (
-                      <div
-                        key={it.name}
-                        onClick={() => handleQuickAddCategoryItem(it.name)}
-                        className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none active:scale-[0.98] ${
-                          isAlreadyInList
-                            ? "bg-emerald-50/70 border-emerald-300"
-                            : "bg-white hover:bg-slate-50 active:bg-emerald-50/40 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
-                        } ${isRecentlyClicked ? "ring-2 ring-emerald-500 scale-[1.02]" : ""}`}
-                      >
-                        <div className="flex items-start justify-between gap-1 mb-1.5">
-                          <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
-                            {it.imageUrl ? (
-                              <img
-                                src={it.imageUrl}
-                                alt={it.name}
-                                loading="lazy"
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = "none";
-                                  const fallback = e.currentTarget.parentElement?.querySelector(".emoji-fallback");
-                                  if (fallback) (fallback as HTMLElement).style.display = "inline-block";
-                                }}
-                              />
-                            ) : null}
-                            <span
-                              className="text-2xl emoji-fallback"
-                              style={{ display: it.imageUrl ? "none" : "inline-block" }}
-                            >
-                              {it.icon}
-                            </span>
-                          </div>
-                          {isAlreadyInList ? (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                              <Check className="w-3 h-3 text-emerald-700" />
-                              <span>In List</span>
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                              <Plus className="w-3 h-3" />
-                              <span>Add</span>
-                            </span>
-                          )}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-slate-900 text-xs leading-snug group-hover:text-emerald-900">
-                            {it.name}
-                          </h4>
-                          {it.subtitle && (
-                            <p className="text-[10px] text-emerald-700/80 font-medium truncate mt-0.5">
-                              {it.subtitle}
-                            </p>
-                          )}
-                          <p className="text-[10px] text-slate-400 mt-1">
-                            Ordered {it.orderCount} times
-                          </p>
-                        </div>
+                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{categoryBrowseData.activeCategory?.icon}</span>
+                        <span className="text-sm font-bold text-slate-800">
+                          {categoryBrowseData.activeCategory?.name}
+                        </span>
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                          {categoryBrowseData.activeCategory?.badge}
+                        </span>
                       </div>
-                    );
-                  })
-                )}
-              </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400">
+                          {categoryBrowseData.activeCategory?.items.length} items ordered before
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsCategoryItemsExpanded(false)}
+                          className="text-xs text-slate-500 hover:text-slate-800 active:scale-95 flex items-center gap-0.5 ml-1 px-1.5 py-0.5 rounded hover:bg-slate-100"
+                          title="Collapse items"
+                        >
+                          <span>Hide</span>
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Items Grid (Responsive 2 or 3 columns) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
+                    {categoryBrowseData.isSearch ? (
+                      categoryBrowseData.results.length === 0 ? (
+                        <div className="col-span-full py-8 text-center text-slate-400 text-xs">
+                          No past items matching &ldquo;{categorySearchQuery}&rdquo;. Try typing it in the top input box to add!
+                        </div>
+                      ) : (
+                        categoryBrowseData.results.map(({ item: it, categoryName }) => {
+                          const isAlreadyInList = items.some(
+                            (item) => !item.isDone && item.name.toLowerCase().trim() === it.name.toLowerCase().trim()
+                          );
+                          const isRecentlyClicked = recentlyAddedAnimation === it.name;
+
+                          return (
+                            <div
+                              key={it.name}
+                              onClick={() => handleQuickAddCategoryItem(it.name)}
+                              className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none active:scale-[0.98] ${
+                                isAlreadyInList
+                                  ? "bg-emerald-50/70 border-emerald-300"
+                                  : "bg-white hover:bg-slate-50 active:bg-emerald-50/40 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
+                              } ${isRecentlyClicked ? "ring-2 ring-emerald-500 scale-[1.02]" : ""}`}
+                            >
+                              <div className="flex items-start justify-between gap-1 mb-1.5">
+                                <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
+                                  {it.imageUrl ? (
+                                    <img
+                                      src={it.imageUrl}
+                                      alt={it.name}
+                                      loading="lazy"
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = "none";
+                                        const fallback = e.currentTarget.parentElement?.querySelector(".emoji-fallback");
+                                        if (fallback) (fallback as HTMLElement).style.display = "inline-block";
+                                      }}
+                                    />
+                                  ) : null}
+                                  <span
+                                    className="text-2xl emoji-fallback"
+                                    style={{ display: it.imageUrl ? "none" : "inline-block" }}
+                                  >
+                                    {it.icon}
+                                  </span>
+                                </div>
+                                {isAlreadyInList ? (
+                                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                    <Check className="w-3 h-3 text-emerald-700" />
+                                    <span>In List</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                    <Plus className="w-3 h-3" />
+                                    <span>Add</span>
+                                  </span>
+                                )}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-slate-900 text-xs leading-snug group-hover:text-emerald-900">
+                                  {it.name}
+                                </h4>
+                                {it.subtitle && (
+                                  <p className="text-[10px] text-emerald-700/80 font-medium truncate mt-0.5">
+                                    {it.subtitle}
+                                  </p>
+                                )}
+                                <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
+                                  <span>Ordered {it.orderCount}x</span>
+                                  <span className="text-slate-300">•</span>
+                                  <span className="truncate max-w-[70px]">{categoryName}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )
+                    ) : (
+                      categoryBrowseData.activeCategory?.items.map((it) => {
+                        const isAlreadyInList = items.some(
+                          (item) => !item.isDone && item.name.toLowerCase().trim() === it.name.toLowerCase().trim()
+                        );
+                        const isRecentlyClicked = recentlyAddedAnimation === it.name;
+
+                        return (
+                          <div
+                            key={it.name}
+                            onClick={() => handleQuickAddCategoryItem(it.name)}
+                            className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none active:scale-[0.98] ${
+                              isAlreadyInList
+                                ? "bg-emerald-50/70 border-emerald-300"
+                                : "bg-white hover:bg-slate-50 active:bg-emerald-50/40 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
+                            } ${isRecentlyClicked ? "ring-2 ring-emerald-500 scale-[1.02]" : ""}`}
+                          >
+                            <div className="flex items-start justify-between gap-1 mb-1.5">
+                              <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
+                                {it.imageUrl ? (
+                                  <img
+                                    src={it.imageUrl}
+                                    alt={it.name}
+                                    loading="lazy"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                      const fallback = e.currentTarget.parentElement?.querySelector(".emoji-fallback");
+                                      if (fallback) (fallback as HTMLElement).style.display = "inline-block";
+                                    }}
+                                  />
+                                ) : null}
+                                <span
+                                  className="text-2xl emoji-fallback"
+                                  style={{ display: it.imageUrl ? "none" : "inline-block" }}
+                                >
+                                  {it.icon}
+                                </span>
+                              </div>
+                              {isAlreadyInList ? (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                  <Check className="w-3 h-3 text-emerald-700" />
+                                  <span>In List</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                  <Plus className="w-3 h-3" />
+                                  <span>Add</span>
+                                </span>
+                              )}
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-slate-900 text-xs leading-snug group-hover:text-emerald-900">
+                                {it.name}
+                              </h4>
+                              {it.subtitle && (
+                                <p className="text-[10px] text-emerald-700/80 font-medium truncate mt-0.5">
+                                  {it.subtitle}
+                                </p>
+                              )}
+                              <p className="text-[10px] text-slate-400 mt-1">
+                                Ordered {it.orderCount} times
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Current Items Preview */}
