@@ -68,6 +68,46 @@ export function getCalendarDayDiff(
  */
 export const MIN_PURCHASES_FOR_CADENCE = 3;
 
+// Cached index of delivered purchase dates per order list (WeakMap keyed by order array)
+const ORDER_DELIVERED_INDEX_CACHE = new WeakMap<HouseholdOrder[], Map<string, Date[]>>();
+
+function getOrBuildDeliveredIndex(orders: HouseholdOrder[]): Map<string, Date[]> {
+  const cached = ORDER_DELIVERED_INDEX_CACHE.get(orders);
+  if (cached) return cached;
+
+  const index = new Map<string, Date[]>();
+  for (const order of orders) {
+    if (order.status === "CANCELLED") continue;
+
+    const orderDateStr = order.placedAt || order.deliveredAt;
+    if (!orderDateStr) continue;
+    const orderDate = new Date(orderDateStr);
+    if (isNaN(orderDate.getTime())) continue;
+
+    for (const item of order.items || []) {
+      if (item.status !== "DELIVERED") continue;
+
+      const rawCanon = item.canonicalName || item.name || "";
+      const resolvedCanon = toCanonicalItemName(rawCanon) || toCanonicalItemName(item.name) || rawCanon;
+      const itemCanon = resolvedCanon.toLowerCase().trim();
+
+      const itemDeliveredStr = item.deliveredAt || order.deliveredAt || orderDateStr;
+      const itemDate = new Date(itemDeliveredStr);
+      if (!isNaN(itemDate.getTime())) {
+        let list = index.get(itemCanon);
+        if (!list) {
+          list = [];
+          index.set(itemCanon, list);
+        }
+        list.push(itemDate);
+      }
+    }
+  }
+
+  ORDER_DELIVERED_INDEX_CACHE.set(orders, index);
+  return index;
+}
+
 /**
  * Calculates cadence-aware replenishment intelligence for a canonical item
  * using delivered purchase history.
@@ -86,35 +126,18 @@ export function calculateItemCadence(
   const canonical = toCanonicalItemName(cleanName) || cleanName;
   const targetKey = canonical.toLowerCase().trim();
 
-  // 1. Gather all delivered purchase occurrences for this canonical item
+  // 1. Gather all delivered purchase occurrences for this canonical item via index
+  const index = getOrBuildDeliveredIndex(ordersToUse);
   const deliveredDates: Date[] = [];
 
-  for (const order of ordersToUse) {
-    // Skip cancelled orders
-    if (order.status === "CANCELLED") continue;
-
-    const orderDateStr = order.placedAt || order.deliveredAt;
-    if (!orderDateStr) continue;
-    const orderDate = new Date(orderDateStr);
-    if (isNaN(orderDate.getTime())) continue;
-
-    for (const item of order.items || []) {
-      if (item.status !== "DELIVERED") continue;
-
-      const rawCanon = item.canonicalName || item.name || "";
-      const resolvedCanon = toCanonicalItemName(rawCanon) || toCanonicalItemName(item.name) || rawCanon;
-      const itemCanon = resolvedCanon.toLowerCase().trim();
-
-      if (
-        itemCanon === targetKey ||
-        itemCanon.includes(targetKey) ||
-        targetKey.includes(itemCanon)
-      ) {
-        const itemDeliveredStr = item.deliveredAt || order.deliveredAt || orderDateStr;
-        const itemDate = new Date(itemDeliveredStr);
-        if (!isNaN(itemDate.getTime())) {
-          deliveredDates.push(itemDate);
-        }
+  for (const [itemCanon, dates] of index.entries()) {
+    if (
+      itemCanon === targetKey ||
+      itemCanon.includes(targetKey) ||
+      targetKey.includes(itemCanon)
+    ) {
+      for (let i = 0; i < dates.length; i++) {
+        deliveredDates.push(dates[i]);
       }
     }
   }
