@@ -1,4 +1,12 @@
-import { HouseholdOrder, OrderLineItem, OrderItemStatus, OrderStatus, normalizeOrderStatus, parseQuantityAndCleanName } from "./orderLifecycle";
+import {
+  HouseholdOrder,
+  OrderLineItem,
+  OrderItemStatus,
+  OrderStatus,
+  normalizeOrderStatus,
+  computeOrderStatus,
+  parseQuantityAndCleanName
+} from "./orderLifecycle";
 import { toCanonicalItemName } from "./orderRecency";
 import unifiedOrdersRaw from "../../data/unified_orders.json";
 
@@ -31,7 +39,7 @@ export interface CanonicalItemPurchaseMemory {
 export function normalizeRawOrder(rawOrder: any): HouseholdOrder {
   const orderId = String(rawOrder.order_id || rawOrder.id || `ord-${Math.random().toString(36).slice(2, 8)}`);
   const platform = rawOrder.platform || "Zepto";
-  const status = normalizeOrderStatus(rawOrder.status);
+  const rawStatus = rawOrder.status;
   const placedAt = rawOrder.placed_at || rawOrder.order_date || rawOrder.delivery_date || rawOrder.delivered_at || rawOrder.created_at || new Date().toISOString();
   const totalAmount = Number(rawOrder.total_amount || 0);
 
@@ -48,11 +56,13 @@ export function normalizeRawOrder(rawOrder: any): HouseholdOrder {
       if (s === "CANCELLED" || s === "REFUNDED" || s === "FAILED") itemStatus = "CANCELLED";
       else if (s === "ORDER_PLACED" || s === "PENDING") itemStatus = "ORDER_PLACED";
       else itemStatus = "DELIVERED";
-    } else {
-      // Default to order-level outcome
-      if (status === "CANCELLED") itemStatus = "CANCELLED";
-      else if (status === "ORDER_PLACED") itemStatus = "ORDER_PLACED";
+    } else if (rawStatus) {
+      const parentStatus = normalizeOrderStatus(rawStatus);
+      if (parentStatus === "CANCELLED") itemStatus = "CANCELLED";
+      else if (parentStatus === "ORDER_PLACED") itemStatus = "ORDER_PLACED";
       else itemStatus = "DELIVERED";
+    } else {
+      itemStatus = "DELIVERED";
     }
 
     return {
@@ -69,13 +79,19 @@ export function normalizeRawOrder(rawOrder: any): HouseholdOrder {
     };
   });
 
+  const finalStatus: OrderStatus = rawStatus
+    ? normalizeOrderStatus(rawStatus)
+    : items.length > 0
+    ? computeOrderStatus(items)
+    : "DELIVERED";
+
   return {
     orderId,
     orderCode: rawOrder.order_code,
     platform,
-    status,
+    status: finalStatus,
     placedAt,
-    deliveredAt: status === "DELIVERED" ? (rawOrder.delivered_at || placedAt) : undefined,
+    deliveredAt: finalStatus === "DELIVERED" ? (rawOrder.delivered_at || placedAt) : undefined,
     totalAmount,
     itemsCount: items.length,
     items,

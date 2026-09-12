@@ -80,7 +80,8 @@ import {
 import {
   getDefaultHistoricalOrders,
   getCanonicalPurchaseMemory,
-  isItemInActiveOrder
+  isItemInActiveOrder,
+  normalizeRawOrder
 } from "../lib/purchaseMemory";
 import {
   evaluateHandoffNotification,
@@ -273,6 +274,29 @@ export default function GroceryAssistantApp() {
           } else if (payload.eventType === "DELETE") {
             const oldId = (payload.old as { id: string }).id;
             setItems((prev) => prev.filter((x) => x.id !== oldId));
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "household_orders" },
+        (payload) => {
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            const incoming = normalizeRawOrder(payload.new);
+            setOrders((prev) => {
+              const existingIdx = prev.findIndex((o) => o.orderId === incoming.orderId);
+              if (existingIdx >= 0) {
+                const next = [...prev];
+                next[existingIdx] = incoming;
+                return next;
+              }
+              return [incoming, ...prev];
+            });
+          } else if (payload.eventType === "DELETE") {
+            const oldId = (payload.old as { order_id?: string; id?: string }).order_id || (payload.old as any).id;
+            if (oldId) {
+              setOrders((prev) => prev.filter((o) => o.orderId !== oldId));
+            }
           }
         }
       )
