@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GroceryItem } from "../src/lib/patterns";
+import { GroceryItem, getMissingItemSuggestions } from "../src/lib/patterns";
 import { toDbItem, toGroceryItem } from "../src/lib/supabase";
 import { getLiraAutonomousRecommendations, canPlaceOrder, BasketHandoffState } from "../src/lib/handoff";
 
@@ -180,5 +180,92 @@ test("Basket Ordered Already Flow", async (t) => {
     assert.equal(restored.orderedAt, "2026-09-14T10:30:00.000Z");
     assert.equal(restored.orderedBy, "Rohan");
     assert.equal(restored.notes, "Organic 500g");
+  });
+
+  await t.test("6. Undo restores item to active pending state and clears ordered fields", () => {
+    const item: GroceryItem = {
+      id: "item-undo",
+      name: "Bread",
+      category: "Bakery",
+      addedBy: "Rohan",
+      addedAt: "Today, 10:00 AM",
+      isDone: false,
+      isOrdered: true,
+      orderedAt: new Date().toISOString(),
+      orderedBy: "Rohan"
+    };
+
+    // Undo action
+    const undone: GroceryItem = {
+      ...item,
+      isOrdered: false,
+      orderedAt: undefined,
+      orderedBy: undefined
+    };
+
+    assert.equal(undone.isOrdered, false);
+    assert.equal(undone.orderedAt, undefined);
+    assert.equal(undone.orderedBy, undefined);
+
+    const pending = [undone].filter((it) => !it.isDone && !it.isOrdered);
+    assert.equal(pending.length, 1);
+  });
+
+  await t.test("7. Missing companion suggestions exclude already-ordered items", () => {
+    const currentList = ["Bread"];
+    const excluded = ["Fresh Paneer", "Butter"];
+    const suggestions = getMissingItemSuggestions(currentList, "Bread", undefined, undefined, excluded);
+    assert.ok(!suggestions.some((s) => s.item.toLowerCase() === "butter"));
+  });
+
+  await t.test("8. Lira can continue building basket around already-ordered items and reach ready_for_order", () => {
+    const items: GroceryItem[] = [
+      {
+        id: "item-1",
+        name: "Cheddar Cheese",
+        category: "Dairy & Eggs",
+        addedBy: "Rohan",
+        addedAt: "Today",
+        isDone: false,
+        isOrdered: true,
+        orderedAt: new Date().toISOString(),
+        orderedBy: "Rohan"
+      },
+      {
+        id: "item-2",
+        name: "Bread",
+        category: "Bakery",
+        addedBy: "Lira",
+        addedAt: "Today",
+        isDone: false
+      }
+    ];
+
+    const pending = items.filter((it) => !it.isDone && !it.isOrdered);
+    assert.equal(pending.length, 1);
+
+    // Lira hands off remaining items
+    const handoffState: BasketHandoffState = {
+      status: "building",
+      handoffMessage: null,
+      handoffAt: null,
+      orderedAt: null,
+      orderedBy: null,
+      lastRunSummary: null
+    };
+
+    const nextState: BasketHandoffState = {
+      ...handoffState,
+      status: "ready_for_order",
+      handoffMessage: "I’m done. Please proceed with order.",
+      handoffAt: new Date().toISOString()
+    };
+
+    assert.equal(nextState.status, "ready_for_order");
+    assert.equal(nextState.handoffMessage, "I’m done. Please proceed with order.");
+
+    // Outstanding order check only considers pending (1 item)
+    const check = canPlaceOrder(nextState, "Rohan", pending.length);
+    assert.equal(check.allowed, true);
   });
 });

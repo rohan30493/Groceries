@@ -122,6 +122,20 @@ function formatEventTime(isoStringOrText?: string): string {
   }
 }
 
+// Helper to format item ordered timestamp (e.g. "Ordered 14 Sep, 10:42 AM" or "Ordered today, 10:42 AM")
+function formatItemOrderedTime(isoStringOrText?: string): string {
+  if (!isoStringOrText) return "Ordered recently";
+  try {
+    const d = new Date(isoStringOrText);
+    if (isNaN(d.getTime())) return `Ordered ${isoStringOrText}`;
+    const timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const dateStr = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+    return `Ordered ${dateStr}, ${timeStr}`;
+  } catch {
+    return `Ordered ${isoStringOrText}`;
+  }
+}
+
 // Helper to check if an item was ordered within the past 24 hours (1 day retention)
 function isWithin24Hours(isoStringOrDate?: string): boolean {
   if (!isoStringOrDate) return false;
@@ -407,6 +421,11 @@ export default function GroceryAssistantApp() {
     return items.filter((it) => !it.isDone && !it.isOrdered).map((it) => it.name);
   }, [items]);
 
+  // Names of items ordered by user within recent retention (to suppress companion suggestions)
+  const orderedItemNames = useMemo(() => {
+    return items.filter((it) => !it.isDone && it.isOrdered && isWithin24Hours(it.orderedAt)).map((it) => it.name);
+  }, [items]);
+
   // Intelligent Pattern Suggestions (reactively calculated from current active items + last added item + cadence replenishment)
   const patternSuggestions = useMemo(() => {
     if (currentItemNames.length === 0) return [];
@@ -414,10 +433,11 @@ export default function GroceryAssistantApp() {
       currentItemNames,
       lastAddedItem,
       orders,
-      activeOrders
+      activeOrders,
+      orderedItemNames
     );
     return rawSuggestions.filter((s) => !dismissedSuggestions.has(s.item.toLowerCase()));
-  }, [currentItemNames, lastAddedItem, dismissedSuggestions, orders, activeOrders]);
+  }, [currentItemNames, lastAddedItem, dismissedSuggestions, orders, activeOrders, orderedItemNames]);
 
   // Real-time preview of parsed items from text/speech
   const detectedPreview = useMemo(() => {
@@ -1317,12 +1337,19 @@ export default function GroceryAssistantApp() {
             {/* ========================================================================= */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <span>Your Basket</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Your Basket
+                  </h3>
                   <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    {pendingItems.length} items
+                    {pendingItems.length} {pendingItems.length === 1 ? "item" : "items"}
                   </span>
-                </h3>
+                  {recentlyOrderedItems.length > 0 && (
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                      {recentlyOrderedItems.length} already ordered
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={() => setActiveTab("rohan")}
                   className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
@@ -1360,10 +1387,16 @@ export default function GroceryAssistantApp() {
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             <span className="text-[10px] text-slate-400">{it.category}</span>
                             {isItemOrdered ? (
-                              <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                                <span>{it.orderedBy || "Rohan"} ordered already • {formatEventTime(it.orderedAt)}</span>
-                              </span>
+                              <div className="flex items-center gap-1.5 flex-wrap text-xs">
+                                <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                  <span>✓ Rohan ordered already</span>
+                                </span>
+                                <span className="text-slate-300">•</span>
+                                <span className="text-slate-500 font-normal">
+                                  {formatItemOrderedTime(it.orderedAt)}
+                                </span>
+                              </div>
                             ) : (
                               <span className="text-[10px] text-slate-400">
                                 • Added {formatEventTime(it.createdAt || it.addedAt)}
@@ -1390,7 +1423,7 @@ export default function GroceryAssistantApp() {
                               title="Mark as ordered already"
                             >
                               <Check className="w-3 h-3 text-emerald-600" />
-                              <span className="hidden sm:inline">Ordered Already</span>
+                              <span className="hidden sm:inline">Mark as Ordered</span>
                               <span className="sm:hidden">Ordered</span>
                             </button>
                           )}
@@ -1840,7 +1873,8 @@ export default function GroceryAssistantApp() {
                         &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
                       </p>
                       <p className="text-xs text-slate-600 mt-0.5">
-                        Lira has finalized the basket with {pendingItems.length} items
+                        Lira has finalized the basket with {pendingItems.length} items still to order
+                        {recentlyOrderedItems.length > 0 ? ` (${recentlyOrderedItems.length} already ordered independently)` : ""}
                         {estimateBasketValue(pendingItems) ? ` (Est. ₹${estimateBasketValue(pendingItems)})` : ""}.
                         Please review items below and place the order.
                       </p>
@@ -1876,7 +1910,8 @@ export default function GroceryAssistantApp() {
                         </span>
                       </div>
                       <p className="text-xs text-amber-900 font-medium mt-1">
-                        Lira is autonomously building and refining the basket ({pendingItems.length} items so far). When finished, Lira will say:
+                        Lira is autonomously building and refining the basket ({pendingItems.length} items so far
+                        {recentlyOrderedItems.length > 0 ? `, ${recentlyOrderedItems.length} already ordered` : ""}). When finished, Lira will say:
                       </p>
                       <p className="text-xs font-bold text-amber-950 mt-0.5 italic">
                         &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
@@ -1939,9 +1974,16 @@ export default function GroceryAssistantApp() {
                   <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
                     Running Grocery Checklist
                   </span>
-                  <h2 className="text-xl font-bold text-slate-900">
-                    {pendingItems.length} Items to Order / Buy
-                  </h2>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-xl font-bold text-slate-900">
+                      {pendingItems.length} {pendingItems.length === 1 ? "Item" : "Items"} to Order / Buy
+                    </h2>
+                    {recentlyOrderedItems.length > 0 && (
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                        {recentlyOrderedItems.length} already ordered
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -2086,7 +2128,7 @@ export default function GroceryAssistantApp() {
                               title="Mark as ordered already by Rohan"
                             >
                               <Check className="w-3 h-3 text-emerald-600" />
-                              <span className="hidden sm:inline">Ordered Already</span>
+                              <span className="hidden sm:inline">Mark as Ordered</span>
                               <span className="sm:hidden">Ordered</span>
                             </button>
                             <button
@@ -2137,10 +2179,16 @@ export default function GroceryAssistantApp() {
                           <span className="text-sm line-through text-slate-400 font-normal block leading-snug truncate">
                             {item.name}
                           </span>
-                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-emerald-800 font-medium">
-                            <span>{item.orderedBy || "Rohan"} ordered already • {formatEventTime(item.orderedAt)}</span>
+                          <div className="flex items-center gap-2 mt-0.5 text-xs text-emerald-800 flex-wrap">
+                            <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                              ✓ Rohan ordered already
+                            </span>
                             <span className="text-slate-300">•</span>
-                            <span className="text-slate-400 font-normal">{item.category}</span>
+                            <span className="text-slate-500 font-normal">
+                              {formatItemOrderedTime(item.orderedAt)}
+                            </span>
+                            <span className="text-slate-300">•</span>
+                            <span className="text-slate-400 font-normal text-[10px]">{item.category}</span>
                           </div>
                         </div>
                       </div>

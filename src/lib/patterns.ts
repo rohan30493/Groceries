@@ -232,7 +232,8 @@ export function getMissingItemSuggestions(
   currentList: string[],
   lastAddedItem?: string | null,
   orders?: HouseholdOrder[],
-  activeOrders?: HouseholdOrder[]
+  activeOrders?: HouseholdOrder[],
+  excludedItems?: string[]
 ): CompanionSuggestion[] {
   // Never show suggestions on empty list - only when items have been added!
   if (!currentList || currentList.length === 0) {
@@ -240,6 +241,7 @@ export function getMissingItemSuggestions(
   }
 
   const currentLowerSet = new Set(currentList.map((x) => x.toLowerCase().trim()));
+  const excludedLowerSet = new Set((excludedItems || []).map((x) => x.toLowerCase().trim()));
   const suggestionsMap = new Map<string, CompanionSuggestion>();
 
   // Helper to check if item is already in list
@@ -253,6 +255,17 @@ export function getMissingItemSuggestions(
     return false;
   };
 
+  // Helper to check if item is in excluded items (e.g. already ordered by user)
+  const isAlreadyExcluded = (candidate: string) => {
+    const cLower = candidate.toLowerCase().trim();
+    for (const excl of excludedLowerSet) {
+      if (excl.includes(cLower) || cLower.includes(excl)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   // Helper to check if item is in active order (suppress from recommendations)
   const isAlreadyInActiveOrder = (candidate: string) => {
     if (!activeOrders || activeOrders.length === 0) return false;
@@ -260,7 +273,7 @@ export function getMissingItemSuggestions(
   };
 
   const isExcluded = (candidate: string) => {
-    return isAlreadyInList(candidate) || isAlreadyInActiveOrder(candidate);
+    return isAlreadyInList(candidate) || isAlreadyExcluded(candidate) || isAlreadyInActiveOrder(candidate);
   };
 
   // Prioritize last added item first if available

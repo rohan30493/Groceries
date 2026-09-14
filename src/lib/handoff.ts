@@ -256,7 +256,8 @@ export function getLiraAutonomousRecommendations(
       currentItems.filter((it) => !it.isDone && !it.isOrdered).map((it) => it.name),
       null,
       ordersHistory,
-      activeOrders
+      activeOrders,
+      Array.from(orderedSet)
     );
     for (const sug of rawSuggestions) {
       const key = sug.item.toLowerCase().trim();
