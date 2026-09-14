@@ -24,12 +24,18 @@ export interface DbGroceryItem {
 export function toGroceryItem(db: DbGroceryItem): GroceryItem {
   let purchasedAt: string | undefined = undefined;
   let customNote: string | undefined = db.notes || undefined;
+  let isOrdered: boolean | undefined = undefined;
+  let orderedAt: string | undefined = undefined;
+  let orderedBy: "Rohan" | "Lira" | undefined = undefined;
 
   if (db.notes && db.notes.startsWith("{") && db.notes.endsWith("}")) {
     try {
       const parsed = JSON.parse(db.notes);
       if (parsed.purchased_at) purchasedAt = parsed.purchased_at;
       if (parsed.user_note !== undefined) customNote = parsed.user_note;
+      if (parsed.is_ordered !== undefined) isOrdered = Boolean(parsed.is_ordered);
+      if (parsed.ordered_at) orderedAt = parsed.ordered_at;
+      if (parsed.ordered_by) orderedBy = parsed.ordered_by;
     } catch {
       // plain text notes
     }
@@ -44,15 +50,21 @@ export function toGroceryItem(db: DbGroceryItem): GroceryItem {
     isDone: db.is_done,
     purchasedAt: purchasedAt,
     createdAt: db.created_at,
-    notes: customNote
+    notes: customNote,
+    isOrdered,
+    orderedAt,
+    orderedBy
   };
 }
 
 export function toDbItem(item: GroceryItem): DbGroceryItem {
-  // Store structured metadata such as purchased_at inside notes JSON cleanly
+  // Store structured metadata such as purchased_at and ordered info inside notes JSON cleanly
   const notesPayload = JSON.stringify({
     purchased_at: item.purchasedAt || null,
-    user_note: item.notes || null
+    user_note: item.notes || null,
+    is_ordered: item.isOrdered || null,
+    ordered_at: item.orderedAt || null,
+    ordered_by: item.orderedBy || null
   });
 
   return {

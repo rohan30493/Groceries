@@ -122,6 +122,20 @@ function formatEventTime(isoStringOrText?: string): string {
   }
 }
 
+// Helper to check if an item was ordered within the past 24 hours (1 day retention)
+function isWithin24Hours(isoStringOrDate?: string): boolean {
+  if (!isoStringOrDate) return false;
+  try {
+    const d = new Date(isoStringOrDate);
+    const time = d.getTime();
+    if (isNaN(time)) return false;
+    const diff = Date.now() - time;
+    return diff >= 0 && diff <= 24 * 60 * 60 * 1000;
+  } catch {
+    return false;
+  }
+}
+
 // Helpers for Order History formatting: "Sep 12 · ₹2,840"
 function formatOrderHeaderDate(isoDateOrStr?: string): string {
   if (!isoDateOrStr) return "Recent Order";
@@ -192,7 +206,7 @@ export default function GroceryAssistantApp() {
   const [browserNotificationPermission, setBrowserNotificationPermission] = useState<NotificationPermissionStatus>("default");
 
   // Collapsible section states to minimize visual clutter in Lira's view
-  const [isRecommendationsExpanded, setIsRecommendationsExpanded] = useState<boolean>(true);
+  const [isRecommendationsExpanded, setIsRecommendationsExpanded] = useState<boolean>(false);
   const [isCategoryItemsExpanded, setIsCategoryItemsExpanded] = useState<boolean>(false);
 
   // Load from localStorage on mount & sync with Supabase in real time
@@ -364,7 +378,23 @@ export default function GroceryAssistantApp() {
   }, [handoffState]);
 
   // Derived filtered subsets
-  const pendingItems = useMemo(() => items.filter((it) => !it.isDone), [items]);
+  // pendingItems: items that need to be bought/ordered (excludes done and already ordered)
+  const pendingItems = useMemo(() => items.filter((it) => !it.isDone && !it.isOrdered), [items]);
+
+  // basketItems: all items visible in "Your Basket" (pending items + items marked as ordered within the last 24 hours)
+  const basketItems = useMemo(() => {
+    return items.filter((it) => {
+      if (it.isDone) return false;
+      if (!it.isOrdered) return true;
+      return isWithin24Hours(it.orderedAt);
+    });
+  }, [items]);
+
+  // Items marked as ordered within 24 hours (for checklist reference)
+  const recentlyOrderedItems = useMemo(() => {
+    return items.filter((it) => !it.isDone && it.isOrdered && isWithin24Hours(it.orderedAt));
+  }, [items]);
+
   const completedItems = useMemo(() => items.filter((it) => it.isDone), [items]);
 
   // Active orders in flight (ORDER_PLACED)
@@ -374,7 +404,7 @@ export default function GroceryAssistantApp() {
 
   // Current active (pending) item names for pattern matching
   const currentItemNames = useMemo(() => {
-    return items.filter((it) => !it.isDone).map((it) => it.name);
+    return items.filter((it) => !it.isDone && !it.isOrdered).map((it) => it.name);
   }, [items]);
 
   // Intelligent Pattern Suggestions (reactively calculated from current active items + last added item + cadence replenishment)
@@ -678,6 +708,46 @@ export default function GroceryAssistantApp() {
       setItems((prev) =>
         prev.map((it) => (it.id === id ? updated : it))
       );
+      upsertGroceryItem(updated);
+    }
+  };
+
+  // Mark an item as already ordered (e.g. by Rohan prior to Lira finishing)
+  // Item remains visible with strikethrough for 24 hours
+  const handleMarkAsOrdered = (id: string, orderedBy: "Rohan" | "Lira" = "Rohan") => {
+    const target = items.find((it) => it.id === id);
+    if (target) {
+      const nowIso = new Date().toISOString();
+      const updated: GroceryItem = {
+        ...target,
+        isOrdered: true,
+        orderedAt: nowIso,
+        orderedBy: orderedBy
+      };
+      setItems((prev) =>
+        prev.map((it) => (it.id === id ? updated : it))
+      );
+      const remainingPending = items.filter((it) => it.id !== id && !it.isDone && !it.isOrdered).length;
+      setHandoffState((hPrev) => registerBasketActivity(hPrev, remainingPending));
+      upsertGroceryItem(updated);
+    }
+  };
+
+  // Undo marking an item as ordered, restoring it to pending
+  const handleUndoOrdered = (id: string) => {
+    const target = items.find((it) => it.id === id);
+    if (target) {
+      const updated: GroceryItem = {
+        ...target,
+        isOrdered: false,
+        orderedAt: undefined,
+        orderedBy: undefined
+      };
+      setItems((prev) =>
+        prev.map((it) => (it.id === id ? updated : it))
+      );
+      const remainingPending = items.filter((it) => !it.isDone && (!it.isOrdered || it.id === id)).length;
+      setHandoffState((hPrev) => registerBasketActivity(hPrev, remainingPending));
       upsertGroceryItem(updated);
     }
   };
@@ -1261,38 +1331,83 @@ export default function GroceryAssistantApp() {
                 </button>
               </div>
 
-              {pendingItems.length === 0 ? (
+              {basketItems.length === 0 ? (
                 <p className="text-sm text-slate-400 text-center py-6">
                   Your basket is empty. Add recommended items above, type below, or browse staples.
                 </p>
               ) : (
-                pendingItems.map((it) => {
-                  const isDeleting = deletingItemIds.has(it.id);
-                  return (
-                    <div
-                      key={it.id}
-                      className={`py-2.5 flex items-center justify-between transition-all ${
-                        isDeleting ? "item-delete-exit" : ""
-                      }`}
-                    >
-                      <div>
-                        <span className="text-base font-medium text-slate-800">{it.name}</span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-slate-400">{it.category}</span>
-                          <span className="text-[10px] text-slate-400">• Added {formatEventTime(it.createdAt || it.addedAt)}</span>
+                <div className="divide-y divide-slate-100">
+                  {basketItems.map((it) => {
+                    const isDeleting = deletingItemIds.has(it.id);
+                    const isItemOrdered = Boolean(it.isOrdered);
+                    return (
+                      <div
+                        key={it.id}
+                        className={`py-2.5 flex items-center justify-between gap-2 transition-all ${
+                          isDeleting ? "item-delete-exit" : ""
+                        } ${isItemOrdered ? "bg-slate-50/60 -mx-2 px-2 rounded-xl" : ""}`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <span
+                            className={`text-base font-medium block truncate transition-all ${
+                              isItemOrdered
+                                ? "line-through text-slate-400 font-normal"
+                                : "text-slate-800"
+                            }`}
+                          >
+                            {it.name}
+                          </span>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            <span className="text-[10px] text-slate-400">{it.category}</span>
+                            {isItemOrdered ? (
+                              <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                                <span>{it.orderedBy || "Rohan"} ordered already • {formatEventTime(it.orderedAt)}</span>
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-slate-400">
+                                • Added {formatEventTime(it.createdAt || it.addedAt)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isItemOrdered ? (
+                            <button
+                              type="button"
+                              onClick={() => handleUndoOrdered(it.id)}
+                              className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition-all"
+                              title="Undo ordered status"
+                            >
+                              Undo
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleMarkAsOrdered(it.id, "Rohan")}
+                              className="px-2.5 py-1 text-xs font-medium text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 active:scale-95 rounded-lg transition-all flex items-center gap-1"
+                              title="Mark as ordered already"
+                            >
+                              <Check className="w-3 h-3 text-emerald-600" />
+                              <span className="hidden sm:inline">Ordered Already</span>
+                              <span className="sm:hidden">Ordered</span>
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => deleteItem(it.id)}
+                            className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all rounded-lg"
+                            title="Remove"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => deleteItem(it.id)}
-                        className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all"
-                        title="Remove"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                })
+                    );
+                  })}
+                </div>
               )}
 
               {/* Lira Ready Callout at bottom of basket */}
@@ -1963,11 +2078,21 @@ export default function GroceryAssistantApp() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleMarkAsOrdered(item.id, "Rohan")}
+                              className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-800 font-semibold text-xs rounded-lg transition-all flex items-center gap-1"
+                              title="Mark as ordered already by Rohan"
+                            >
+                              <Check className="w-3 h-3 text-emerald-600" />
+                              <span className="hidden sm:inline">Ordered Already</span>
+                              <span className="sm:hidden">Ordered</span>
+                            </button>
                             <button
                               type="button"
                               onClick={() => toggleItemDone(item.id)}
-                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-800 font-semibold text-xs rounded-lg transition-all"
+                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-semibold text-xs rounded-lg transition-all"
                             >
                               Mark Done
                             </button>
@@ -1986,6 +2111,60 @@ export default function GroceryAssistantApp() {
                   </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Recently Ordered Items Section (Items marked ordered in the past 24 hours) */}
+            {recentlyOrderedItems.length > 0 && (
+              <div className="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-200/90 shadow-2xs">
+                <div className="flex items-center justify-between mb-2.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>Ordered Already ({recentlyOrderedItems.length})</span>
+                  </h3>
+                  <span className="text-[11px] text-emerald-700 font-medium">
+                    Kept in basket for 24 hours
+                  </span>
+                </div>
+                <div className="divide-y divide-emerald-100/80">
+                  {recentlyOrderedItems.map((item) => (
+                    <div key={item.id} className="py-2.5 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <div className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                          <Check className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm line-through text-slate-400 font-normal block leading-snug truncate">
+                            {item.name}
+                          </span>
+                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-emerald-800 font-medium">
+                            <span>{item.orderedBy || "Rohan"} ordered already • {formatEventTime(item.orderedAt)}</span>
+                            <span className="text-slate-300">•</span>
+                            <span className="text-slate-400 font-normal">{item.category}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleUndoOrdered(item.id)}
+                          className="text-xs text-emerald-800 hover:text-emerald-950 bg-white hover:bg-emerald-100/80 active:scale-95 px-2.5 py-1 font-semibold rounded-lg border border-emerald-200 transition-all"
+                          title="Restore item to pending list"
+                        >
+                          Undo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteItem(item.id)}
+                          className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all rounded-lg"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

@@ -200,13 +200,32 @@ export function getLiraAutonomousRecommendations(
   activeOrders?: HouseholdOrder[],
   ordersHistory?: HouseholdOrder[]
 ): AutonomousRecommendation[] {
-  const currentItemNames = currentItems.filter((it) => !it.isDone).map((it) => it.name.toLowerCase().trim());
+  const currentItemNames = currentItems
+    .filter((it) => !it.isDone && !it.isOrdered)
+    .map((it) => it.name.toLowerCase().trim());
   const existingSet = new Set(currentItemNames);
+
+  // Set of items already ordered by user within recent retention
+  const orderedSet = new Set(
+    currentItems
+      .filter((it) => !it.isDone && it.isOrdered)
+      .map((it) => it.name.toLowerCase().trim())
+  );
 
   const isAlreadyInBasket = (candidate: string) => {
     const cLower = candidate.toLowerCase().trim();
     for (const inList of existingSet) {
       if (inList.includes(cLower) || cLower.includes(inList)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const isAlreadyOrdered = (candidate: string) => {
+    const cLower = candidate.toLowerCase().trim();
+    for (const orderedItem of orderedSet) {
+      if (orderedItem.includes(cLower) || cLower.includes(orderedItem)) {
         return true;
       }
     }
@@ -219,7 +238,7 @@ export function getLiraAutonomousRecommendations(
   };
 
   const isExcluded = (candidate: string) => {
-    return isAlreadyInBasket(candidate) || isAlreadyInActiveOrder(candidate);
+    return isAlreadyInBasket(candidate) || isAlreadyOrdered(candidate) || isAlreadyInActiveOrder(candidate);
   };
 
   interface ScoredCandidate {
@@ -234,7 +253,7 @@ export function getLiraAutonomousRecommendations(
   // 1. Check companion suggestions for current basket items (already cadence-ranked)
   if (currentItems.length > 0) {
     const rawSuggestions = getMissingItemSuggestions(
-      currentItems.filter((it) => !it.isDone).map((it) => it.name),
+      currentItems.filter((it) => !it.isDone && !it.isOrdered).map((it) => it.name),
       null,
       ordersHistory,
       activeOrders

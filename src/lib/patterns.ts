@@ -27,6 +27,9 @@ export interface GroceryItem {
   purchasedAt?: string;
   createdAt?: string;
   notes?: string;
+  isOrdered?: boolean;
+  orderedAt?: string;
+  orderedBy?: "Rohan" | "Lira";
 }
 
 export interface PatternRules {
