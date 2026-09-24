@@ -5,7 +5,7 @@
     "icon": "🥦",
     "badge": "Fresh Daily",
     "description": "Fresh produce, greens & fruits",
-    "itemCount": 27,
+    "itemCount": 28,
     "items": [
       {
         "name": "Tomatoes",
@@ -170,6 +170,13 @@
         "icon": "🥝",
         "orderCount": 3,
         "imageUrl": "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/bfa092fc-a1fe-4ac3-9e8a-41558650e414.jpeg"
+      },
+      {
+        "name": "Brinjal / Eggplant",
+        "icon": "🍆",
+        "orderCount": 34,
+        "subtitle": "Purple / Bharta",
+        "imageUrl": "https://d69ugcdrlg41w.cloudfront.net/d71cbab1-3b8c-4ef2-90e1-cf8f75b097c2.jpg"
       }
     ]
   },

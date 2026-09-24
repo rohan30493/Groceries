@@ -49,7 +49,8 @@ TARGET_TAXONOMY = [
             {"name": "French Beans", "icon": "🫛", "keywords": ["french bean", "haricot", "green beans"], "exclude": ["cluster beans", "broad beans", "soya beans", "kidney beans"]},
             {"name": "Pomegranate", "icon": "🍒", "keywords": ["pomegranate", "anar"], "exclude": ["juice"]},
             {"name": "Mandarin Orange", "icon": "🍊", "keywords": ["mandarin", "orange mini mandarin", "kinnow", "santra", "tangerine"], "exclude": ["juice", "carbonated", "soft drink", "cleaner"]},
-            {"name": "Kiwi", "icon": "🥝", "keywords": ["kiwi"], "exclude": []}
+            {"name": "Kiwi", "icon": "🥝", "keywords": ["kiwi"], "exclude": []},
+            {"name": "Brinjal / Eggplant", "icon": "🍆", "subtitle": "Purple / Bharta", "keywords": ["brinjal", "eggplant", "baingan", "badanekaayi"], "exclude": []}
         ]
     },
     {

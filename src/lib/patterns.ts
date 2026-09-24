@@ -172,7 +172,7 @@ export function detectCategory(itemName: string): string {
   if (lower.includes("paneer") || lower.includes("milk") || lower.includes("curd") || lower.includes("cheese") || lower.includes("dahi") || lower.includes("egg") || lower.includes("butter") || lower.includes("batter") || lower.includes("bread") || lower.includes("pav")) {
     return "Dairy, Bread & Eggs";
   }
-  if (lower.includes("gobi") || lower.includes("palak") || lower.includes("methi") || lower.includes("bhindi") || lower.includes("onion") || lower.includes("tomato") || lower.includes("potato") || lower.includes("chilli") || lower.includes("carrot") || lower.includes("beans") || lower.includes("cucumber") || lower.includes("lettuce") || lower.includes("lauki") || lower.includes("ghea") || lower.includes("tori") || lower.includes("thori") || lower.includes("fruit") || lower.includes("apple") || lower.includes("banana")) {
+  if (lower.includes("gobi") || lower.includes("palak") || lower.includes("methi") || lower.includes("bhindi") || lower.includes("onion") || lower.includes("tomato") || lower.includes("potato") || lower.includes("chilli") || lower.includes("carrot") || lower.includes("beans") || lower.includes("cucumber") || lower.includes("lettuce") || lower.includes("lauki") || lower.includes("ghea") || lower.includes("tori") || lower.includes("thori") || lower.includes("brinjal") || lower.includes("baingan") || lower.includes("eggplant") || lower.includes("badanekaayi") || lower.includes("fruit") || lower.includes("apple") || lower.includes("banana")) {
     return "Fruits & Vegetables";
   }
   if (lower.includes("atta") || lower.includes("flour") || lower.includes("dal") || lower.includes("rice") || lower.includes("oil") || lower.includes("ghee") || lower.includes("rajma") || lower.includes("chana") || lower.includes("besan") || lower.includes("poha") || lower.includes("suji")) {
@@ -210,13 +210,14 @@ const GROCERY_VOCABULARY = [
   "pasta sauce", "hot sauce", "soy sauce", "sleepy owl", "roasted peanuts",
   "cat food", "cat poop bags", "toilet paper", "kitchen roll", "glass cleaner",
   "laundry detergent", "floor cleaner", "handwash liquid", "facial tissues", "dosa batter",
-  "idli batter", "cheddar cheese", "shredded cheese",
+  "idli batter", "cheddar cheese", "shredded cheese", "bharta brinjal", "purple brinjal",
 
   // Single word items
   "tomatoes", "tomato", "onions", "onion", "bananas", "banana", "potatoes", "potato",
   "cauliflower", "gobi", "carrots", "carrot", "cucumber", "palak", "spinach", "lemons",
   "lemon", "coriander", "dhaniya", "garlic", "apples", "apple", "lettuce", "ginger",
   "capsicum", "cabbage", "bhindi", "tori", "lauki", "broccoli", "mushrooms", "mushroom",
+  "brinjal", "baingan", "eggplant",
   "pomegranate", "kiwi", "milk", "paneer", "curd", "dahi", "eggs", "egg", "butter",
   "ghee", "buttermilk", "skyr", "cheese", "bread", "atta", "rice", "rajma", "besan",
   "poha", "suji", "semolina", "vermicelli", "seviyan", "oats", "sugar", "salt",
