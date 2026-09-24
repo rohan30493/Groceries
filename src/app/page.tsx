@@ -39,7 +39,9 @@ import {
   patternRules,
   CATEGORY_SECTIONS as DEFAULT_CATEGORY_SECTIONS,
   CategorySection,
-  CategoryItemDef
+  CategoryItemDef,
+  getItemVisual,
+  CATEGORY_ICONS
 } from "../lib/patterns";
 import {
   supabase,
@@ -157,7 +159,12 @@ function formatOrderHeaderDate(isoDateOrStr?: string): string {
   try {
     const d = new Date(isoDateOrStr);
     if (isNaN(d.getTime())) return isoDateOrStr;
-    return d.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+    const isCurrentYear = d.getFullYear() === new Date().getFullYear();
+    return d.toLocaleDateString("en-IN", {
+      month: "short",
+      day: "numeric",
+      ...(!isCurrentYear && { year: "numeric" })
+    });
   } catch {
     return isoDateOrStr;
   }
@@ -480,10 +487,11 @@ export default function GroceryAssistantApp() {
     return getLiraAutonomousRecommendations(items, 6, activeOrders, orders);
   }, [items, activeOrders, orders]);
 
-  // Filtered orders for Order History tab
+  // Filtered orders for Order History tab (excluding any empty records)
   const filteredOrders = useMemo(() => {
-    if (ordersFilter === "ALL") return orders;
-    return orders.filter((o) => o.status === ordersFilter);
+    const validOrders = orders.filter((o) => o.items && o.items.length > 0);
+    if (ordersFilter === "ALL") return validOrders;
+    return validOrders.filter((o) => o.status === ordersFilter);
   }, [orders, ordersFilter]);
 
   // Current active builder person ("Lira" or "Rhythm")
@@ -1770,12 +1778,13 @@ export default function GroceryAssistantApp() {
                       : filter === "DELIVERED"
                       ? "Delivered"
                       : "Cancelled";
+                  const validOrders = orders.filter((o) => o.items && o.items.length > 0);
                   const count =
                     filter === "ALL"
-                      ? orders.length
+                      ? validOrders.length
                       : filter === "ORDER_PLACED"
                       ? activeOrders.length
-                      : orders.filter((o) => o.status === filter).length;
+                      : validOrders.filter((o) => o.status === filter).length;
 
                   return (
                     <button

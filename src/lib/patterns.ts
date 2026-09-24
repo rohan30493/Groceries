@@ -60,13 +60,104 @@ export interface CategorySection {
 export const patternRules: PatternRules = patternRulesRaw as unknown as PatternRules;
 export const CATEGORY_SECTIONS: CategorySection[] = categorySectionsRaw as unknown as CategorySection[];
 
-// Fast lookup map for canonical categories
+export const CATEGORY_ICONS: Record<string, string> = {
+  "Fruits & Vegetables": "🥦",
+  "Dairy, Bread & Eggs": "🥛",
+  "Atta, Rice, Oil & Dals": "🌾",
+  "Masala & Dry Fruits": "🌶️",
+  "Breakfast & Sauces": "🥣",
+  "Tea, Coffee & Drinks": "☕",
+  "Tea, Coffee & Beverages": "☕",
+  "Munchies & Biscuits": "🍿",
+  "Munchies & Snacks": "🍿",
+  "Pet Care & Household": "🐾",
+  "Other Items": "🛒"
+};
+
+export interface ItemVisual {
+  imageUrl?: string;
+  icon: string;
+}
+
+// Flat lookup cache for catalog items & categories
+const CATALOG_ITEMS: CategoryItemDef[] = [];
 const ITEM_TO_CATEGORY_MAP: Record<string, string> = {};
 CATEGORY_SECTIONS.forEach((cat) => {
   cat.items.forEach((it) => {
+    CATALOG_ITEMS.push(it);
     ITEM_TO_CATEGORY_MAP[it.name.toLowerCase()] = cat.name;
   });
 });
+
+/**
+ * Resolves product image and icon for an item name by matching against catalog with aliases & fuzzy matches
+ */
+export function getItemVisual(itemName: string, categoryName?: string): ItemVisual {
+  if (!itemName) {
+    const fallbackCat = categoryName || "Other Items";
+    return { icon: CATEGORY_ICONS[fallbackCat] || "🛒" };
+  }
+
+  const clean = itemName.toLowerCase().trim();
+
+  // 1. Direct match against catalog items
+  for (const catItem of CATALOG_ITEMS) {
+    const catNameLower = catItem.name.toLowerCase();
+    
+    // Exact match
+    if (catNameLower === clean) {
+      return { imageUrl: catItem.imageUrl, icon: catItem.icon || "🛒" };
+    }
+
+    // Split aliases (e.g. "Lady Finger / Bhindi" -> "lady finger", "bhindi")
+    const parts = catNameLower.split("/").map((p) => p.trim());
+    for (const p of parts) {
+      if (p === clean || clean === p) {
+        return { imageUrl: catItem.imageUrl, icon: catItem.icon || "🛒" };
+      }
+    }
+  }
+
+  // 2. Substring & keyword match against catalog
+  for (const catItem of CATALOG_ITEMS) {
+    const catNameLower = catItem.name.toLowerCase();
+    const parts = catNameLower.split("/").map((p) => p.trim());
+    for (const p of parts) {
+      if (p.length > 2 && (clean.includes(p) || p.includes(clean))) {
+        return { imageUrl: catItem.imageUrl, icon: catItem.icon || "🛒" };
+      }
+    }
+  }
+
+  // 3. Common grocery aliases
+  if (clean.includes("brinjal") || clean.includes("eggplant") || clean.includes("baingan")) {
+    return {
+      imageUrl: "https://cdn.zeptonow.com/production/tr:w-600,ar-100-100,pr-true,f-auto,q-80/cms/product_variant/7b489a59-1e3d-49fa-9844-42f06859e4b6.jpeg",
+      icon: "🍆"
+    };
+  }
+  if (clean.includes("bindi") || clean.includes("bhindi") || clean.includes("okra")) {
+    const bhindi = CATALOG_ITEMS.find((c) => c.name.toLowerCase().includes("bhindi"));
+    if (bhindi) return { imageUrl: bhindi.imageUrl, icon: bhindi.icon || "🫛" };
+  }
+  if (clean.includes("butter") && !clean.includes("peanut") && !clean.includes("milk")) {
+    const butter = CATALOG_ITEMS.find((c) => c.name.toLowerCase() === "butter");
+    if (butter) return { imageUrl: butter.imageUrl, icon: butter.icon || "🧈" };
+  }
+  if (clean.includes("bread") || clean.includes("pav") || clean.includes("bun")) {
+    const bread = CATALOG_ITEMS.find((c) => c.name.toLowerCase().includes("bread"));
+    if (bread) return { imageUrl: bread.imageUrl, icon: bread.icon || "🍞" };
+  }
+  if (clean.includes("chilli") || clean.includes("mirch")) {
+    const chilli = CATALOG_ITEMS.find((c) => c.name.toLowerCase().includes("green chillies"));
+    if (chilli) return { imageUrl: chilli.imageUrl, icon: chilli.icon || "🌶️" };
+  }
+
+  // 4. Fallback to category icon
+  const cat = categoryName || detectCategory(itemName) || "Other Items";
+  const catIcon = CATEGORY_ICONS[cat] || "🛒";
+  return { icon: catIcon };
+}
 
 export function detectCategory(itemName: string): string {
   const lower = itemName.toLowerCase();
@@ -74,7 +165,7 @@ export function detectCategory(itemName: string): string {
   // Exact or contains match from canonical catalog
   for (const [canonical, catName] of Object.entries(ITEM_TO_CATEGORY_MAP)) {
     if (lower.includes(canonical) || canonical.includes(lower)) {
-      return catName;
+      return String(catName);
     }
   }
 
