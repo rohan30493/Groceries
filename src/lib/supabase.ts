@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { GroceryItem } from "./patterns";
+import { GroceryItem, detectCategory } from "./patterns";
 import { HouseholdOrder } from "./orderLifecycle";
 import { normalizeRawOrder } from "./purchaseMemory";
 import { BasketHandoffState } from "./handoff";
@@ -41,10 +41,16 @@ export function toGroceryItem(db: DbGroceryItem): GroceryItem {
     }
   }
 
+  const detected = detectCategory(db.name);
+  const resolvedCategory =
+    !db.category || db.category === "Other Items" || (detected !== "Other Items" && db.category !== detected)
+      ? detected
+      : db.category;
+
   return {
     id: db.id,
     name: db.name,
-    category: db.category,
+    category: resolvedCategory,
     addedBy: (db.added_by as "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion") || "Lira",
     addedAt: db.added_at,
     isDone: db.is_done,

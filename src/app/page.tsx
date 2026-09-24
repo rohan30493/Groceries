@@ -831,9 +831,10 @@ export default function GroceryAssistantApp() {
 
     const categoryMap: Record<string, GroceryItem[]> = {};
     pending.forEach((it) => {
-      const cat = it.category || "Other Items";
+      const detected = detectCategory(it.name);
+      const cat = !it.category || it.category === "Other Items" || detected !== "Other Items" ? detected : it.category;
       if (!categoryMap[cat]) categoryMap[cat] = [];
-      categoryMap[cat].push(it);
+      categoryMap[cat].push({ ...it, category: cat });
     });
 
     const categoryOrder = [
@@ -880,9 +881,10 @@ export default function GroceryAssistantApp() {
 
     const categoryMap: Record<string, GroceryItem[]> = {};
     basketItems.forEach((it) => {
-      const cat = it.category || "Other Items";
+      const detected = detectCategory(it.name);
+      const cat = !it.category || it.category === "Other Items" || detected !== "Other Items" ? detected : it.category;
       if (!categoryMap[cat]) categoryMap[cat] = [];
-      categoryMap[cat].push(it);
+      categoryMap[cat].push({ ...it, category: cat });
     });
 
     const categoryOrder = [
