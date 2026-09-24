@@ -21,7 +21,7 @@ export interface GroceryItem {
   id: string;
   name: string;
   category: string;
-  addedBy: "Lira" | "Rohan" | "Pattern Suggestion";
+  addedBy: "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion";
   addedAt: string;
   isDone: boolean;
   purchasedAt?: string;
@@ -29,7 +29,7 @@ export interface GroceryItem {
   notes?: string;
   isOrdered?: boolean;
   orderedAt?: string;
-  orderedBy?: "Rohan" | "Lira";
+  orderedBy?: "Rohan" | "Lira" | "Rhythm";
 }
 
 export interface PatternRules {

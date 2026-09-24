@@ -147,17 +147,24 @@ test("Lira order handoff flow", async (t) => {
     assert.strictEqual(nextRunState.handoffMessage, null);
   });
 
-  await t.test("actor invariant: Lira can never place the order under any circumstances", () => {
+  await t.test("actor invariant: Lira and Rhythm can never place the order under any circumstances", () => {
     // 1. In idle
     assert.strictEqual(canPlaceOrder(initHandoffState(0), "Lira", 0).allowed, false);
+    assert.strictEqual(canPlaceOrder(initHandoffState(0), "Rhythm", 0).allowed, false);
     // 2. In building
     assert.strictEqual(canPlaceOrder(initHandoffState(2), "Lira", 2).allowed, false);
+    assert.strictEqual(canPlaceOrder(initHandoffState(2), "Rhythm", 2).allowed, false);
     // 3. In ready_for_order
     let state = initHandoffState(2);
     state = liraCompleteAndHandoff(state, 2);
     assert.strictEqual(canPlaceOrder(state, "Lira", 2).allowed, false);
-    const execRes = executePlaceOrder(state, "Lira", 2);
-    assert.strictEqual(execRes.success, false);
-    assert.match(execRes.error || "", /Lira cannot place the order/);
+    assert.strictEqual(canPlaceOrder(state, "Rhythm", 2).allowed, false);
+    const execResLira = executePlaceOrder(state, "Lira", 2);
+    assert.strictEqual(execResLira.success, false);
+    assert.match(execResLira.error || "", /Lira cannot place the order/);
+
+    const execResRhythm = executePlaceOrder(state, "Rhythm", 2);
+    assert.strictEqual(execResRhythm.success, false);
+    assert.match(execResRhythm.error || "", /Rhythm cannot place the order/);
   });
 });

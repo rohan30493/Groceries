@@ -45,7 +45,7 @@ export function toGroceryItem(db: DbGroceryItem): GroceryItem {
     id: db.id,
     name: db.name,
     category: db.category,
-    addedBy: (db.added_by as "Lira" | "Rohan" | "Pattern Suggestion") || "Lira",
+    addedBy: (db.added_by as "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion") || "Lira",
     addedAt: db.added_at,
     isDone: db.is_done,
     purchasedAt: purchasedAt,

@@ -90,19 +90,19 @@ export interface CanPlaceOrderResult {
 
 /**
  * Invariants:
- * 1. Lira must NOT place the order (actor must be 'Rohan').
- * 2. Order cannot be placed before Lira hands off (status must be 'ready_for_order').
+ * 1. Lira/Rhythm must NOT place the order (actor must be 'Rohan').
+ * 2. Order cannot be placed before handoff (status must be 'ready_for_order').
  * 3. Basket cannot be empty.
  */
 export function canPlaceOrder(
   state: BasketHandoffState,
-  actor: "Lira" | "Rohan",
+  actor: "Lira" | "Rhythm" | "Rohan",
   itemsCount: number
 ): CanPlaceOrderResult {
-  if (actor === "Lira") {
+  if (actor === "Lira" || actor === "Rhythm") {
     return {
       allowed: false,
-      reason: "Lira cannot place the order. Lira hands off the basket to Rohan to place the order."
+      reason: `${actor} cannot place the order. ${actor} hands off the basket to Rohan to place the order.`
     };
   }
 
@@ -140,7 +140,7 @@ export function canPlaceOrder(
  */
 export function executePlaceOrder(
   state: BasketHandoffState,
-  actor: "Lira" | "Rohan",
+  actor: "Lira" | "Rhythm" | "Rohan",
   itemsCount: number
 ): { success: boolean; nextState: BasketHandoffState; error?: string } {
   const check = canPlaceOrder(state, actor, itemsCount);

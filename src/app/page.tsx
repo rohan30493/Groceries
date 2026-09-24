@@ -181,7 +181,7 @@ function formatPlatformName(platform?: string): string {
 const INITIAL_ITEMS: GroceryItem[] = [];
 
 export default function GroceryAssistantApp() {
-  const [activeTab, setActiveTab] = useState<"lira" | "rohan" | "orders">("lira");
+  const [activeTab, setActiveTab] = useState<"lira" | "rhythm" | "rohan" | "orders">("lira");
   const [items, setItems] = useState<GroceryItem[]>(INITIAL_ITEMS);
   const [inputText, setInputText] = useState("");
   const [isListening, setIsListening] = useState(false);
@@ -532,10 +532,14 @@ export default function GroceryAssistantApp() {
     }
   }, [handoffState.status, handoffState.handoffAt, browserNotificationPermission, pendingItems]);
 
+  // Current active builder person ("Lira" or "Rhythm")
+  const currentBuilderPerson: "Lira" | "Rhythm" = activeTab === "rhythm" ? "Rhythm" : "Lira";
+
   // Add multiple items from input bar or speech
-  const handleAddItems = (text: string, sender: "Lira" | "Rohan" = "Lira") => {
+  const handleAddItems = (text: string, sender?: "Lira" | "Rhythm" | "Rohan") => {
     if (!text.trim()) return;
 
+    const actualSender = sender || currentBuilderPerson;
     const parsedNames = parseNaturalLanguageList(text);
     if (parsedNames.length === 0) return;
 
@@ -546,7 +550,7 @@ export default function GroceryAssistantApp() {
       id: `item-${Date.now()}-${idx}`,
       name: name,
       category: detectCategory(name),
-      addedBy: sender,
+      addedBy: actualSender,
       addedAt: timeFormatted,
       createdAt: nowIso,
       isDone: false
@@ -562,7 +566,8 @@ export default function GroceryAssistantApp() {
   };
 
   // Add a specific single item (sync to Supabase)
-  const handleAddSingleItem = (name: string, addedBy: "Lira" | "Rohan" | "Pattern Suggestion" = "Lira") => {
+  const handleAddSingleItem = (name: string, addedBy?: "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion") => {
+    const actualAddedBy = addedBy || currentBuilderPerson;
     const isAlreadyPresent = items.some(
       (it) => !it.isDone && it.name.toLowerCase().trim() === name.toLowerCase().trim()
     );
@@ -575,7 +580,7 @@ export default function GroceryAssistantApp() {
       id: `item-${Date.now()}-${Math.random()}`,
       name: name,
       category: detectCategory(name),
-      addedBy: addedBy,
+      addedBy: actualAddedBy,
       addedAt: timeFormatted,
       createdAt: nowIso,
       isDone: false
@@ -591,7 +596,7 @@ export default function GroceryAssistantApp() {
 
   // Quick add from category sections with visual feedback
   const handleQuickAddCategoryItem = (itemName: string) => {
-    handleAddSingleItem(itemName, "Lira");
+    handleAddSingleItem(itemName, currentBuilderPerson);
     setLastAddedItem(itemName);
     setRecentlyAddedAnimation(itemName);
     setTimeout(() => {
@@ -599,7 +604,7 @@ export default function GroceryAssistantApp() {
     }, 1200);
   };
 
-  // Lira autonomously adds all currently recommended items to the basket
+  // Autonomously add all currently recommended items to the basket
   const handleAutonomousAddAll = () => {
     if (autonomousRecs.length === 0) return;
     const nowIso = new Date().toISOString();
@@ -615,7 +620,7 @@ export default function GroceryAssistantApp() {
           id: `item-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
           name: rec.name,
           category: rec.category || detectCategory(rec.name),
-          addedBy: "Lira",
+          addedBy: currentBuilderPerson,
           addedAt: timeFormatted,
           createdAt: nowIso,
           isDone: false
@@ -631,7 +636,7 @@ export default function GroceryAssistantApp() {
     }
   };
 
-  // Lira completes the basket and triggers handoff with the exact message: "I’m done. Please proceed with order."
+  // Completes the basket and triggers handoff with the exact message: "I’m done. Please proceed with order."
   const handleLiraHandoff = () => {
     if (pendingItems.length === 0) return;
     try {
@@ -914,11 +919,22 @@ export default function GroceryAssistantApp() {
               onClick={() => setActiveTab("lira")}
               className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 whitespace-nowrap flex items-center gap-1 ${
                 activeTab === "lira"
-                  ? "bg-white text-emerald-800 shadow-sm"
+                  ? "bg-emerald-600 text-white shadow-sm"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <span>✨ Lira</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("rhythm")}
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 whitespace-nowrap flex items-center gap-1 ${
+                activeTab === "rhythm"
+                  ? "bg-purple-600 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <span>✨ Rhythm</span>
             </button>
             <button
               type="button"
@@ -1048,662 +1064,879 @@ export default function GroceryAssistantApp() {
       {/* Main Container */}
       <main className="max-w-2xl mx-auto px-4 pt-4">
         {/* ========================================================================= */}
-        {/* VIEW 1: LIRA'S VIEW (Tell what is needed + Pattern Suggestions)           */}
+        {/* VIEW 1: BUILDER VIEW (LIRA OR RHYTHM)                                      */}
         {/* ========================================================================= */}
-        {activeTab === "lira" && (
-          <div className="space-y-5">
-            {/* Lira Status & Action Banner */}
-            {handoffState.status === "ready_for_order" ? (
-              <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm animate-fadeIn">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm font-bold">
-                      👩‍🍳
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                          Lira is Done
-                        </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
-                          Ready for Review
-                        </span>
+        {(activeTab === "lira" || activeTab === "rhythm") && (() => {
+          const isRhythm = activeTab === "rhythm";
+          const builderName = isRhythm ? "Rhythm" : "Lira";
+          const builderRole = isRhythm ? "Wife" : "Mother-in-law";
+          const builderAvatar = isRhythm ? "👩" : "👩‍🍳";
+
+          return (
+            <div className="space-y-5">
+              {/* Builder Status & Action Banner */}
+              {handoffState.status === "ready_for_order" ? (
+                <div className={`border-2 rounded-2xl p-4 shadow-sm animate-fadeIn ${
+                  isRhythm ? "bg-purple-50 border-purple-500" : "bg-emerald-50 border-emerald-500"
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-full text-white flex items-center justify-center text-lg shrink-0 shadow-sm font-bold ${
+                        isRhythm ? "bg-purple-600" : "bg-emerald-600"
+                      }`}>
+                        {builderAvatar}
                       </div>
-                      <p className="text-base font-bold text-slate-900 mt-1 italic">
-                        &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
-                      </p>
-                      <p className="text-xs text-slate-600 mt-0.5">
-                        Basket is ready with {pendingItems.length} items. Handed to Rohan to review and order.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("rohan")}
-                    className="shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5"
-                  >
-                    <span>Review Basket &amp; Order &rarr;</span>
-                  </button>
-                </div>
-              </div>
-            ) : pendingItems.length > 0 && handoffState.status === "building" ? (
-              <div className="bg-amber-50/90 border border-amber-300/90 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-2xs">
-                    🧺
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-                        Basket in Progress
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold">
-                        {pendingItems.length} items
-                      </span>
-                    </div>
-                    <p className="text-xs text-amber-800 mt-0.5">
-                      Refine or add what is needed. When finished, notify Rohan to review and order.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleLiraHandoff}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 shrink-0"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Lira is Done</span>
-                </button>
-              </div>
-            ) : handoffState.status === "ordered" ? (
-              <div className="bg-slate-100 border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Last Run Ordered
-                  </span>
-                  <p className="text-sm font-medium text-slate-700 mt-0.5">
-                    Order for {handoffState.lastRunSummary?.itemCount ?? 0} items placed by Rohan.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("orders")}
-                    className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 active:scale-95 text-slate-700 font-semibold text-xs rounded-xl transition-all flex items-center gap-1"
-                  >
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>View Orders</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleStartNewBasket}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold text-xs rounded-xl transition-all"
-                  >
-                    Start New Basket
-                  </button>
-                </div>
-              </div>
-            ) : null}
-
-            {/* ========================================================================= */}
-            {/* 1. PRIMARY FEATURE: UNIFIED LIRA'S RECOMMENDATIONS                       */}
-            {/* Autonomous Replenishment Staples + Companion Co-occurrence Suggestions    */}
-            {/* ========================================================================= */}
-            {(autonomousRecs.length > 0 || (pendingItems.length > 0 && patternSuggestions.length > 0)) && (
-              <div className="bg-gradient-to-br from-teal-50/90 to-emerald-50/70 border-2 border-teal-300/80 rounded-2xl p-4 sm:p-5 shadow-sm transition-all">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsRecommendationsExpanded((prev) => !prev)}
-                    className="flex items-center gap-2.5 text-left flex-1 min-w-0 group py-0.5"
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-2xs font-bold">
-                      <Sparkles className="w-5 h-5 text-teal-100" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-base font-bold text-teal-950 group-hover:text-teal-800 transition-colors tracking-tight">
-                          ✨ Lira&apos;s Recommendations
-                        </h3>
-                        <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-teal-200/90 text-teal-950 font-bold shadow-2xs">
-                          {autonomousRecs.length + (pendingItems.length > 0 ? patternSuggestions.length : 0)} items spotted
-                        </span>
-                      </div>
-                      <p className="text-xs text-teal-800 mt-0.5">
-                        I&apos;ve spotted a few things your household may need
-                      </p>
-                    </div>
-                  </button>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {autonomousRecs.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleAutonomousAddAll}
-                        className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1 shrink-0"
-                        title="Add all recommended items"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Auto-Add All</span>
-                        <span>({autonomousRecs.length})</span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setIsRecommendationsExpanded((prev) => !prev)}
-                      className="p-1.5 text-teal-800 hover:bg-teal-100 rounded-lg transition-colors active:scale-90"
-                      aria-label={isRecommendationsExpanded ? "Collapse recommendations" : "Expand recommendations"}
-                    >
-                      {isRecommendationsExpanded ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {isRecommendationsExpanded && (
-                  <div className="mt-3.5 pt-3.5 border-t border-teal-200/80 space-y-4 animate-fadeIn">
-                    {/* Companion / Co-occurrence Suggestions (if any items in basket) */}
-                    {pendingItems.length > 0 && patternSuggestions.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
-                            <span>🤝</span>
-                            <span>
-                              {lastAddedItem
-                                ? `Pairs with "${lastAddedItem}"`
-                                : "Frequently Ordered Together"}
-                            </span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-bold uppercase tracking-wider ${
+                            isRhythm ? "text-purple-900" : "text-emerald-800"
+                          }`}>
+                            {builderName} is Done
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              patternSuggestions.forEach((s) => dismissedSuggestions.add(s.item.toLowerCase()));
-                              setDismissedSuggestions(new Set(dismissedSuggestions));
-                            }}
-                            className="text-[11px] text-amber-800 hover:text-amber-950 active:scale-95 font-medium px-2 py-0.5 rounded hover:bg-amber-100/80 transition-all"
-                          >
-                            Dismiss
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {patternSuggestions.map((suggestion) => (
-                            <div
-                              key={suggestion.item}
-                              className="bg-white/95 border border-amber-200/90 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-2xs hover:border-amber-400 transition-all"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <div className="font-bold text-slate-900 text-xs flex items-center gap-1.5 flex-wrap">
-                                  <span>{suggestion.item}</span>
-                                  {suggestion.dueText && (
-                                    <span
-                                      className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
-                                        suggestion.replenishmentStatus === "DUE_NOW"
-                                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                                          : suggestion.replenishmentStatus === "APPROACHING_DUE"
-                                          ? "bg-amber-100 text-amber-900 border border-amber-300"
-                                          : "bg-slate-100 text-slate-600 border border-slate-200"
-                                      }`}
-                                    >
-                                      {suggestion.dueText}
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                                  Often with {suggestion.triggeredBy} • {suggestion.reason}
-                                </p>
-                              </div>
-
-                              <div className="flex items-center gap-1 shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    handleAddSingleItem(suggestion.item, "Pattern Suggestion");
-                                    setLastAddedItem(suggestion.item);
-                                    setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
-                                  }}
-                                  className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shadow-2xs"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                  <span>Add</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
-                                  }}
-                                  className="text-slate-400 hover:text-slate-600 active:scale-90 p-1 transition-transform"
-                                  title="Don't need today"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Autonomous Staple Replenishment Recommendations */}
-                    {autonomousRecs.length > 0 && (
-                      <div className="space-y-2">
-                        {pendingItems.length > 0 && patternSuggestions.length > 0 && (
-                          <div className="text-xs font-bold uppercase tracking-wider text-teal-900 flex items-center gap-1.5 pt-2 border-t border-teal-200/60">
-                            <span>📦</span>
-                            <span>Household Staples &amp; Replenishments</span>
-                          </div>
-                        )}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {autonomousRecs.map((rec) => (
-                            <div
-                              key={rec.name}
-                              className="bg-white/95 border border-teal-100 rounded-xl p-2.5 flex items-center justify-between gap-2 hover:border-teal-300 transition-colors shadow-2xs"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-xs font-bold text-slate-900 truncate">
-                                    {rec.name}
-                                  </span>
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800 font-medium shrink-0">
-                                    {rec.category}
-                                  </span>
-                                </div>
-                                <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                                  {rec.reason}
-                                </p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleAddSingleItem(rec.name, "Lira")}
-                                className="bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shrink-0"
-                              >
-                                <Plus className="w-3 h-3" />
-                                <span>Add</span>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ========================================================================= */}
-            {/* 2. YOUR BASKET (Items currently in the basket)                           */}
-            {/* ========================================================================= */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-sm font-bold text-slate-900">
-                    Your Basket
-                  </h3>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    {pendingItems.length} {pendingItems.length === 1 ? "item" : "items"}
-                  </span>
-                  {recentlyOrderedItems.length > 0 && (
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                      {recentlyOrderedItems.length} already ordered
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={() => setActiveTab("rohan")}
-                  className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
-                >
-                  <span>Review Basket &rarr;</span>
-                </button>
-              </div>
-
-              {basketItems.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-6">
-                  Your basket is empty. Add recommended items above, type below, or browse staples.
-                </p>
-              ) : (
-                <div className="divide-y divide-slate-100">
-                  {basketItems.map((it) => {
-                    const isDeleting = deletingItemIds.has(it.id);
-                    const isItemOrdered = Boolean(it.isOrdered);
-                    return (
-                      <div
-                        key={it.id}
-                        className={`py-2.5 flex items-center justify-between gap-2 transition-all ${
-                          isDeleting ? "item-delete-exit" : ""
-                        } ${isItemOrdered ? "bg-slate-50/60 -mx-2 px-2 rounded-xl" : ""}`}
-                      >
-                        <div className="min-w-0 flex-1">
-                          <span
-                            className={`text-base font-medium block truncate transition-all ${
-                              isItemOrdered
-                                ? "line-through text-slate-400 font-normal"
-                                : "text-slate-800"
-                            }`}
-                          >
-                            {it.name}
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                            isRhythm
+                              ? "bg-purple-100 text-purple-800 border-purple-300"
+                              : "bg-emerald-100 text-emerald-800 border-emerald-300"
+                          }`}>
+                            Ready for Review
                           </span>
-                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-[10px] text-slate-400">{it.category}</span>
-                            {isItemOrdered ? (
-                              <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                                <span className="font-semibold text-emerald-700 flex items-center gap-1">
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                  <span>✓ Rohan ordered already</span>
-                                </span>
-                                <span className="text-slate-300">•</span>
-                                <span className="text-slate-500 font-normal">
-                                  {formatItemOrderedTime(it.orderedAt)}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-[10px] text-slate-400">
-                                • Added {formatEventTime(it.createdAt || it.addedAt)}
-                              </span>
-                            )}
-                          </div>
                         </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {isItemOrdered ? (
-                            <button
-                              type="button"
-                              onClick={() => handleUndoOrdered(it.id)}
-                              className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition-all"
-                              title="Undo ordered status"
-                            >
-                              Undo
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleMarkAsOrdered(it.id, "Rohan")}
-                              className="px-2.5 py-1 text-xs font-medium text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 active:scale-95 rounded-lg transition-all flex items-center gap-1"
-                              title="Mark as ordered already"
-                            >
-                              <Check className="w-3 h-3 text-emerald-600" />
-                              <span className="hidden sm:inline">Mark as Ordered</span>
-                              <span className="sm:hidden">Ordered</span>
-                            </button>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={() => deleteItem(it.id)}
-                            className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all rounded-lg"
-                            title="Remove"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                        <p className="text-base font-bold text-slate-900 mt-1 italic">
+                          &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
+                        </p>
+                        <p className="text-xs text-slate-600 mt-0.5">
+                          Basket is ready with {pendingItems.length} items. Handed to Rohan to review and order.
+                        </p>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Lira Ready Callout at bottom of basket */}
-              {pendingItems.length > 0 && (
-                handoffState.status === "ready_for_order" ? (
-                  <div className="mt-3.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="text-xs font-semibold text-emerald-950">
-                        Basket ready: &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
-                      </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setActiveTab("rohan")}
-                      className="text-xs font-bold text-emerald-700 hover:text-emerald-900 active:scale-95 transition-transform flex items-center gap-1"
+                      className={`shrink-0 px-4 py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
+                        isRhythm ? "bg-purple-600 hover:bg-purple-700" : "bg-emerald-600 hover:bg-emerald-700"
+                      }`}
                     >
                       <span>Review Basket &amp; Order &rarr;</span>
                     </button>
                   </div>
-                ) : (
-                  <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <span className="text-xs text-slate-500">
-                      Finished building the basket?
+                </div>
+              ) : pendingItems.length > 0 && handoffState.status === "building" ? (
+                <div className="bg-amber-50/90 border border-amber-300/90 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-2xs">
+                      🧺
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                          Basket in Progress
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold">
+                          {pendingItems.length} items
+                        </span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                          isRhythm ? "bg-purple-100 text-purple-800" : "bg-emerald-100 text-emerald-800"
+                        }`}>
+                          Active: {builderName} ({builderRole})
+                        </span>
+                      </div>
+                      <p className="text-xs text-amber-800 mt-0.5">
+                        Refine or add what is needed. When finished, notify Rohan to review and order.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLiraHandoff}
+                    className={`px-4 py-2 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 shrink-0 active:scale-95 ${
+                      isRhythm ? "bg-purple-600 hover:bg-purple-700" : "bg-emerald-600 hover:bg-emerald-700"
+                    }`}
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{builderName} is Done</span>
+                  </button>
+                </div>
+              ) : handoffState.status === "ordered" ? (
+                <div className="bg-slate-100 border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Last Run Ordered
                     </span>
+                    <p className="text-sm font-medium text-slate-700 mt-0.5">
+                      Order for {handoffState.lastRunSummary?.itemCount ?? 0} items placed by Rohan.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={handleLiraHandoff}
-                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5"
+                      onClick={() => setActiveTab("orders")}
+                      className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 active:scale-95 text-slate-700 font-semibold text-xs rounded-xl transition-all flex items-center gap-1"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Lira is Done</span>
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>View Orders</span>
                     </button>
-                  </div>
-                )
-              )}
-            </div>
-
-            {/* ========================================================================= */}
-            {/* 3. COMPACT MANUAL ENTRY: ADD TO BASKET                                   */}
-            {/* Reduced visual weight, concise labels, preserves typing/pasting/voice     */}
-            {/* ========================================================================= */}
-            <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-2xs border border-slate-200">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                Add to your basket:
-              </label>
-              <div className="relative">
-                <textarea
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Type or paste items (e.g. Paneer, Tomatoes, Curd, Eggs)..."
-                  rows={2}
-                  className="w-full text-sm p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent placeholder:text-slate-400 bg-slate-50/50 focus:bg-white transition-all"
-                />
-              </div>
-
-              {detectedPreview.length > 1 && (
-                <div className="mt-2 p-2 bg-emerald-50/80 border border-emerald-200 rounded-xl animate-fadeIn">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 mb-1">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Recognized {detectedPreview.length} separate items:</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {detectedPreview.map((name) => (
-                      <span
-                        key={name}
-                        className="px-2 py-0.5 rounded-md bg-white text-emerald-900 text-xs font-semibold border border-emerald-300 shadow-2xs"
-                      >
-                        {name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between gap-2.5 mt-2.5">
-                <button
-                  type="button"
-                  onClick={toggleVoiceInput}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-95 shrink-0 ${
-                    isListening
-                      ? "bg-rose-50 border-rose-300 text-rose-700 animate-pulse"
-                      : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-                  }`}
-                >
-                  {isListening ? <MicOff className="w-3.5 h-3.5 text-rose-600" /> : <Mic className="w-3.5 h-3.5 text-slate-600" />}
-                  <span>{isListening ? "Listening..." : "Speak items"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleAddItems(inputText, "Lira")}
-                  disabled={!inputText.trim()}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5 text-xs sm:text-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>
-                    {detectedPreview.length > 1
-                      ? `Add All ${detectedPreview.length} Items`
-                      : "Add to Basket"}
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            {/* ========================================================================= */}
-            {/* 4. BROWSE STAPLES (Zepto-style Sections & 1-Tap Quick Add)                */}
-            {/* Category pills visible; item list expands when category clicked           */}
-            {/* ========================================================================= */}
-            <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🛍️</span>
-                    <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                      Browse Staples
-                    </h3>
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                      {totalStaplesCount} Past Staples
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    1-Tap quick add from your 820+ past orders • Tap a category to view items
-                  </p>
-                </div>
-
-                {/* Quick Search across all categories */}
-                <div className="relative min-w-[200px]">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={categorySearchQuery}
-                    onChange={(e) => {
-                      setCategorySearchQuery(e.target.value);
-                      if (e.target.value) {
-                        setIsCategoryItemsExpanded(true);
-                      }
-                    }}
-                    placeholder="Search past items..."
-                    className="w-full text-xs pl-8 pr-6 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-slate-50 focus:bg-white"
-                  />
-                  {categorySearchQuery && (
                     <button
-                      onClick={() => setCategorySearchQuery("")}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
+                      type="button"
+                      onClick={handleStartNewBasket}
+                      className={`px-3 py-1.5 text-white font-semibold text-xs rounded-xl transition-all active:scale-95 ${
+                        isRhythm ? "bg-purple-600 hover:bg-purple-700" : "bg-emerald-600 hover:bg-emerald-700"
+                      }`}
                     >
-                      ✕
+                      Start New Basket
                     </button>
-                  )}
+                  </div>
                 </div>
-              </div>
+              ) : null}
 
-              {/* Category Grid (Compact 2-column mobile grid, 4-column responsive desktop) */}
-              {!categorySearchQuery && (
-                <div
-                  role="tablist"
-                  aria-label="Grocery categories"
-                  className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3.5"
-                >
-                  {categorySections.map((cat) => {
-                    const isSelected = selectedCategoryId === cat.id && isCategoryItemsExpanded;
-                    const count = cat.itemCount ?? cat.items?.length ?? 0;
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={isSelected}
-                        aria-label={`${cat.name}, ${count} items`}
-                        onClick={() => {
-                          if (selectedCategoryId === cat.id) {
-                            setIsCategoryItemsExpanded((prev) => !prev);
-                          } else {
-                            setSelectedCategoryId(cat.id);
-                            setIsCategoryItemsExpanded(true);
-                          }
-                        }}
-                        className={`group relative flex items-center justify-between gap-1.5 p-2 sm:p-2.5 rounded-xl text-left transition-all border min-h-[48px] active:scale-95 ${
-                          isSelected
-                            ? "bg-emerald-50/90 border-emerald-600 text-emerald-950 shadow-xs ring-1 ring-emerald-600/25"
-                            : "bg-slate-50/80 hover:bg-slate-100 text-slate-700 border-slate-200/90 hover:border-slate-300"
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
-                          <span className="text-base sm:text-lg shrink-0 leading-none select-none">
-                            {cat.icon}
-                          </span>
-                          <span
-                            className={`text-[11px] sm:text-xs leading-tight break-words ${
-                              isSelected ? "font-bold text-emerald-950" : "font-semibold text-slate-800"
-                            }`}
-                          >
-                            {cat.name}
+              {/* ========================================================================= */}
+              {/* 1. PRIMARY FEATURE: RECOMMENDATIONS                                       */}
+              {/* Autonomous Replenishment Staples + Companion Co-occurrence Suggestions    */}
+              {/* ========================================================================= */}
+              {(autonomousRecs.length > 0 || (pendingItems.length > 0 && patternSuggestions.length > 0)) && (
+                <div className={`border-2 rounded-2xl p-4 sm:p-5 shadow-sm transition-all ${
+                  isRhythm
+                    ? "bg-gradient-to-br from-purple-50/90 to-fuchsia-50/70 border-purple-300/80"
+                    : "bg-gradient-to-br from-teal-50/90 to-emerald-50/70 border-teal-300/80"
+                }`}>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsRecommendationsExpanded((prev) => !prev)}
+                      className="flex items-center gap-2.5 text-left flex-1 min-w-0 group py-0.5"
+                    >
+                      <div className={`w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0 shadow-2xs font-bold ${
+                        isRhythm ? "bg-purple-600" : "bg-teal-600"
+                      }`}>
+                        <Sparkles className={`w-5 h-5 ${isRhythm ? "text-purple-100" : "text-teal-100"}`} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className={`text-base font-bold transition-colors tracking-tight ${
+                            isRhythm
+                              ? "text-purple-950 group-hover:text-purple-800"
+                              : "text-teal-950 group-hover:text-teal-800"
+                          }`}>
+                            ✨ {builderName}&apos;s Recommendations
+                          </h3>
+                          <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold shadow-2xs ${
+                            isRhythm ? "bg-purple-200/90 text-purple-950" : "bg-teal-200/90 text-teal-950"
+                          }`}>
+                            {autonomousRecs.length + (pendingItems.length > 0 ? patternSuggestions.length : 0)} items spotted
                           </span>
                         </div>
-                        <span
-                          className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-bold tabular-nums ${
-                            isSelected
-                              ? "bg-emerald-200/90 text-emerald-900"
-                              : "bg-slate-200/80 text-slate-600"
+                        <p className={`text-xs mt-0.5 ${isRhythm ? "text-purple-800" : "text-teal-800"}`}>
+                          I&apos;ve spotted a few things your household may need
+                        </p>
+                      </div>
+                    </button>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {autonomousRecs.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleAutonomousAddAll}
+                          className={`px-3 py-1.5 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1 shrink-0 active:scale-95 ${
+                            isRhythm ? "bg-purple-700 hover:bg-purple-800" : "bg-teal-700 hover:bg-teal-800"
                           }`}
+                          title="Add all recommended items"
                         >
-                          {count}
-                        </span>
+                          <Plus className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Auto-Add All</span>
+                          <span>({autonomousRecs.length})</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setIsRecommendationsExpanded((prev) => !prev)}
+                        className={`p-1.5 rounded-lg transition-colors active:scale-90 ${
+                          isRhythm
+                            ? "text-purple-800 hover:bg-purple-100"
+                            : "text-teal-800 hover:bg-teal-100"
+                        }`}
+                        aria-label={isRecommendationsExpanded ? "Collapse recommendations" : "Expand recommendations"}
+                      >
+                        {isRecommendationsExpanded ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
                       </button>
-                    );
-                  })}
+                    </div>
+                  </div>
+
+                  {isRecommendationsExpanded && (
+                    <div className={`mt-3.5 pt-3.5 border-t space-y-4 animate-fadeIn ${
+                      isRhythm ? "border-purple-200/80" : "border-teal-200/80"
+                    }`}>
+                      {/* Companion / Co-occurrence Suggestions (if any items in basket) */}
+                      {pendingItems.length > 0 && patternSuggestions.length > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                              <span>🤝</span>
+                              <span>
+                                {lastAddedItem
+                                  ? `Pairs with "${lastAddedItem}"`
+                                  : "Frequently Ordered Together"}
+                              </span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                patternSuggestions.forEach((s) => dismissedSuggestions.add(s.item.toLowerCase()));
+                                setDismissedSuggestions(new Set(dismissedSuggestions));
+                              }}
+                              className="text-[11px] text-amber-800 hover:text-amber-950 active:scale-95 font-medium px-2 py-0.5 rounded hover:bg-amber-100/80 transition-all"
+                            >
+                              Dismiss
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {patternSuggestions.map((suggestion) => (
+                              <div
+                                key={suggestion.item}
+                                className="bg-white/95 border border-amber-200/90 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-2xs hover:border-amber-400 transition-all"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="font-bold text-slate-900 text-xs flex items-center gap-1.5 flex-wrap">
+                                    <span>{suggestion.item}</span>
+                                    {suggestion.dueText && (
+                                      <span
+                                        className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
+                                          suggestion.replenishmentStatus === "DUE_NOW"
+                                            ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                            : suggestion.replenishmentStatus === "APPROACHING_DUE"
+                                            ? "bg-amber-100 text-amber-900 border border-amber-300"
+                                            : "bg-slate-100 text-slate-600 border border-slate-200"
+                                        }`}
+                                      >
+                                        {suggestion.dueText}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                                    Often with {suggestion.triggeredBy} • {suggestion.reason}
+                                  </p>
+                                </div>
+
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      handleAddSingleItem(suggestion.item, "Pattern Suggestion");
+                                      setLastAddedItem(suggestion.item);
+                                      setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
+                                    }}
+                                    className={`text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shadow-2xs active:scale-95 ${
+                                      isRhythm
+                                        ? "bg-purple-600 hover:bg-purple-700"
+                                        : "bg-emerald-600 hover:bg-emerald-700"
+                                    }`}
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                    <span>Add</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setDismissedSuggestions((prev) => new Set([...prev, suggestion.item.toLowerCase()]));
+                                    }}
+                                    className="text-slate-400 hover:text-slate-600 active:scale-90 p-1 transition-transform"
+                                    title="Don't need today"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Autonomous Staple Replenishment Recommendations */}
+                      {autonomousRecs.length > 0 && (
+                        <div className="space-y-2">
+                          {pendingItems.length > 0 && patternSuggestions.length > 0 && (
+                            <div className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 pt-2 border-t ${
+                              isRhythm ? "text-purple-900 border-purple-200/60" : "text-teal-900 border-teal-200/60"
+                            }`}>
+                              <span>📦</span>
+                              <span>Household Staples &amp; Replenishments</span>
+                            </div>
+                          )}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {autonomousRecs.map((rec) => (
+                              <div
+                                key={rec.name}
+                                className={`bg-white/95 border rounded-xl p-2.5 flex items-center justify-between gap-2 transition-colors shadow-2xs ${
+                                  isRhythm ? "border-purple-100 hover:border-purple-300" : "border-teal-100 hover:border-teal-300"
+                                }`}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-xs font-bold text-slate-900 truncate">
+                                      {rec.name}
+                                    </span>
+                                    <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium shrink-0 ${
+                                      isRhythm ? "bg-purple-100 text-purple-800" : "bg-teal-100 text-teal-800"
+                                    }`}>
+                                      {rec.category}
+                                    </span>
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                                    {rec.reason}
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddSingleItem(rec.name, builderName)}
+                                  className={`text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 shrink-0 active:scale-95 ${
+                                    isRhythm ? "bg-purple-600 hover:bg-purple-700" : "bg-teal-600 hover:bg-teal-700"
+                                  }`}
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  <span>Add</span>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Items Grid & Header (Visible when expanded or searching) */}
-              {(isCategoryItemsExpanded || categoryBrowseData.isSearch) && (
-                <div className="pt-2 border-t border-slate-100 animate-fadeIn">
-                  {/* Search Header or Category Header */}
-                  {categoryBrowseData.isSearch ? (
-                    <div className="flex items-center justify-between mb-3 text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-2 rounded-lg">
-                      <span>
-                        Search results for &ldquo;{categorySearchQuery}&rdquo; ({categoryBrowseData.results.length} items found)
+              {/* ========================================================================= */}
+              {/* 2. YOUR BASKET (Items currently in the basket)                           */}
+              {/* ========================================================================= */}
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Household Basket
+                    </h3>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      isRhythm ? "bg-purple-100 text-purple-800" : "bg-emerald-100 text-emerald-800"
+                    }`}>
+                      {pendingItems.length} {pendingItems.length === 1 ? "item" : "items"}
+                    </span>
+                    {recentlyOrderedItems.length > 0 && (
+                      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                        {recentlyOrderedItems.length} already ordered
                       </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setActiveTab("rohan")}
+                    className={`text-xs font-semibold flex items-center gap-1 ${
+                      isRhythm ? "text-purple-600 hover:text-purple-700" : "text-emerald-600 hover:text-emerald-700"
+                    }`}
+                  >
+                    <span>Review Basket &rarr;</span>
+                  </button>
+                </div>
+
+                {basketItems.length === 0 ? (
+                  <p className="text-sm text-slate-400 text-center py-6">
+                    Your basket is empty. Add recommended items above, type below, or browse staples.
+                  </p>
+                ) : (
+                  <div className="divide-y divide-slate-100">
+                    {basketItems.map((it) => {
+                      const isDeleting = deletingItemIds.has(it.id);
+                      const isItemOrdered = Boolean(it.isOrdered);
+                      return (
+                        <div
+                          key={it.id}
+                          className={`py-2.5 flex items-center justify-between gap-2 transition-all ${
+                            isDeleting ? "item-delete-exit" : ""
+                          } ${isItemOrdered ? "bg-slate-50/60 -mx-2 px-2 rounded-xl" : ""}`}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <span
+                              className={`text-base font-medium block truncate transition-all ${
+                                isItemOrdered
+                                  ? "line-through text-slate-400 font-normal"
+                                  : "text-slate-800"
+                              }`}
+                            >
+                              {it.name}
+                            </span>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <span className="text-[10px] text-slate-400">{it.category}</span>
+                              {/* Person Tag Badge */}
+                              {it.addedBy === "Rhythm" ? (
+                                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-purple-100 text-purple-800 font-semibold border border-purple-200">
+                                  Rhythm
+                                </span>
+                              ) : it.addedBy === "Lira" ? (
+                                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                                  Lira
+                                </span>
+                              ) : it.addedBy === "Rohan" ? (
+                                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 font-semibold border border-blue-200">
+                                  Rohan
+                                </span>
+                              ) : (
+                                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-semibold border border-amber-200">
+                                  AI Suggestion
+                                </span>
+                              )}
+                              {isItemOrdered ? (
+                                <div className="flex items-center gap-1.5 flex-wrap text-xs">
+                                  <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                    <span>✓ Rohan ordered already</span>
+                                  </span>
+                                  <span className="text-slate-300">•</span>
+                                  <span className="text-slate-500 font-normal">
+                                    {formatItemOrderedTime(it.orderedAt)}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-[10px] text-slate-400">
+                                  • Added {formatEventTime(it.createdAt || it.addedAt)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {isItemOrdered ? (
+                              <button
+                                type="button"
+                                onClick={() => handleUndoOrdered(it.id)}
+                                className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition-all"
+                                title="Undo ordered status"
+                              >
+                                Undo
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleMarkAsOrdered(it.id, "Rohan")}
+                                className="px-2.5 py-1 text-xs font-medium text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 active:scale-95 rounded-lg transition-all flex items-center gap-1"
+                                title="Mark as ordered already"
+                              >
+                                <Check className="w-3 h-3 text-emerald-600" />
+                                <span className="hidden sm:inline">Mark as Ordered</span>
+                                <span className="sm:hidden">Ordered</span>
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => deleteItem(it.id)}
+                              className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all rounded-lg"
+                              title="Remove"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Handoff Ready Callout at bottom of basket */}
+                {pendingItems.length > 0 && (
+                  handoffState.status === "ready_for_order" ? (
+                    <div className={`mt-3.5 p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+                      isRhythm
+                        ? "bg-purple-50 border-purple-200"
+                        : "bg-emerald-50 border-emerald-200"
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className={`w-4 h-4 shrink-0 ${
+                          isRhythm ? "text-purple-600" : "text-emerald-600"
+                        }`} />
+                        <span className={`text-xs font-semibold ${
+                          isRhythm ? "text-purple-950" : "text-emerald-950"
+                        }`}>
+                          Basket ready: &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
+                        </span>
+                      </div>
                       <button
-                        onClick={() => setCategorySearchQuery("")}
-                        className="text-emerald-700 hover:underline"
+                        type="button"
+                        onClick={() => setActiveTab("rohan")}
+                        className={`text-xs font-bold active:scale-95 transition-transform flex items-center gap-1 ${
+                          isRhythm
+                            ? "text-purple-700 hover:text-purple-900"
+                            : "text-emerald-700 hover:text-emerald-900"
+                        }`}
                       >
-                        Clear Search
+                        <span>Review Basket &amp; Order &rarr;</span>
                       </button>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{categoryBrowseData.activeCategory?.icon}</span>
-                        <span className="text-sm font-bold text-slate-800">
-                          {categoryBrowseData.activeCategory?.name}
+                    <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                      <span className="text-xs text-slate-500">
+                        Finished building the basket?
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleLiraHandoff}
+                        className={`px-3.5 py-1.5 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5 active:scale-95 ${
+                          isRhythm
+                            ? "bg-purple-600 hover:bg-purple-700"
+                            : "bg-emerald-600 hover:bg-emerald-700"
+                        }`}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>{builderName} is Done</span>
+                      </button>
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* ========================================================================= */}
+              {/* 3. COMPACT MANUAL ENTRY: ADD TO BASKET                                   */}
+              {/* Reduced visual weight, concise labels, preserves typing/pasting/voice     */}
+              {/* ========================================================================= */}
+              <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-2xs border border-slate-200">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  Add to your basket ({builderName}):
+                </label>
+                <div className="relative">
+                  <textarea
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    placeholder="Type or paste items (e.g. Paneer, Tomatoes, Curd, Eggs)..."
+                    rows={2}
+                    className={`w-full text-sm p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent placeholder:text-slate-400 bg-slate-50/50 focus:bg-white transition-all ${
+                      isRhythm ? "focus:ring-purple-500" : "focus:ring-emerald-500"
+                    }`}
+                  />
+                </div>
+
+                {detectedPreview.length > 1 && (
+                  <div className={`mt-2 p-2 border rounded-xl animate-fadeIn ${
+                    isRhythm
+                      ? "bg-purple-50/80 border-purple-200"
+                      : "bg-emerald-50/80 border-emerald-200"
+                  }`}>
+                    <div className={`flex items-center gap-1.5 text-xs font-semibold mb-1 ${
+                      isRhythm ? "text-purple-800" : "text-emerald-800"
+                    }`}>
+                      <Sparkles className={`w-3.5 h-3.5 ${isRhythm ? "text-purple-600" : "text-emerald-600"}`} />
+                      <span>Recognized {detectedPreview.length} separate items:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {detectedPreview.map((name) => (
+                        <span
+                          key={name}
+                          className={`px-2 py-0.5 rounded-md bg-white text-xs font-semibold border shadow-2xs ${
+                            isRhythm
+                              ? "text-purple-900 border-purple-300"
+                              : "text-emerald-900 border-emerald-300"
+                          }`}
+                        >
+                          {name}
                         </span>
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                          {categoryBrowseData.activeCategory?.badge}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400">
-                          {categoryBrowseData.activeCategory?.items.length} items ordered before
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between gap-2.5 mt-2.5">
+                  <button
+                    type="button"
+                    onClick={toggleVoiceInput}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-95 shrink-0 ${
+                      isListening
+                        ? "bg-rose-50 border-rose-300 text-rose-700 animate-pulse"
+                        : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    {isListening ? <MicOff className="w-3.5 h-3.5 text-rose-600" /> : <Mic className="w-3.5 h-3.5 text-slate-600" />}
+                    <span>{isListening ? "Listening..." : "Speak items"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleAddItems(inputText, builderName)}
+                    disabled={!inputText.trim()}
+                    className={`flex-1 text-white font-semibold py-2 px-4 rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5 text-xs sm:text-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isRhythm
+                        ? "bg-purple-600 hover:bg-purple-700"
+                        : "bg-emerald-600 hover:bg-emerald-700"
+                    }`}
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>
+                      {detectedPreview.length > 1
+                        ? `Add All ${detectedPreview.length} Items`
+                        : "Add to Basket"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* ========================================================================= */}
+              {/* 4. BROWSE STAPLES (Zepto-style Sections & 1-Tap Quick Add)                */}
+              {/* Category pills visible; item list expands when category clicked           */}
+              {/* ========================================================================= */}
+              <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🛍️</span>
+                      <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                        Browse Staples
+                      </h3>
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                        isRhythm ? "bg-purple-100 text-purple-800" : "bg-emerald-100 text-emerald-800"
+                      }`}>
+                        {totalStaplesCount} Past Staples
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      1-Tap quick add from your 820+ past orders • Tap a category to view items
+                    </p>
+                  </div>
+
+                  {/* Quick Search across all categories */}
+                  <div className="relative min-w-[200px]">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={categorySearchQuery}
+                      onChange={(e) => {
+                        setCategorySearchQuery(e.target.value);
+                        if (e.target.value) {
+                          setIsCategoryItemsExpanded(true);
+                        }
+                      }}
+                      placeholder="Search past items..."
+                      className={`w-full text-xs pl-8 pr-6 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 bg-slate-50 focus:bg-white ${
+                        isRhythm ? "focus:ring-purple-500" : "focus:ring-emerald-500"
+                      }`}
+                    />
+                    {categorySearchQuery && (
+                      <button
+                        onClick={() => setCategorySearchQuery("")}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Category Grid */}
+                {!categorySearchQuery && (
+                  <div
+                    role="tablist"
+                    aria-label="Grocery categories"
+                    className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3.5"
+                  >
+                    {categorySections.map((cat) => {
+                      const isSelected = selectedCategoryId === cat.id && isCategoryItemsExpanded;
+                      const count = cat.itemCount ?? cat.items?.length ?? 0;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          role="tab"
+                          aria-selected={isSelected}
+                          aria-label={`${cat.name}, ${count} items`}
+                          onClick={() => {
+                            if (selectedCategoryId === cat.id) {
+                              setIsCategoryItemsExpanded((prev) => !prev);
+                            } else {
+                              setSelectedCategoryId(cat.id);
+                              setIsCategoryItemsExpanded(true);
+                            }
+                          }}
+                          className={`group relative flex items-center justify-between gap-1.5 p-2 sm:p-2.5 rounded-xl text-left transition-all border min-h-[48px] active:scale-95 ${
+                            isSelected
+                              ? isRhythm
+                                ? "bg-purple-50/90 border-purple-600 text-purple-950 shadow-xs ring-1 ring-purple-600/25"
+                                : "bg-emerald-50/90 border-emerald-600 text-emerald-950 shadow-xs ring-1 ring-emerald-600/25"
+                              : "bg-slate-50/80 hover:bg-slate-100 text-slate-700 border-slate-200/90 hover:border-slate-300"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                            <span className="text-base sm:text-lg shrink-0 leading-none select-none">
+                              {cat.icon}
+                            </span>
+                            <span
+                              className={`text-[11px] sm:text-xs leading-tight break-words ${
+                                isSelected
+                                  ? isRhythm
+                                    ? "font-bold text-purple-950"
+                                    : "font-bold text-emerald-950"
+                                  : "font-semibold text-slate-800"
+                              }`}
+                            >
+                              {cat.name}
+                            </span>
+                          </div>
+                          <span
+                            className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-bold tabular-nums ${
+                              isSelected
+                                ? isRhythm
+                                  ? "bg-purple-200/90 text-purple-900"
+                                  : "bg-emerald-200/90 text-emerald-900"
+                                : "bg-slate-200/80 text-slate-600"
+                            }`}
+                          >
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Items Grid & Header (Visible when expanded or searching) */}
+                {(isCategoryItemsExpanded || categoryBrowseData.isSearch) && (
+                  <div className="pt-2 border-t border-slate-100 animate-fadeIn">
+                    {/* Search Header or Category Header */}
+                    {categoryBrowseData.isSearch ? (
+                      <div className="flex items-center justify-between mb-3 text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-2 rounded-lg">
+                        <span>
+                          Search results for &ldquo;{categorySearchQuery}&rdquo; ({categoryBrowseData.results.length} items found)
                         </span>
                         <button
-                          type="button"
-                          onClick={() => setIsCategoryItemsExpanded(false)}
-                          className="text-xs text-slate-500 hover:text-slate-800 active:scale-95 flex items-center gap-0.5 ml-1 px-1.5 py-0.5 rounded hover:bg-slate-100"
-                          title="Collapse items"
+                          onClick={() => setCategorySearchQuery("")}
+                          className={`hover:underline ${isRhythm ? "text-purple-700" : "text-emerald-700"}`}
                         >
-                          <span>Hide</span>
-                          <ChevronUp className="w-3.5 h-3.5" />
+                          Clear Search
                         </button>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Items Grid (Responsive 2 or 3 columns) */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
-                    {categoryBrowseData.isSearch ? (
-                      categoryBrowseData.results.length === 0 ? (
-                        <div className="col-span-full py-8 text-center text-slate-400 text-xs">
-                          No past items matching &ldquo;{categorySearchQuery}&rdquo;. Try typing it in the input box above to add!
+                    ) : (
+                      <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{categoryBrowseData.activeCategory?.icon}</span>
+                          <span className="text-sm font-bold text-slate-800">
+                            {categoryBrowseData.activeCategory?.name}
+                          </span>
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                            {categoryBrowseData.activeCategory?.badge}
+                          </span>
                         </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-400">
+                            {categoryBrowseData.activeCategory?.items.length} items ordered before
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setIsCategoryItemsExpanded(false)}
+                            className="text-xs text-slate-500 hover:text-slate-800 active:scale-95 flex items-center gap-0.5 ml-1 px-1.5 py-0.5 rounded hover:bg-slate-100"
+                            title="Collapse items"
+                          >
+                            <span>Hide</span>
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Items Grid (Responsive 2 or 3 columns) */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
+                      {categoryBrowseData.isSearch ? (
+                        categoryBrowseData.results.length === 0 ? (
+                          <div className="col-span-full py-8 text-center text-slate-400 text-xs">
+                            No past items matching &ldquo;{categorySearchQuery}&rdquo;. Try typing it in the input box above to add!
+                          </div>
+                        ) : (
+                          categoryBrowseData.results.map(({ item: it, categoryName }) => {
+                            const isAlreadyInList = items.some(
+                              (item) => !item.isDone && item.name.toLowerCase().trim() === it.name.toLowerCase().trim()
+                            );
+                            const isRecentlyClicked = recentlyAddedAnimation === it.name;
+
+                            return (
+                              <div
+                                key={it.name}
+                                onClick={() => handleQuickAddCategoryItem(it.name)}
+                                className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none active:scale-[0.98] ${
+                                  isAlreadyInList
+                                    ? isRhythm
+                                      ? "bg-purple-50/70 border-purple-300"
+                                      : "bg-emerald-50/70 border-emerald-300"
+                                    : isRhythm
+                                    ? "bg-white hover:bg-slate-50 active:bg-purple-50/40 border-slate-200 hover:border-purple-300 hover:shadow-2xs"
+                                    : "bg-white hover:bg-slate-50 active:bg-emerald-50/40 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
+                                } ${
+                                  isRecentlyClicked
+                                    ? isRhythm
+                                      ? "ring-2 ring-purple-500 scale-[1.02]"
+                                      : "ring-2 ring-emerald-500 scale-[1.02]"
+                                    : ""
+                                }`}
+                              >
+                                <div className="flex items-start justify-between gap-1 mb-1.5">
+                                  <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
+                                    {it.imageUrl ? (
+                                      <img
+                                        src={it.imageUrl}
+                                        alt={it.name}
+                                        loading="lazy"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = "none";
+                                          const fallback = e.currentTarget.parentElement?.querySelector(".emoji-fallback");
+                                          if (fallback) (fallback as HTMLElement).style.display = "inline-block";
+                                        }}
+                                      />
+                                    ) : null}
+                                    <span
+                                      className="text-2xl emoji-fallback"
+                                      style={{ display: it.imageUrl ? "none" : "inline-block" }}
+                                    >
+                                      {it.icon}
+                                    </span>
+                                  </div>
+                                  {isAlreadyInList ? (
+                                    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold border ${
+                                      isRhythm
+                                        ? "bg-purple-100 text-purple-800 border-purple-200"
+                                        : "bg-emerald-100 text-emerald-800 border-emerald-200"
+                                    }`}>
+                                      <Check className={`w-3 h-3 ${isRhythm ? "text-purple-700" : "text-emerald-700"}`} />
+                                      <span>In List</span>
+                                    </span>
+                                  ) : (
+                                    <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 transition-colors ${
+                                      isRhythm
+                                        ? "group-hover:bg-purple-600 group-hover:text-white"
+                                        : "group-hover:bg-emerald-600 group-hover:text-white"
+                                    }`}>
+                                      <Plus className="w-3 h-3" />
+                                      <span>Add</span>
+                                    </span>
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className={`font-semibold text-slate-900 text-xs leading-snug ${
+                                    isRhythm ? "group-hover:text-purple-900" : "group-hover:text-emerald-900"
+                                  }`}>
+                                    {it.name}
+                                  </h4>
+                                  {it.subtitle && (
+                                    <p className={`text-[10px] font-medium truncate mt-0.5 ${
+                                      isRhythm ? "text-purple-700/80" : "text-emerald-700/80"
+                                    }`}>
+                                      {it.subtitle}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
+                                    <span>Ordered {it.orderCount}x</span>
+                                    <span className="text-slate-300">•</span>
+                                    <span className="truncate max-w-[70px]">{categoryName}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )
                       ) : (
-                        categoryBrowseData.results.map(({ item: it, categoryName }) => {
+                        categoryBrowseData.activeCategory?.items.map((it) => {
                           const isAlreadyInList = items.some(
                             (item) => !item.isDone && item.name.toLowerCase().trim() === it.name.toLowerCase().trim()
                           );
@@ -1715,9 +1948,19 @@ export default function GroceryAssistantApp() {
                               onClick={() => handleQuickAddCategoryItem(it.name)}
                               className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none active:scale-[0.98] ${
                                 isAlreadyInList
-                                  ? "bg-emerald-50/70 border-emerald-300"
+                                  ? isRhythm
+                                    ? "bg-purple-50/70 border-purple-300"
+                                    : "bg-emerald-50/70 border-emerald-300"
+                                  : isRhythm
+                                  ? "bg-white hover:bg-slate-50 active:bg-purple-50/40 border-slate-200 hover:border-purple-300 hover:shadow-2xs"
                                   : "bg-white hover:bg-slate-50 active:bg-emerald-50/40 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
-                              } ${isRecentlyClicked ? "ring-2 ring-emerald-500 scale-[1.02]" : ""}`}
+                              } ${
+                                isRecentlyClicked
+                                  ? isRhythm
+                                    ? "ring-2 ring-purple-500 scale-[1.02]"
+                                    : "ring-2 ring-emerald-500 scale-[1.02]"
+                                  : ""
+                              }`}
                             >
                               <div className="flex items-start justify-between gap-1 mb-1.5">
                                 <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
@@ -1742,110 +1985,53 @@ export default function GroceryAssistantApp() {
                                   </span>
                                 </div>
                                 {isAlreadyInList ? (
-                                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                    <Check className="w-3 h-3 text-emerald-700" />
+                                  <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold border ${
+                                    isRhythm
+                                      ? "bg-purple-100 text-purple-800 border-purple-200"
+                                      : "bg-emerald-100 text-emerald-800 border-emerald-200"
+                                  }`}>
+                                    <Check className={`w-3 h-3 ${isRhythm ? "text-purple-700" : "text-emerald-700"}`} />
                                     <span>In List</span>
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                  <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 transition-colors ${
+                                    isRhythm
+                                      ? "group-hover:bg-purple-600 group-hover:text-white"
+                                      : "group-hover:bg-emerald-600 group-hover:text-white"
+                                  }`}>
                                     <Plus className="w-3 h-3" />
                                     <span>Add</span>
                                   </span>
                                 )}
                               </div>
                               <div>
-                                <h4 className="font-semibold text-slate-900 text-xs leading-snug group-hover:text-emerald-900">
+                                <h4 className={`font-semibold text-slate-900 text-xs leading-snug ${
+                                  isRhythm ? "group-hover:text-purple-900" : "group-hover:text-emerald-900"
+                                }`}>
                                   {it.name}
                                 </h4>
                                 {it.subtitle && (
-                                  <p className="text-[10px] text-emerald-700/80 font-medium truncate mt-0.5">
+                                  <p className={`text-[10px] font-medium truncate mt-0.5 ${
+                                    isRhythm ? "text-purple-700/80" : "text-emerald-700/80"
+                                  }`}>
                                     {it.subtitle}
                                   </p>
                                 )}
-                                <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
-                                  <span>Ordered {it.orderCount}x</span>
-                                  <span className="text-slate-300">•</span>
-                                  <span className="truncate max-w-[70px]">{categoryName}</span>
-                                </div>
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                  Ordered {it.orderCount} times
+                                </p>
                               </div>
                             </div>
                           );
                         })
-                      )
-                    ) : (
-                      categoryBrowseData.activeCategory?.items.map((it) => {
-                        const isAlreadyInList = items.some(
-                          (item) => !item.isDone && item.name.toLowerCase().trim() === it.name.toLowerCase().trim()
-                        );
-                        const isRecentlyClicked = recentlyAddedAnimation === it.name;
-
-                        return (
-                          <div
-                            key={it.name}
-                            onClick={() => handleQuickAddCategoryItem(it.name)}
-                            className={`cursor-pointer group relative p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between select-none active:scale-[0.98] ${
-                              isAlreadyInList
-                                ? "bg-emerald-50/70 border-emerald-300"
-                                : "bg-white hover:bg-slate-50 active:bg-emerald-50/40 border-slate-200 hover:border-emerald-300 hover:shadow-2xs"
-                            } ${isRecentlyClicked ? "ring-2 ring-emerald-500 scale-[1.02]" : ""}`}
-                          >
-                            <div className="flex items-start justify-between gap-1 mb-1.5">
-                              <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
-                                {it.imageUrl ? (
-                                  <img
-                                    src={it.imageUrl}
-                                    alt={it.name}
-                                    loading="lazy"
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = "none";
-                                      const fallback = e.currentTarget.parentElement?.querySelector(".emoji-fallback");
-                                      if (fallback) (fallback as HTMLElement).style.display = "inline-block";
-                                    }}
-                                  />
-                                ) : null}
-                                <span
-                                  className="text-2xl emoji-fallback"
-                                  style={{ display: it.imageUrl ? "none" : "inline-block" }}
-                                >
-                                  {it.icon}
-                                </span>
-                              </div>
-                              {isAlreadyInList ? (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                  <Check className="w-3 h-3 text-emerald-700" />
-                                  <span>In List</span>
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                                  <Plus className="w-3 h-3" />
-                                  <span>Add</span>
-                                </span>
-                              )}
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-slate-900 text-xs leading-snug group-hover:text-emerald-900">
-                                {it.name}
-                              </h4>
-                              {it.subtitle && (
-                                <p className="text-[10px] text-emerald-700/80 font-medium truncate mt-0.5">
-                                  {it.subtitle}
-                                </p>
-                              )}
-                              <p className="text-[10px] text-slate-400 mt-1">
-                                Ordered {it.orderCount} times
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ========================================================================= */}
         {/* VIEW 2: ROHAN'S VIEW (Running List & Checkoff)                             */}
@@ -1858,12 +2044,12 @@ export default function GroceryAssistantApp() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm font-bold">
-                      👩‍🍳
+                      🛒
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                          Lira is Done
+                          Household Basket Ready
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-950 font-bold border border-emerald-300">
                           Ready to Review &amp; Order
@@ -1873,7 +2059,7 @@ export default function GroceryAssistantApp() {
                         &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
                       </p>
                       <p className="text-xs text-slate-600 mt-0.5">
-                        Lira has finalized the basket with {pendingItems.length} items still to order
+                        Household has finalized the basket with {pendingItems.length} items still to order
                         {recentlyOrderedItems.length > 0 ? ` (${recentlyOrderedItems.length} already ordered independently)` : ""}
                         {estimateBasketValue(pendingItems) ? ` (Est. ₹${estimateBasketValue(pendingItems)})` : ""}.
                         Please review items below and place the order.
@@ -1903,28 +2089,37 @@ export default function GroceryAssistantApp() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-                          Lira is Building the Basket
+                          Rhythm &amp; Lira are Building the Basket
                         </span>
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold">
                           In Progress
                         </span>
                       </div>
                       <p className="text-xs text-amber-900 font-medium mt-1">
-                        Lira is autonomously building and refining the basket ({pendingItems.length} items so far
-                        {recentlyOrderedItems.length > 0 ? `, ${recentlyOrderedItems.length} already ordered` : ""}). When finished, Lira will say:
+                        Household is autonomously building and refining the basket ({pendingItems.length} items so far
+                        {recentlyOrderedItems.length > 0 ? `, ${recentlyOrderedItems.length} already ordered` : ""}). When finished, they will say:
                       </p>
                       <p className="text-xs font-bold text-amber-950 mt-0.5 italic">
                         &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
                       </p>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("lira")}
-                    className="shrink-0 px-3.5 py-1.5 bg-white border border-amber-300 hover:bg-amber-50 active:scale-95 text-amber-900 font-semibold text-xs rounded-xl transition-all"
-                  >
-                    View Lira&apos;s Basket &rarr;
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("lira")}
+                      className="px-3 py-1.5 bg-white border border-amber-300 hover:bg-amber-50 active:scale-95 text-emerald-900 font-semibold text-xs rounded-xl transition-all"
+                    >
+                      ✨ Lira &rarr;
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("rhythm")}
+                      className="px-3 py-1.5 bg-white border border-purple-300 hover:bg-purple-50 active:scale-95 text-purple-900 font-semibold text-xs rounded-xl transition-all"
+                    >
+                      ✨ Rhythm &rarr;
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : handoffState.status === "ordered" ? (
@@ -1999,7 +2194,7 @@ export default function GroceryAssistantApp() {
                     }`}
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
-                    <span>{canOrderResult.allowed ? `Review Basket & Order (${pendingItems.length})` : "Ordering Locked (Lira Building)"}</span>
+                    <span>{canOrderResult.allowed ? `Review Basket & Order (${pendingItems.length})` : "Ordering Locked (Household Building)"}</span>
                   </button>
 
                   <button
@@ -2056,15 +2251,24 @@ export default function GroceryAssistantApp() {
                 </div>
                 <h3 className="font-bold text-slate-800 text-lg">All items checked off!</h3>
                 <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Everything requested has been bought or marked as done. Lira can add more items anytime.
+                  Everything requested has been bought or marked as done. Rhythm &amp; Lira can add more items anytime.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("lira")}
-                  className="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold rounded-xl transition-all"
-                >
-                  Add New Items
-                </button>
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("lira")}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold rounded-xl transition-all"
+                  >
+                    Add with Lira
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("rhythm")}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-semibold rounded-xl transition-all"
+                  >
+                    Add with Rhythm
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
@@ -2108,11 +2312,20 @@ export default function GroceryAssistantApp() {
                                   <Clock className="w-3 h-3 text-slate-400" />
                                   <span>Added {formatEventTime(item.createdAt || item.addedAt)}</span>
                                 </span>
-                                <span className="text-[10px] text-slate-400">
-                                  • by {item.addedBy}
-                                </span>
-                                {item.addedBy === "Pattern Suggestion" && (
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-medium">
+                                {item.addedBy === "Rhythm" ? (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-purple-100 text-purple-800 font-semibold border border-purple-200">
+                                    Rhythm
+                                  </span>
+                                ) : item.addedBy === "Lira" ? (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                                    Lira
+                                  </span>
+                                ) : item.addedBy === "Rohan" ? (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 font-semibold border border-blue-200">
+                                    Rohan
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-semibold border border-amber-200">
                                     AI Suggestion
                                   </span>
                                 )}
