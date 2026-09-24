@@ -103,11 +103,11 @@ export function parseQuantityAndCleanName(rawName: string): { cleanName: string;
   let name = rawName.trim();
   let quantity = 1;
 
-  // Match e.g. "Milk x2" or "Milk ×2" or "Eggs x 12"
-  const trailingMultiplier = name.match(/^(.*?)\s*[×x*]\s*(\d+)$/i);
+  // Match e.g. "Milk x2" or "Milk ×2" or "Eggs x 12" or "Milk 2 packs" or "Milk 2 packets"
+  const trailingMultiplier = name.match(/^(.*?)\s*(?:[×x*]\s*(\d+)|(\d+)\s*(?:packets?|packs?|pcs?|kg|litres?|l|boxes?|bottles?))$/i);
   if (trailingMultiplier) {
     name = trailingMultiplier[1].trim();
-    quantity = parseInt(trailingMultiplier[2], 10) || 1;
+    quantity = parseInt(trailingMultiplier[2] || trailingMultiplier[3], 10) || 1;
   } else {
     // Match e.g. "2 packets of milk", "3 avocados"
     const leadingQty = name.match(/^(\d+)\s*(?:packets?|packs?|pcs?|kg|litres?|l)?\s*(?:of)?\s*(.+)$/i);
@@ -233,4 +233,78 @@ export function updateOrderStatus(
     deliveredAt: newStatus === "DELIVERED" ? (order.deliveredAt || nowIso) : order.deliveredAt,
     items: nextItems
   };
+}
+
+/**
+ * Records an individual item to a HouseholdOrder list, grouping with any recent order
+ * within a time window (e.g. 30 minutes) or creating a new order.
+ */
+export function recordItemToOrders(
+  orders: HouseholdOrder[],
+  item: GroceryItem,
+  orderedBy: string = "Rohan",
+  windowMs: number = 30 * 60 * 1000
+): { updatedOrders: HouseholdOrder[]; modifiedOrder: HouseholdOrder } {
+  const nowIso = new Date().toISOString();
+  const nowMs = Date.now();
+  const { cleanName, quantity } = parseQuantityAndCleanName(item.name);
+  const canonical = toCanonicalItemName(cleanName) || cleanName;
+
+  const lineItem: OrderLineItem = {
+    id: item.id || `item-${Date.now()}`,
+    name: item.name,
+    canonicalName: canonical,
+    quantity: quantity,
+    category: item.category,
+    status: "DELIVERED",
+    deliveredAt: nowIso
+  };
+
+  const recentIndex = orders.findIndex((ord) => {
+    if (ord.platform !== "HOUSEHOLD_APP" && ord.platform !== "Zepto") return false;
+    const orderTime = new Date(ord.placedAt).getTime();
+    if (isNaN(orderTime)) return false;
+    return nowMs - orderTime <= windowMs;
+  });
+
+  if (recentIndex >= 0) {
+    const existing = orders[recentIndex];
+    const exists = existing.items.some(
+      (it) => it.id === item.id || it.canonicalName.toLowerCase() === canonical.toLowerCase()
+    );
+    const nextItems = exists
+      ? existing.items.map((it) =>
+          it.id === item.id || it.canonicalName.toLowerCase() === canonical.toLowerCase()
+            ? { ...it, status: "DELIVERED" as OrderItemStatus, deliveredAt: nowIso }
+            : it
+        )
+      : [...existing.items, lineItem];
+
+    const modifiedOrder: HouseholdOrder = {
+      ...existing,
+      items: nextItems,
+      itemsCount: nextItems.length,
+      status: "DELIVERED",
+      deliveredAt: nowIso
+    };
+
+    const updatedOrders = orders.map((o, idx) => (idx === recentIndex ? modifiedOrder : o));
+    return { updatedOrders, modifiedOrder };
+  } else {
+    const orderId = `ord-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const modifiedOrder: HouseholdOrder = {
+      orderId,
+      orderCode: `ORD-${orderId.slice(-6).toUpperCase()}`,
+      platform: "HOUSEHOLD_APP",
+      status: "DELIVERED",
+      placedAt: nowIso,
+      deliveredAt: nowIso,
+      totalAmount: 0,
+      itemsCount: 1,
+      items: [lineItem],
+      orderedBy
+    };
+    const updatedOrders = [modifiedOrder, ...orders];
+    return { updatedOrders, modifiedOrder };
+  }
 }

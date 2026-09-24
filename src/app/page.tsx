@@ -78,7 +78,8 @@ import {
   OrderItemStatus,
   createOrderFromBasket,
   updateOrderStatus,
-  updateOrderItemOutcome
+  updateOrderItemOutcome,
+  recordItemToOrders
 } from "../lib/orderLifecycle";
 import {
   getDefaultHistoricalOrders,
@@ -181,7 +182,7 @@ function formatPlatformName(platform?: string): string {
 const INITIAL_ITEMS: GroceryItem[] = [];
 
 export default function GroceryAssistantApp() {
-  const [activeTab, setActiveTab] = useState<"lira" | "rhythm" | "rohan" | "orders">("lira");
+  const [activeTab, setActiveTab] = useState<"lira" | "rhythm" | "orders">("lira");
   const [items, setItems] = useState<GroceryItem[]>(INITIAL_ITEMS);
   const [inputText, setInputText] = useState("");
   const [isListening, setIsListening] = useState(false);
@@ -485,53 +486,6 @@ export default function GroceryAssistantApp() {
     return orders.filter((o) => o.status === ordersFilter);
   }, [orders, ordersFilter]);
 
-  // Order placement check for Rohan (gated until Lira hands off with 'I’m done. Please proceed with order.')
-  const canOrderResult = useMemo(() => {
-    return canPlaceOrder(handoffState, "Rohan", pendingItems.length);
-  }, [handoffState, pendingItems.length]);
-
-  // Persistent Handoff Notification (idempotent, single source of truth from handoffState.status === 'ready_for_order')
-  const activeNotification = useMemo(() => {
-    return evaluateHandoffNotification(handoffState, pendingItems, acknowledgedNotificationIds);
-  }, [handoffState, pendingItems, acknowledgedNotificationIds]);
-
-  // Acknowledge/dismiss active notification without cancelling handoff
-  const handleAcknowledgeNotification = (notificationId: string) => {
-    setAcknowledgedNotificationIds((prev) => {
-      const next = new Set(prev);
-      next.add(notificationId);
-      try {
-        localStorage.setItem("household_ack_notifications", JSON.stringify(Array.from(next)));
-      } catch {}
-      return next;
-    });
-  };
-
-  // Explicit user opt-in for browser notifications
-  const handleEnablePushNotifications = async () => {
-    const status = await requestNotificationPermission();
-    setBrowserNotificationPermission(status);
-  };
-
-  // Trigger browser push notification once per unique handoff event if granted
-  useEffect(() => {
-    if (
-      handoffState.status === "ready_for_order" &&
-      handoffState.handoffAt &&
-      browserNotificationPermission === "granted"
-    ) {
-      const eventKey = `browser_push_sent_${handoffState.handoffAt}`;
-      if (!sessionStorage.getItem(eventKey)) {
-        sessionStorage.setItem(eventKey, "true");
-        sendBrowserHandoffNotification({
-          itemCount: pendingItems.length,
-          estimatedValue: estimateBasketValue(pendingItems),
-          onOpenBasket: () => setActiveTab("rohan")
-        });
-      }
-    }
-  }, [handoffState.status, handoffState.handoffAt, browserNotificationPermission, pendingItems]);
-
   // Current active builder person ("Lira" or "Rhythm")
   const currentBuilderPerson: "Lira" | "Rhythm" = activeTab === "rhythm" ? "Rhythm" : "Lira";
 
@@ -636,49 +590,6 @@ export default function GroceryAssistantApp() {
     }
   };
 
-  // Completes the basket and triggers handoff with the exact message: "I’m done. Please proceed with order."
-  const handleLiraHandoff = () => {
-    if (pendingItems.length === 0) return;
-    try {
-      const nextState = liraCompleteAndHandoff(handoffState, pendingItems.length);
-      setHandoffState(nextState);
-    } catch (e) {
-      console.error("Handoff error", e);
-    }
-  };
-
-  // Rohan places the order (gated until Lira hands off)
-  const handlePlaceOrder = async () => {
-    const check = canPlaceOrder(handoffState, "Rohan", pendingItems.length);
-    if (!check.allowed) {
-      alert(check.reason || "Cannot place order.");
-      return;
-    }
-
-    const result = executePlaceOrder(handoffState, "Rohan", pendingItems.length);
-    if (!result.success) {
-      alert(result.error || "Failed to place order.");
-      return;
-    }
-
-    // 1. Create the new HouseholdOrder in ORDER_PLACED status with canonical identities
-    const newOrder = createOrderFromBasket(pendingItems, "Zepto", "Rohan");
-
-    // 2. Add to orders history (newest first)
-    setOrders((prev) => [newOrder, ...prev]);
-
-    // 3. Persist to Supabase household_orders
-    saveHouseholdOrder(newOrder);
-
-    // 4. Remove active items from current basket (both local state & Supabase grocery_items)
-    const activeItemIds = pendingItems.map((it) => it.id);
-    setItems((prev) => prev.filter((it) => it.isDone));
-    clearActiveBasketDb(activeItemIds);
-
-    // 5. Transition handoff state to 'ordered'
-    setHandoffState(result.nextState);
-  };
-
   // Order lifecycle management handlers for Order History UI
   const handleUpdateOrderStatus = (orderId: string, status: OrderStatus) => {
     setOrders((prev) => {
@@ -713,32 +624,43 @@ export default function GroceryAssistantApp() {
     });
   };
 
-  // Reset to start a new grocery run
-  const handleStartNewBasket = () => {
-    setItems((prev) => prev.filter((it) => !it.isDone));
-    setHandoffState(resetBasketState());
-    setActiveTab("lira");
+  // Records an ordered / purchased item directly to Order History with smart 30-min grouping
+  const recordItemToOrderHistory = (targetItem: GroceryItem, orderedBy: string = "Rohan") => {
+    setOrders((prevOrders) => {
+      const { updatedOrders, modifiedOrder } = recordItemToOrders(prevOrders, targetItem, orderedBy);
+      saveHouseholdOrder(modifiedOrder);
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("household_orders_cache", JSON.stringify(updatedOrders));
+        } catch {}
+      }
+      return updatedOrders;
+    });
   };
 
-  // Toggle Done / Bought status (sync to Supabase with exact purchased_at timestamp)
+  // Toggle Done / Bought status (sync to Supabase & record to Order History)
   const toggleItemDone = (id: string) => {
     const target = items.find((it) => it.id === id);
     if (target) {
       const willBeDone = !target.isDone;
+      const nowIso = new Date().toISOString();
       const updated: GroceryItem = {
         ...target,
         isDone: willBeDone,
-        purchasedAt: willBeDone ? new Date().toISOString() : undefined
+        purchasedAt: willBeDone ? nowIso : undefined
       };
       setItems((prev) =>
         prev.map((it) => (it.id === id ? updated : it))
       );
       upsertGroceryItem(updated);
+      if (willBeDone) {
+        recordItemToOrderHistory(target, "Rohan");
+      }
     }
   };
 
-  // Mark an item as already ordered (e.g. by Rohan prior to Lira finishing)
-  // Item remains visible with strikethrough for 24 hours
+  // Mark an item as already ordered directly from the live list
+  // Item remains visible with strikethrough for 24 hours & syncs to Order History
   const handleMarkAsOrdered = (id: string, orderedBy: "Rohan" | "Lira" = "Rohan") => {
     const target = items.find((it) => it.id === id);
     if (target) {
@@ -755,6 +677,7 @@ export default function GroceryAssistantApp() {
       const remainingPending = items.filter((it) => it.id !== id && !it.isDone && !it.isOrdered).length;
       setHandoffState((hPrev) => registerBasketActivity(hPrev, remainingPending));
       upsertGroceryItem(updated);
+      recordItemToOrderHistory(target, orderedBy);
     }
   };
 
@@ -938,32 +861,6 @@ export default function GroceryAssistantApp() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab("rohan")}
-              className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1 relative whitespace-nowrap ${
-                activeTab === "rohan"
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <span>🛒 Basket</span>
-              {handoffState.status === "ready_for_order" && (
-                <span
-                  title="Basket is ready for order"
-                  className="w-2 h-2 rounded-full bg-amber-400 animate-ping absolute -top-0.5 -right-0.5"
-                />
-              )}
-              {pendingItems.length > 0 && (
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                    activeTab === "rohan" ? "bg-emerald-700 text-white" : "bg-emerald-200 text-emerald-900"
-                  }`}
-                >
-                  {pendingItems.length}
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
               onClick={() => setActiveTab("orders")}
               className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 flex items-center gap-1 whitespace-nowrap ${
                 activeTab === "orders"
@@ -981,90 +878,12 @@ export default function GroceryAssistantApp() {
             </button>
           </div>
         </div>
-
-        {/* Global Persistent In-App Notification Banner for Lira Handoff */}
-        {activeNotification && !activeNotification.isAcknowledged && (
-          <div className="bg-amber-500 text-white px-4 py-2.5 shadow-sm border-t border-amber-600/30 animate-fadeIn">
-            <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
-              <div
-                onClick={() => setActiveTab("rohan")}
-                className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer select-none group"
-              >
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0 text-base">
-                  🛒
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold uppercase tracking-wider bg-white/25 px-1.5 py-0.2 rounded text-white">
-                      Basket Ready
-                    </span>
-                    <span className="text-xs font-semibold truncate">
-                      {activeNotification.itemCount} {activeNotification.itemCount === 1 ? "item" : "items"}
-                      {activeNotification.estimatedBasketValue ? ` • Est. ₹${activeNotification.estimatedBasketValue}` : ""}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-amber-100 truncate group-hover:underline">
-                    &ldquo;{activeNotification.message}&rdquo; — Tap to review &amp; order &rarr;
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("rohan")}
-                  className="px-3 py-1 bg-white text-amber-900 font-bold text-xs rounded-lg hover:bg-amber-50 active:scale-95 transition-all shadow-xs"
-                >
-                  Review
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAcknowledgeNotification(activeNotification.id)}
-                  className="p-1 rounded-lg hover:bg-white/20 text-white/80 hover:text-white transition-all"
-                  title="Dismiss alert"
-                  aria-label="Dismiss alert"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Browser Push Permission Opt-in Bar (Shown only if browser supports and user hasn't chosen yet) */}
-        {browserNotificationPermission === "default" && (
-          <div className="bg-slate-100 border-t border-slate-200/80 px-4 py-1.5">
-            <div className="max-w-2xl mx-auto flex items-center justify-between text-xs text-slate-600">
-              <div className="flex items-center gap-1.5">
-                <Bell className="w-3.5 h-3.5 text-slate-500" />
-                <span>Get notified when Lira finishes building your grocery basket?</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleEnablePushNotifications}
-                  className="font-semibold text-emerald-700 hover:text-emerald-800 underline active:scale-95"
-                >
-                  Enable notifications
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBrowserNotificationPermission("denied")}
-                  className="text-slate-400 hover:text-slate-600 p-0.5"
-                  title="Not now"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </header>
 
       {/* Main Container */}
       <main className="max-w-2xl mx-auto px-4 pt-4">
         {/* ========================================================================= */}
-        {/* VIEW 1: BUILDER VIEW (LIRA OR RHYTHM)                                      */}
+        {/* VIEW 1: LIVE LIST (LIRA OR RHYTHM)                                        */}
         {/* ========================================================================= */}
         {(activeTab === "lira" || activeTab === "rhythm") && (() => {
           const isRhythm = activeTab === "rhythm";
@@ -1074,119 +893,6 @@ export default function GroceryAssistantApp() {
 
           return (
             <div className="space-y-5">
-              {/* Builder Status & Action Banner */}
-              {handoffState.status === "ready_for_order" ? (
-                <div className={`border-2 rounded-2xl p-4 shadow-sm animate-fadeIn ${
-                  isRhythm ? "bg-purple-50 border-purple-500" : "bg-emerald-50 border-emerald-500"
-                }`}>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className={`w-10 h-10 rounded-full text-white flex items-center justify-center text-lg shrink-0 shadow-sm font-bold ${
-                        isRhythm ? "bg-purple-600" : "bg-emerald-600"
-                      }`}>
-                        {builderAvatar}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs font-bold uppercase tracking-wider ${
-                            isRhythm ? "text-purple-900" : "text-emerald-800"
-                          }`}>
-                            {builderName} is Done
-                          </span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
-                            isRhythm
-                              ? "bg-purple-100 text-purple-800 border-purple-300"
-                              : "bg-emerald-100 text-emerald-800 border-emerald-300"
-                          }`}>
-                            Ready for Review
-                          </span>
-                        </div>
-                        <p className="text-base font-bold text-slate-900 mt-1 italic">
-                          &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
-                        </p>
-                        <p className="text-xs text-slate-600 mt-0.5">
-                          Basket is ready with {pendingItems.length} items. Handed to Rohan to review and order.
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("rohan")}
-                      className={`shrink-0 px-4 py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95 ${
-                        isRhythm ? "bg-purple-600 hover:bg-purple-700" : "bg-emerald-600 hover:bg-emerald-700"
-                      }`}
-                    >
-                      <span>Review Basket &amp; Order &rarr;</span>
-                    </button>
-                  </div>
-                </div>
-              ) : pendingItems.length > 0 && handoffState.status === "building" ? (
-                <div className="bg-amber-50/90 border border-amber-300/90 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-2xs">
-                      🧺
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-                          Basket in Progress
-                        </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold">
-                          {pendingItems.length} items
-                        </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                          isRhythm ? "bg-purple-100 text-purple-800" : "bg-emerald-100 text-emerald-800"
-                        }`}>
-                          Active: {builderName} ({builderRole})
-                        </span>
-                      </div>
-                      <p className="text-xs text-amber-800 mt-0.5">
-                        Refine or add what is needed. When finished, notify Rohan to review and order.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleLiraHandoff}
-                    className={`px-4 py-2 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 shrink-0 active:scale-95 ${
-                      isRhythm ? "bg-purple-600 hover:bg-purple-700" : "bg-emerald-600 hover:bg-emerald-700"
-                    }`}
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>{builderName} is Done</span>
-                  </button>
-                </div>
-              ) : handoffState.status === "ordered" ? (
-                <div className="bg-slate-100 border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Last Run Ordered
-                    </span>
-                    <p className="text-sm font-medium text-slate-700 mt-0.5">
-                      Order for {handoffState.lastRunSummary?.itemCount ?? 0} items placed by Rohan.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("orders")}
-                      className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 active:scale-95 text-slate-700 font-semibold text-xs rounded-xl transition-all flex items-center gap-1"
-                    >
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>View Orders</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleStartNewBasket}
-                      className={`px-3 py-1.5 text-white font-semibold text-xs rounded-xl transition-all active:scale-95 ${
-                        isRhythm ? "bg-purple-600 hover:bg-purple-700" : "bg-emerald-600 hover:bg-emerald-700"
-                      }`}
-                    >
-                      Start New Basket
-                    </button>
-                  </div>
-                </div>
-              ) : null}
 
               {/* ========================================================================= */}
               {/* 1. PRIMARY FEATURE: RECOMMENDATIONS                                       */}
@@ -1414,7 +1120,7 @@ export default function GroceryAssistantApp() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-sm font-bold text-slate-900">
-                      Household Basket
+                      Household Groceries
                     </h3>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                       isRhythm ? "bg-purple-100 text-purple-800" : "bg-emerald-100 text-emerald-800"
@@ -1427,19 +1133,31 @@ export default function GroceryAssistantApp() {
                       </span>
                     )}
                   </div>
-                  <button
-                    onClick={() => setActiveTab("rohan")}
-                    className={`text-xs font-semibold flex items-center gap-1 ${
-                      isRhythm ? "text-purple-600 hover:text-purple-700" : "text-emerald-600 hover:text-emerald-700"
-                    }`}
-                  >
-                    <span>Review Basket &rarr;</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCopyList}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-semibold rounded-xl transition-all"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>{copiedNotification ? "Copied!" : "Copy for WhatsApp"}</span>
+                    </button>
+                    {completedItems.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={clearCompleted}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-700 text-xs font-semibold rounded-xl transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Clear Done ({completedItems.length})</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {basketItems.length === 0 ? (
                   <p className="text-sm text-slate-400 text-center py-6">
-                    Your basket is empty. Add recommended items above, type below, or browse staples.
+                    Your list is empty. Add recommended items above, type below, or browse staples.
                   </p>
                 ) : (
                   <div className="divide-y divide-slate-100">
@@ -1451,54 +1169,82 @@ export default function GroceryAssistantApp() {
                           key={it.id}
                           className={`py-2.5 flex items-center justify-between gap-2 transition-all ${
                             isDeleting ? "item-delete-exit" : ""
-                          } ${isItemOrdered ? "bg-slate-50/60 -mx-2 px-2 rounded-xl" : ""}`}
+                          } ${isItemOrdered || it.isDone ? "bg-slate-50/60 -mx-2 px-2 rounded-xl" : ""}`}
                         >
-                          <div className="min-w-0 flex-1">
-                            <span
-                              className={`text-base font-medium block truncate transition-all ${
-                                isItemOrdered
-                                  ? "line-through text-slate-400 font-normal"
-                                  : "text-slate-800"
+                          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                            <button
+                              type="button"
+                              onClick={() => toggleItemDone(it.id)}
+                              aria-label={`Mark ${it.name} as done`}
+                              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 active:scale-90 ${
+                                it.isDone
+                                  ? "bg-emerald-600 border-emerald-600 text-white"
+                                  : isItemOrdered
+                                  ? "bg-emerald-100 border-emerald-400 text-emerald-700"
+                                  : "border-slate-300 hover:border-emerald-500 text-transparent hover:text-emerald-500"
                               }`}
                             >
-                              {it.name}
-                            </span>
-                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              <span className="text-[10px] text-slate-400">{it.category}</span>
-                              {/* Person Tag Badge */}
-                              {it.addedBy === "Rhythm" ? (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-purple-100 text-purple-800 font-semibold border border-purple-200">
-                                  Rhythm
-                                </span>
-                              ) : it.addedBy === "Lira" ? (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
-                                  Lira
-                                </span>
-                              ) : it.addedBy === "Rohan" ? (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 font-semibold border border-blue-200">
-                                  Rohan
-                                </span>
-                              ) : (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-semibold border border-amber-200">
-                                  AI Suggestion
-                                </span>
-                              )}
-                              {isItemOrdered ? (
-                                <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                                  <span className="font-semibold text-emerald-700 flex items-center gap-1">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                    <span>✓ Rohan ordered already</span>
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+
+                            <div className="min-w-0 flex-1">
+                              <span
+                                className={`text-base font-medium block truncate transition-all ${
+                                  isItemOrdered || it.isDone
+                                    ? "line-through text-slate-400 font-normal"
+                                    : "text-slate-800"
+                                }`}
+                              >
+                                {it.name}
+                              </span>
+                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                <span className="text-[10px] text-slate-400">{it.category}</span>
+                                {/* Person Tag Badge */}
+                                {it.addedBy === "Rhythm" ? (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-purple-100 text-purple-800 font-semibold border border-purple-200">
+                                    Rhythm
                                   </span>
-                                  <span className="text-slate-300">•</span>
-                                  <span className="text-slate-500 font-normal">
-                                    {formatItemOrderedTime(it.orderedAt)}
+                                ) : it.addedBy === "Lira" ? (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                                    Lira
                                   </span>
-                                </div>
-                              ) : (
-                                <span className="text-[10px] text-slate-400">
-                                  • Added {formatEventTime(it.createdAt || it.addedAt)}
-                                </span>
-                              )}
+                                ) : it.addedBy === "Rohan" ? (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 font-semibold border border-blue-200">
+                                    Rohan
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-semibold border border-amber-200">
+                                    AI Suggestion
+                                  </span>
+                                )}
+                                {isItemOrdered ? (
+                                  <div className="flex items-center gap-1.5 flex-wrap text-xs">
+                                    <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                      <span>✓ {it.orderedBy || "Rohan"} ordered</span>
+                                    </span>
+                                    <span className="text-slate-300">•</span>
+                                    <span className="text-slate-500 font-normal">
+                                      {formatItemOrderedTime(it.orderedAt)}
+                                    </span>
+                                  </div>
+                                ) : it.isDone ? (
+                                  <div className="flex items-center gap-1.5 flex-wrap text-xs">
+                                    <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                      <span>✓ Bought / Done</span>
+                                    </span>
+                                    <span className="text-slate-300">•</span>
+                                    <span className="text-slate-500 font-normal">
+                                      {formatEventTime(it.purchasedAt)}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400">
+                                    • Added {formatEventTime(it.createdAt || it.addedAt)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
 
@@ -1509,6 +1255,15 @@ export default function GroceryAssistantApp() {
                                 onClick={() => handleUndoOrdered(it.id)}
                                 className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition-all"
                                 title="Undo ordered status"
+                              >
+                                Undo
+                              </button>
+                            ) : it.isDone ? (
+                              <button
+                                type="button"
+                                onClick={() => toggleItemDone(it.id)}
+                                className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition-all"
+                                title="Restore item"
                               >
                                 Undo
                               </button>
@@ -1538,57 +1293,6 @@ export default function GroceryAssistantApp() {
                       );
                     })}
                   </div>
-                )}
-
-                {/* Handoff Ready Callout at bottom of basket */}
-                {pendingItems.length > 0 && (
-                  handoffState.status === "ready_for_order" ? (
-                    <div className={`mt-3.5 p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-                      isRhythm
-                        ? "bg-purple-50 border-purple-200"
-                        : "bg-emerald-50 border-emerald-200"
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className={`w-4 h-4 shrink-0 ${
-                          isRhythm ? "text-purple-600" : "text-emerald-600"
-                        }`} />
-                        <span className={`text-xs font-semibold ${
-                          isRhythm ? "text-purple-950" : "text-emerald-950"
-                        }`}>
-                          Basket ready: &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("rohan")}
-                        className={`text-xs font-bold active:scale-95 transition-transform flex items-center gap-1 ${
-                          isRhythm
-                            ? "text-purple-700 hover:text-purple-900"
-                            : "text-emerald-700 hover:text-emerald-900"
-                        }`}
-                      >
-                        <span>Review Basket &amp; Order &rarr;</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                      <span className="text-xs text-slate-500">
-                        Finished building the basket?
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleLiraHandoff}
-                        className={`px-3.5 py-1.5 text-white font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5 active:scale-95 ${
-                          isRhythm
-                            ? "bg-purple-600 hover:bg-purple-700"
-                            : "bg-emerald-600 hover:bg-emerald-700"
-                        }`}
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>{builderName} is Done</span>
-                      </button>
-                    </div>
-                  )
                 )}
               </div>
 
@@ -2034,455 +1738,7 @@ export default function GroceryAssistantApp() {
         })()}
 
         {/* ========================================================================= */}
-        {/* VIEW 2: ROHAN'S VIEW (Running List & Checkoff)                             */}
-        {/* ========================================================================= */}
-        {activeTab === "rohan" && (
-          <div className="space-y-5">
-            {/* Basket Status Banner in Rohan's View */}
-            {handoffState.status === "ready_for_order" ? (
-              <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-4 shadow-sm animate-fadeIn">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm font-bold">
-                      🛒
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                          Household Basket Ready
-                        </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-950 font-bold border border-emerald-300">
-                          Ready to Review &amp; Order
-                        </span>
-                      </div>
-                      <p className="text-base font-bold text-slate-900 mt-1 italic">
-                        &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
-                      </p>
-                      <p className="text-xs text-slate-600 mt-0.5">
-                        Household has finalized the basket with {pendingItems.length} items still to order
-                        {recentlyOrderedItems.length > 0 ? ` (${recentlyOrderedItems.length} already ordered independently)` : ""}
-                        {estimateBasketValue(pendingItems) ? ` (Est. ₹${estimateBasketValue(pendingItems)})` : ""}.
-                        Please review items below and place the order.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handlePlaceOrder}
-                    className="shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 ring-2 ring-emerald-500/40"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                    <span>
-                      Review Basket &amp; Order ({pendingItems.length})
-                      {estimateBasketValue(pendingItems) ? ` • ₹${estimateBasketValue(pendingItems)}` : ""}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            ) : handoffState.status === "building" ? (
-              <div className="bg-amber-50/90 border border-amber-300 rounded-2xl p-4 shadow-sm animate-fadeIn">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-2xs">
-                      ⏳
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-                          Rhythm &amp; Lira are Building the Basket
-                        </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold">
-                          In Progress
-                        </span>
-                      </div>
-                      <p className="text-xs text-amber-900 font-medium mt-1">
-                        Household is autonomously building and refining the basket ({pendingItems.length} items so far
-                        {recentlyOrderedItems.length > 0 ? `, ${recentlyOrderedItems.length} already ordered` : ""}). When finished, they will say:
-                      </p>
-                      <p className="text-xs font-bold text-amber-950 mt-0.5 italic">
-                        &ldquo;{LIRA_HANDOFF_MESSAGE}&rdquo;
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("lira")}
-                      className="px-3 py-1.5 bg-white border border-amber-300 hover:bg-amber-50 active:scale-95 text-emerald-900 font-semibold text-xs rounded-xl transition-all"
-                    >
-                      ✨ Lira &rarr;
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("rhythm")}
-                      className="px-3 py-1.5 bg-white border border-purple-300 hover:bg-purple-50 active:scale-95 text-purple-900 font-semibold text-xs rounded-xl transition-all"
-                    >
-                      ✨ Rhythm &rarr;
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : handoffState.status === "ordered" ? (
-              <div className="bg-emerald-50/80 border border-emerald-300 rounded-2xl p-4 shadow-sm animate-fadeIn">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
-                      ✓
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                        Order Placed by Rohan
-                      </span>
-                      <p className="text-sm font-semibold text-slate-900 mt-0.5">
-                        Order for {handoffState.lastRunSummary?.itemCount ?? 0} items placed at {formatEventTime(handoffState.orderedAt ?? undefined)}.
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Basket cleared. Items are now in flight and tracked in Order History.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("orders")}
-                      className="shrink-0 px-3.5 py-2 bg-white border border-emerald-300 hover:bg-emerald-50 active:scale-95 text-emerald-800 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 shadow-2xs"
-                    >
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>View Orders</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleStartNewBasket}
-                      className="shrink-0 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold rounded-xl transition-all"
-                    >
-                      Start New Basket
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {/* Header Toolbar */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">
-                    Running Grocery Checklist
-                  </span>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl font-bold text-slate-900">
-                      {pendingItems.length} {pendingItems.length === 1 ? "Item" : "Items"} to Order / Buy
-                    </h2>
-                    {recentlyOrderedItems.length > 0 && (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                        {recentlyOrderedItems.length} already ordered
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handlePlaceOrder}
-                    disabled={!canOrderResult.allowed}
-                    title={canOrderResult.allowed ? "Review and place order with current items" : canOrderResult.reason}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl transition-all shadow-sm ${
-                      canOrderResult.allowed
-                        ? "bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white ring-2 ring-emerald-500/50 cursor-pointer"
-                        : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
-                    }`}
-                  >
-                    <ShoppingCart className="w-3.5 h-3.5" />
-                    <span>{canOrderResult.allowed ? `Review Basket & Order (${pendingItems.length})` : "Ordering Locked (Household Building)"}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleCopyList}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-semibold rounded-xl transition-all"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>{copiedNotification ? "Copied!" : "Copy for WhatsApp"}</span>
-                  </button>
-
-                  {completedItems.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={clearCompleted}
-                      className="flex items-center gap-1 px-3 py-2 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-700 text-xs font-semibold rounded-xl transition-all"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Clear Done ({completedItems.length})</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Quick Add Bar for Rohan */}
-              <div className="mt-3.5 flex items-center gap-2">
-                <input
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleAddItems(inputText, "Rohan");
-                  }}
-                  placeholder="Quick add item (e.g. Eggs, Coffee)..."
-                  className="flex-1 text-sm px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleAddItems(inputText, "Rohan")}
-                  disabled={!inputText.trim()}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 text-white font-medium text-sm rounded-xl transition-all flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Categorized To-Buy Checklist */}
-            {pendingItems.length === 0 ? (
-              <div className="bg-white rounded-2xl p-10 text-center border border-slate-200 shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
-                  <Check className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-slate-800 text-lg">All items checked off!</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Everything requested has been bought or marked as done. Rhythm &amp; Lira can add more items anytime.
-                </p>
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("lira")}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold rounded-xl transition-all"
-                  >
-                    Add with Lira
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("rhythm")}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-semibold rounded-xl transition-all"
-                  >
-                    Add with Rhythm
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {Object.entries(groupedPending).map(([category, catItems]) => (
-                  <div key={category} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="bg-slate-50/80 px-4 py-2.5 border-b border-slate-200/70 flex items-center justify-between">
-                      <span className="font-bold text-xs uppercase tracking-wider text-slate-600">
-                        {category}
-                      </span>
-                      <span className="text-[11px] font-semibold text-slate-500">
-                        {catItems.length} {catItems.length === 1 ? "item" : "items"}
-                      </span>
-                    </div>
-
-                    <div className="divide-y divide-slate-100">
-                      {catItems.map((item) => {
-                        const isDeleting = deletingItemIds.has(item.id);
-                        return (
-                          <div
-                            key={item.id}
-                            className={`px-4 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-colors group ${
-                              isDeleting ? "item-delete-exit" : ""
-                            }`}
-                          >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <button
-                              type="button"
-                              onClick={() => toggleItemDone(item.id)}
-                              aria-label={`Mark ${item.name} as done`}
-                              className="w-6 h-6 rounded-lg border-2 border-slate-300 hover:border-emerald-500 active:scale-90 flex items-center justify-center transition-all text-transparent hover:text-emerald-500 shrink-0"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <div
-                              onClick={() => toggleItemDone(item.id)}
-                              className="flex-1 cursor-pointer select-none min-w-0"
-                            >
-                              <p className="text-base font-medium text-slate-900 leading-snug">{item.name}</p>
-                              <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                                <span className="text-[10px] text-slate-500 flex items-center gap-1">
-                                  <Clock className="w-3 h-3 text-slate-400" />
-                                  <span>Added {formatEventTime(item.createdAt || item.addedAt)}</span>
-                                </span>
-                                {item.addedBy === "Rhythm" ? (
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-purple-100 text-purple-800 font-semibold border border-purple-200">
-                                    Rhythm
-                                  </span>
-                                ) : item.addedBy === "Lira" ? (
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
-                                    Lira
-                                  </span>
-                                ) : item.addedBy === "Rohan" ? (
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 font-semibold border border-blue-200">
-                                    Rohan
-                                  </span>
-                                ) : (
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-semibold border border-amber-200">
-                                    AI Suggestion
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => handleMarkAsOrdered(item.id, "Rohan")}
-                              className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-800 font-semibold text-xs rounded-lg transition-all flex items-center gap-1"
-                              title="Mark as ordered already by Rohan"
-                            >
-                              <Check className="w-3 h-3 text-emerald-600" />
-                              <span className="hidden sm:inline">Mark as Ordered</span>
-                              <span className="sm:hidden">Ordered</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => toggleItemDone(item.id)}
-                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-semibold text-xs rounded-lg transition-all"
-                            >
-                              Mark Done
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => deleteItem(item.id)}
-                              className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Recently Ordered Items Section (Items marked ordered in the past 24 hours) */}
-            {recentlyOrderedItems.length > 0 && (
-              <div className="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-200/90 shadow-2xs">
-                <div className="flex items-center justify-between mb-2.5">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Ordered Already ({recentlyOrderedItems.length})</span>
-                  </h3>
-                  <span className="text-[11px] text-emerald-700 font-medium">
-                    Kept in basket for 24 hours
-                  </span>
-                </div>
-                <div className="divide-y divide-emerald-100/80">
-                  {recentlyOrderedItems.map((item) => (
-                    <div key={item.id} className="py-2.5 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <div className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                          <Check className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm line-through text-slate-400 font-normal block leading-snug truncate">
-                            {item.name}
-                          </span>
-                          <div className="flex items-center gap-2 mt-0.5 text-xs text-emerald-800 flex-wrap">
-                            <span className="font-semibold text-emerald-700 flex items-center gap-1">
-                              ✓ Rohan ordered already
-                            </span>
-                            <span className="text-slate-300">•</span>
-                            <span className="text-slate-500 font-normal">
-                              {formatItemOrderedTime(item.orderedAt)}
-                            </span>
-                            <span className="text-slate-300">•</span>
-                            <span className="text-slate-400 font-normal text-[10px]">{item.category}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => handleUndoOrdered(item.id)}
-                          className="text-xs text-emerald-800 hover:text-emerald-950 bg-white hover:bg-emerald-100/80 active:scale-95 px-2.5 py-1 font-semibold rounded-lg border border-emerald-200 transition-all"
-                          title="Restore item to pending list"
-                        >
-                          Undo
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteItem(item.id)}
-                          className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all rounded-lg"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Completed / Bought Items Section */}
-            {completedItems.length > 0 && (
-              <div className="bg-slate-100/80 rounded-2xl p-4 border border-slate-200">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Bought / Done ({completedItems.length})</span>
-                </h3>
-                <div className="divide-y divide-slate-200/60">
-                  {completedItems.map((item) => (
-                    <div key={item.id} className="py-2.5 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <button
-                          type="button"
-                          onClick={() => toggleItemDone(item.id)}
-                          aria-label={`Unmark ${item.name}`}
-                          className="w-5 h-5 rounded-md bg-emerald-600 active:scale-90 text-white flex items-center justify-center shrink-0 transition-all"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                        </button>
-                        <div
-                          onClick={() => toggleItemDone(item.id)}
-                          className="flex-1 cursor-pointer select-none min-w-0"
-                        >
-                          <span className="text-sm line-through text-slate-500 font-medium block leading-snug">{item.name}</span>
-                          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
-                            {item.purchasedAt ? (
-                              <span className="text-emerald-700 font-medium">
-                                Bought {formatEventTime(item.purchasedAt)}
-                              </span>
-                            ) : (
-                              <span>Bought</span>
-                            )}
-                            <span>• Added {formatEventTime(item.createdAt || item.addedAt)} ({item.addedBy})</span>
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => toggleItemDone(item.id)}
-                        className="text-xs text-slate-400 hover:text-slate-700 active:scale-95 px-2 py-1 font-medium transition-all shrink-0"
-                        title="Restore to active list"
-                      >
-                        Undo
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* VIEW 3: ORDER HISTORY (Simple, Mobile-Friendly & Purchase Memory)        */}
+        {/* VIEW 2: ORDER HISTORY (Simple, Mobile-Friendly & Purchase Memory)        */}
         {/* ========================================================================= */}
         {activeTab === "orders" && (
           <div className="space-y-4 pb-12">
