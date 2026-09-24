@@ -185,6 +185,37 @@ function formatPlatformName(platform?: string): string {
   return p;
 }
 
+// Item Thumbnail Component with catalog image lookup & category icon fallback
+function GroceryItemThumbnail({ itemName, category }: { itemName: string; category?: string }) {
+  const [imageError, setImageError] = useState(false);
+  const visual = useMemo(() => getItemVisual(itemName, category), [itemName, category]);
+
+  // Reset image error state if item name changes
+  useEffect(() => {
+    setImageError(false);
+  }, [itemName]);
+
+  if (visual.imageUrl && !imageError) {
+    return (
+      <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 border border-slate-200/80 shrink-0 shadow-2xs relative flex items-center justify-center">
+        <img
+          src={visual.imageUrl}
+          alt={itemName}
+          loading="lazy"
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-10 h-10 rounded-xl bg-slate-100/90 border border-slate-200/80 flex items-center justify-center text-xl shrink-0 select-none shadow-2xs">
+      <span>{visual.icon || "🛒"}</span>
+    </div>
+  );
+}
+
 // Initial sample items to populate the list on first load
 const INITIAL_ITEMS: GroceryItem[] = [];
 
@@ -793,18 +824,111 @@ export default function GroceryAssistantApp() {
     }
   };
 
-  // Copy list for WhatsApp or Rohan's quick ordering
+  // Copy list for WhatsApp formatted cleanly by category groups
   const handleCopyList = () => {
-    const pending = items.filter((it) => !it.isDone);
+    const pending = items.filter((it) => !it.isDone && !it.isOrdered);
     if (pending.length === 0) return;
 
-    const listText = pending.map((it, idx) => `${idx + 1}. ${it.name}`).join("\n");
-    const clipboardText = `🛒 *Household Grocery List:*\n${listText}`;
+    const categoryMap: Record<string, GroceryItem[]> = {};
+    pending.forEach((it) => {
+      const cat = it.category || "Other Items";
+      if (!categoryMap[cat]) categoryMap[cat] = [];
+      categoryMap[cat].push(it);
+    });
+
+    const categoryOrder = [
+      "Fruits & Vegetables",
+      "Dairy, Bread & Eggs",
+      "Atta, Rice, Oil & Dals",
+      "Masala & Dry Fruits",
+      "Breakfast & Sauces",
+      "Tea, Coffee & Drinks",
+      "Tea, Coffee & Beverages",
+      "Munchies & Biscuits",
+      "Munchies & Snacks",
+      "Pet Care & Household",
+      "Other Items"
+    ];
+
+    const sortedCats = Object.keys(categoryMap).sort((a, b) => {
+      const idxA = categoryOrder.indexOf(a);
+      const idxB = categoryOrder.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+
+    const sectionsText = sortedCats
+      .map((cat) => {
+        const icon = CATEGORY_ICONS[cat] || "🛒";
+        const itemList = categoryMap[cat].map((it) => `• ${it.name}`).join("\n");
+        return `*${icon} ${cat}*\n${itemList}`;
+      })
+      .join("\n\n");
+
+    const clipboardText = `🛒 *Household Grocery List:*\n\n${sectionsText}`;
 
     navigator.clipboard.writeText(clipboardText);
     setCopiedNotification(true);
     setTimeout(() => setCopiedNotification(false), 2500);
   };
+
+  // Group basket items by category, sorted with active items first, ordered items at bottom
+  const groupedBasketItems = useMemo(() => {
+    if (basketItems.length === 0) return [];
+
+    const categoryMap: Record<string, GroceryItem[]> = {};
+    basketItems.forEach((it) => {
+      const cat = it.category || "Other Items";
+      if (!categoryMap[cat]) categoryMap[cat] = [];
+      categoryMap[cat].push(it);
+    });
+
+    const categoryOrder = [
+      "Fruits & Vegetables",
+      "Dairy, Bread & Eggs",
+      "Atta, Rice, Oil & Dals",
+      "Masala & Dry Fruits",
+      "Breakfast & Sauces",
+      "Tea, Coffee & Drinks",
+      "Tea, Coffee & Beverages",
+      "Munchies & Biscuits",
+      "Munchies & Snacks",
+      "Pet Care & Household",
+      "Other Items"
+    ];
+
+    const sortedCats = Object.keys(categoryMap).sort((a, b) => {
+      const idxA = categoryOrder.indexOf(a);
+      const idxB = categoryOrder.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+
+    return sortedCats.map((cat) => {
+      // Sort items within group: pending items first, ordered/done at bottom
+      const itemsInCat = [...categoryMap[cat]].sort((a, b) => {
+        const aOrdered = Boolean(a.isOrdered || a.isDone);
+        const bOrdered = Boolean(b.isOrdered || b.isDone);
+        if (aOrdered !== bOrdered) {
+          return aOrdered ? 1 : -1;
+        }
+        return (a.name || "").localeCompare(b.name || "");
+      });
+
+      const pendingCount = itemsInCat.filter((it) => !it.isDone && !it.isOrdered).length;
+
+      return {
+        category: cat,
+        icon: CATEGORY_ICONS[cat] || "🛒",
+        items: itemsInCat,
+        pendingCount
+      };
+    });
+  }, [basketItems]);
 
   // Group items by category for Rohan's checklist
   const groupedPending = useMemo(() => {
@@ -1168,138 +1292,166 @@ export default function GroceryAssistantApp() {
                     Your list is empty. Add recommended items above, type below, or browse staples.
                   </p>
                 ) : (
-                  <div className="divide-y divide-slate-100">
-                    {basketItems.map((it) => {
-                      const isDeleting = deletingItemIds.has(it.id);
-                      const isItemOrdered = Boolean(it.isOrdered);
-                      return (
-                        <div
-                          key={it.id}
-                          className={`py-2.5 flex items-center justify-between gap-2 transition-all ${
-                            isDeleting ? "item-delete-exit" : ""
-                          } ${isItemOrdered || it.isDone ? "bg-slate-50/60 -mx-2 px-2 rounded-xl" : ""}`}
-                        >
-                          <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                            <button
-                              type="button"
-                              onClick={() => toggleItemDone(it.id)}
-                              aria-label={`Mark ${it.name} as done`}
-                              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 active:scale-90 ${
-                                it.isDone
-                                  ? "bg-emerald-600 border-emerald-600 text-white"
-                                  : isItemOrdered
-                                  ? "bg-emerald-100 border-emerald-400 text-emerald-700"
-                                  : "border-slate-300 hover:border-emerald-500 text-transparent hover:text-emerald-500"
-                              }`}
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                            </button>
-
-                            <div className="min-w-0 flex-1">
-                              <span
-                                className={`text-base font-medium block truncate transition-all ${
-                                  isItemOrdered || it.isDone
-                                    ? "line-through text-slate-400 font-normal"
-                                    : "text-slate-800"
-                                }`}
-                              >
-                                {it.name}
-                              </span>
-                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                <span className="text-[10px] text-slate-400">{it.category}</span>
-                                {/* Person Tag Badge */}
-                                {it.addedBy === "Rhythm" ? (
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-purple-100 text-purple-800 font-semibold border border-purple-200">
-                                    Rhythm
-                                  </span>
-                                ) : it.addedBy === "Lira" ? (
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
-                                    Lira
-                                  </span>
-                                ) : it.addedBy === "Rohan" ? (
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 font-semibold border border-blue-200">
-                                    Rohan
-                                  </span>
-                                ) : (
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-semibold border border-amber-200">
-                                    AI Suggestion
-                                  </span>
-                                )}
-                                {isItemOrdered ? (
-                                  <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                                    <span className="font-semibold text-emerald-700 flex items-center gap-1">
-                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                      <span>✓ {it.orderedBy || "Rohan"} ordered</span>
-                                    </span>
-                                    <span className="text-slate-300">•</span>
-                                    <span className="text-slate-500 font-normal">
-                                      {formatItemOrderedTime(it.orderedAt)}
-                                    </span>
-                                  </div>
-                                ) : it.isDone ? (
-                                  <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                                    <span className="font-semibold text-emerald-700 flex items-center gap-1">
-                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                      <span>✓ Bought / Done</span>
-                                    </span>
-                                    <span className="text-slate-300">•</span>
-                                    <span className="text-slate-500 font-normal">
-                                      {formatEventTime(it.purchasedAt)}
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <span className="text-[10px] text-slate-400">
-                                    • Added {formatEventTime(it.createdAt || it.addedAt)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
+                  <div className="space-y-4">
+                    {groupedBasketItems.map((group) => (
+                      <div key={group.category} className="space-y-1">
+                        {/* Category Group Header */}
+                        <div className="flex items-center justify-between pt-2 pb-1 px-1 border-b border-slate-100">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">{group.icon}</span>
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                              {group.category}
+                            </h4>
+                            <span className="text-[11px] font-semibold px-2 py-0.2 rounded-full bg-slate-100 text-slate-600 border border-slate-200/70">
+                              {group.items.length}
+                            </span>
                           </div>
-
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {isItemOrdered ? (
-                              <button
-                                type="button"
-                                onClick={() => handleUndoOrdered(it.id)}
-                                className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition-all"
-                                title="Undo ordered status"
-                              >
-                                Undo
-                              </button>
-                            ) : it.isDone ? (
-                              <button
-                                type="button"
-                                onClick={() => toggleItemDone(it.id)}
-                                className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition-all"
-                                title="Restore item"
-                              >
-                                Undo
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => handleMarkAsOrdered(it.id, "Rohan")}
-                                className="px-2.5 py-1 text-xs font-medium text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 active:scale-95 rounded-lg transition-all flex items-center gap-1"
-                                title="Mark as ordered already"
-                              >
-                                <Check className="w-3 h-3 text-emerald-600" />
-                                <span className="hidden sm:inline">Mark as Ordered</span>
-                                <span className="sm:hidden">Ordered</span>
-                              </button>
-                            )}
-
-                            <button
-                              type="button"
-                              onClick={() => deleteItem(it.id)}
-                              className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all rounded-lg"
-                              title="Remove"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
+                          {group.pendingCount > 0 && group.pendingCount !== group.items.length && (
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              {group.pendingCount} pending
+                            </span>
+                          )}
                         </div>
-                      );
-                    })}
+
+                        {/* Items within this Category */}
+                        <div className="divide-y divide-slate-100">
+                          {group.items.map((it) => {
+                            const isDeleting = deletingItemIds.has(it.id);
+                            const isItemOrdered = Boolean(it.isOrdered);
+                            return (
+                              <div
+                                key={it.id}
+                                className={`py-2.5 flex items-center justify-between gap-2.5 sm:gap-3 transition-all ${
+                                  isDeleting ? "item-delete-exit" : ""
+                                } ${isItemOrdered || it.isDone ? "bg-slate-50/60 -mx-2 px-2 rounded-xl" : ""}`}
+                              >
+                                <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+                                  {/* Checkbox */}
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleItemDone(it.id)}
+                                    aria-label={`Mark ${it.name} as done`}
+                                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 active:scale-90 ${
+                                      it.isDone
+                                        ? "bg-emerald-600 border-emerald-600 text-white"
+                                        : isItemOrdered
+                                        ? "bg-emerald-100 border-emerald-400 text-emerald-700"
+                                        : "border-slate-300 hover:border-emerald-500 text-transparent hover:text-emerald-500"
+                                    }`}
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                  </button>
+
+                                  {/* 40x40 Product Thumbnail / Icon */}
+                                  <GroceryItemThumbnail itemName={it.name} category={it.category} />
+
+                                  <div className="min-w-0 flex-1">
+                                    <span
+                                      className={`text-base font-medium block truncate transition-all ${
+                                        isItemOrdered || it.isDone
+                                          ? "line-through text-slate-400 font-normal"
+                                          : "text-slate-800"
+                                      }`}
+                                    >
+                                      {it.name}
+                                    </span>
+                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                      {/* Person Tag Badge */}
+                                      {it.addedBy === "Rhythm" ? (
+                                        <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-purple-100 text-purple-800 font-semibold border border-purple-200">
+                                          Rhythm
+                                        </span>
+                                      ) : it.addedBy === "Lira" ? (
+                                        <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                                          Lira
+                                        </span>
+                                      ) : it.addedBy === "Rohan" ? (
+                                        <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 font-semibold border border-blue-200">
+                                          Rohan
+                                        </span>
+                                      ) : (
+                                        <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-semibold border border-amber-200">
+                                          AI Suggestion
+                                        </span>
+                                      )}
+                                      {isItemOrdered ? (
+                                        <div className="flex items-center gap-1.5 flex-wrap text-xs">
+                                          <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                            <span>✓ {it.orderedBy || "Rohan"} ordered</span>
+                                          </span>
+                                          <span className="text-slate-300">•</span>
+                                          <span className="text-slate-500 font-normal">
+                                            {formatItemOrderedTime(it.orderedAt)}
+                                          </span>
+                                        </div>
+                                      ) : it.isDone ? (
+                                        <div className="flex items-center gap-1.5 flex-wrap text-xs">
+                                          <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                            <span>✓ Bought / Done</span>
+                                          </span>
+                                          <span className="text-slate-300">•</span>
+                                          <span className="text-slate-500 font-normal">
+                                            {formatEventTime(it.purchasedAt)}
+                                          </span>
+                                        </div>
+                                      ) : (
+                                        <span className="text-[10px] text-slate-400">
+                                          • Added {formatEventTime(it.createdAt || it.addedAt)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {isItemOrdered ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUndoOrdered(it.id)}
+                                      className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition-all"
+                                      title="Undo ordered status"
+                                    >
+                                      Undo
+                                    </button>
+                                  ) : it.isDone ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleItemDone(it.id)}
+                                      className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition-all"
+                                      title="Restore item"
+                                    >
+                                      Undo
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMarkAsOrdered(it.id, "Rohan")}
+                                      className="px-2.5 py-1 text-xs font-medium text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 active:scale-95 rounded-lg transition-all flex items-center gap-1"
+                                      title="Mark as ordered already"
+                                    >
+                                      <Check className="w-3 h-3 text-emerald-600" />
+                                      <span className="hidden sm:inline">Mark as Ordered</span>
+                                      <span className="sm:hidden">Ordered</span>
+                                    </button>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteItem(it.id)}
+                                    className="text-slate-300 hover:text-rose-500 active:scale-90 p-1.5 transition-all rounded-lg"
+                                    title="Remove"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
