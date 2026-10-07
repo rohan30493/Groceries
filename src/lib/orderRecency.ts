@@ -1,4 +1,4 @@
-import unifiedOrdersRaw from "../../data/unified_orders.json";
+import { itemCatalog } from "./itemCatalog";
 
 export interface OrderItem {
   name: string;
@@ -197,7 +197,14 @@ export function isValidDeliveredOrder(order: HistoricalOrder): boolean {
  * Extracts a valid ISO date or timestamp string from an order record.
  */
 export function extractOrderDate(order: HistoricalOrder): string | null {
-  const d = order.placed_at || order.order_date || order.delivery_date || order.delivered_at || order.created_at;
+  const d =
+    order.placed_at ||
+    (order as any).placedAt ||
+    order.order_date ||
+    order.delivery_date ||
+    order.delivered_at ||
+    (order as any).deliveredAt ||
+    order.created_at;
   return d || null;
 }
 
@@ -262,28 +269,32 @@ export function formatOrderRecency(
   return `Last ordered ${displayYears} ${displayYears === 1 ? "year" : "years"} ago`;
 }
 
-// Pre-index the latest valid order date for each canonical item from historical orders
-const DEFAULT_HISTORICAL_ORDERS: HistoricalOrder[] = unifiedOrdersRaw as unknown as HistoricalOrder[];
+let PRECOMPUTED_LATEST_DATES: Map<string, Date> | null = null;
 
-const PRECOMPUTED_LATEST_DATES: Map<string, Date> = new Map();
+function getPrecomputedDates(): Map<string, Date> {
+  if (!PRECOMPUTED_LATEST_DATES) {
+    PRECOMPUTED_LATEST_DATES = new Map();
+    const defaultOrders = itemCatalog.getDefaultHistoricalOrders() as unknown as HistoricalOrder[];
+    for (const order of defaultOrders) {
+      if (!isValidDeliveredOrder(order)) continue;
+      const dateStr = extractOrderDate(order);
+      if (!dateStr) continue;
+      const dateObj = new Date(dateStr);
+      if (isNaN(dateObj.getTime())) continue;
 
-for (const order of DEFAULT_HISTORICAL_ORDERS) {
-  if (!isValidDeliveredOrder(order)) continue;
-  const dateStr = extractOrderDate(order);
-  if (!dateStr) continue;
-  const dateObj = new Date(dateStr);
-  if (isNaN(dateObj.getTime())) continue;
+      for (const it of order.items || []) {
+        if (!it || !it.name) continue;
+        const canon = toCanonicalItemName(it.name);
+        if (!canon) continue;
 
-  for (const it of order.items || []) {
-    if (!it || !it.name) continue;
-    const canon = toCanonicalItemName(it.name);
-    if (!canon) continue;
-
-    const existing = PRECOMPUTED_LATEST_DATES.get(canon);
-    if (!existing || dateObj.getTime() > existing.getTime()) {
-      PRECOMPUTED_LATEST_DATES.set(canon, dateObj);
+        const existing = PRECOMPUTED_LATEST_DATES.get(canon);
+        if (!existing || dateObj.getTime() > existing.getTime()) {
+          PRECOMPUTED_LATEST_DATES.set(canon, dateObj);
+        }
+      }
     }
   }
+  return PRECOMPUTED_LATEST_DATES;
 }
 
 /**
@@ -329,7 +340,7 @@ export function calculateItemLastOrdered(
   }
 
   // Fast precomputed lookup for default historical orders
-  const latest = PRECOMPUTED_LATEST_DATES.get(canon);
+  const latest = getPrecomputedDates().get(canon);
   if (!latest) return null;
   return formatOrderRecency(latest, now);
 }

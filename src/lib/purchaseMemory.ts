@@ -8,7 +8,7 @@ import {
   parseQuantityAndCleanName
 } from "./orderLifecycle";
 import { toCanonicalItemName } from "./orderRecency";
-import unifiedOrdersRaw from "../../data/unified_orders.json";
+import { itemCatalog } from "./itemCatalog";
 
 export interface RecentPurchaseRecord {
   orderId: string;
@@ -302,12 +302,6 @@ export function getCanonicalPurchaseMemory(
   return null;
 }
 
-// Lazy cached default historical orders from unified_orders.json
-let defaultHistoricalOrdersCache: HouseholdOrder[] | null = null;
-
 export function getDefaultHistoricalOrders(): HouseholdOrder[] {
-  if (!defaultHistoricalOrdersCache) {
-    defaultHistoricalOrdersCache = (unifiedOrdersRaw as any[]).map(normalizeRawOrder);
-  }
-  return defaultHistoricalOrdersCache;
+  return itemCatalog.getDefaultHistoricalOrders();
 }

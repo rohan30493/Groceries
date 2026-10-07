@@ -1,7 +1,6 @@
 import { BasketHandoffState } from "./handoff";
 import { GroceryItem } from "./patterns";
-import { toCanonicalItemName } from "./orderRecency";
-import unifiedOrdersRaw from "../../data/unified_orders.json";
+import { itemCatalog } from "./itemCatalog";
 
 export interface HandoffNotification {
   id: string; // e.g. "handoff_2026-09-12T12:00:00.000Z"
@@ -11,22 +10,6 @@ export interface HandoffNotification {
   title: string;
   message: string;
   isAcknowledged: boolean;
-}
-
-// Canonical unit price lookup computed from unified orders
-const CANONICAL_PRICE_MAP: Map<string, number> = new Map();
-
-for (const order of unifiedOrdersRaw as any[]) {
-  if (order.status === "CANCELLED" || order.status === "RETURN_TO_ORIGIN") continue;
-  for (const it of order.items || []) {
-    if (!it || !it.name) continue;
-    const canon = toCanonicalItemName(it.name);
-    if (!canon) continue;
-    const price = typeof it.price === "number" && it.price > 0 ? it.price : 0;
-    if (price > 0 && !CANONICAL_PRICE_MAP.has(canon)) {
-      CANONICAL_PRICE_MAP.set(canon, price);
-    }
-  }
 }
 
 /**
@@ -41,15 +24,9 @@ export function estimateBasketValue(items: GroceryItem[]): number | null {
   let pricedItemsCount = 0;
 
   for (const it of pending) {
-    const canon = toCanonicalItemName(it.name);
-    if (canon && CANONICAL_PRICE_MAP.has(canon)) {
-      total += CANONICAL_PRICE_MAP.get(canon)!;
-      pricedItemsCount++;
-    } else {
-      // Default fallback estimate per typical staple (~₹60) if historical price not known
-      total += 60;
-      pricedItemsCount++;
-    }
+    const price = itemCatalog.getPrice(it.name);
+    total += price !== null ? price : 60;
+    pricedItemsCount++;
   }
 
   return pricedItemsCount > 0 ? Math.round(total) : null;

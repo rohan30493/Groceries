@@ -243,10 +243,11 @@ export function recordItemToOrders(
   orders: HouseholdOrder[],
   item: GroceryItem,
   orderedBy: string = "Rohan",
-  windowMs: number = 30 * 60 * 1000
+  windowMs: number = 30 * 60 * 1000,
+  currentTimeMs: number = Date.now()
 ): { updatedOrders: HouseholdOrder[]; modifiedOrder: HouseholdOrder } {
-  const nowIso = new Date().toISOString();
-  const nowMs = Date.now();
+  const nowIso = new Date(currentTimeMs).toISOString();
+  const nowMs = currentTimeMs;
   const { cleanName, quantity } = parseQuantityAndCleanName(item.name);
   const canonical = toCanonicalItemName(cleanName) || cleanName;
 

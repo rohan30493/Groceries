@@ -34,73 +34,18 @@ import {
   GroceryItem,
   detectCategory,
   parseNaturalLanguageList,
-  getMissingItemSuggestions,
-  CompanionSuggestion,
-  patternRules,
   CATEGORY_SECTIONS as DEFAULT_CATEGORY_SECTIONS,
   CategorySection,
   CategoryItemDef,
   getItemVisual,
   CATEGORY_ICONS
 } from "../lib/patterns";
-import {
-  supabase,
-  fetchGroceryItems,
-  upsertGroceryItem,
-  deleteGroceryItemDb,
-  clearCompletedItemsDb,
-  archiveCompletedRun,
-  fetchCategorySectionsDb,
-  fetchPatternRulesDb,
-  saveHouseholdOrder,
-  fetchHouseholdOrders,
-  updateHouseholdOrder,
-  clearActiveBasketDb,
-  toGroceryItem,
-  DbGroceryItem,
-  saveHandoffStateDb,
-  fetchHandoffStateDb,
-  HANDOFF_RECORD_ID
-} from "../lib/supabase";
-import {
-  BasketHandoffState,
-  LIRA_HANDOFF_MESSAGE,
-  initHandoffState,
-  registerBasketActivity,
-  liraCompleteAndHandoff,
-  canPlaceOrder,
-  executePlaceOrder,
-  resetBasketState,
-  getLiraAutonomousRecommendations,
-  AutonomousRecommendation
-} from "../lib/handoff";
-import {
-  HouseholdOrder,
-  OrderStatus,
-  OrderItemStatus,
-  createOrderFromBasket,
-  updateOrderStatus,
-  updateOrderItemOutcome,
-  recordItemToOrders
-} from "../lib/orderLifecycle";
-import {
-  getDefaultHistoricalOrders,
-  getCanonicalPurchaseMemory,
-  isItemInActiveOrder,
-  normalizeRawOrder
-} from "../lib/purchaseMemory";
-import {
-  evaluateHandoffNotification,
-  estimateBasketValue,
-  formatNotificationPreview,
-  HandoffNotification
-} from "../lib/handoffNotification";
-import {
-  getBrowserNotificationPermission,
-  requestNotificationPermission,
-  sendBrowserHandoffNotification,
-  NotificationPermissionStatus
-} from "../lib/pushNotifications";
+import { fetchCategorySectionsDb } from "../lib/supabase";
+import { OrderStatus, OrderItemStatus } from "../lib/orderLifecycle";
+import { useHouseholdBasket } from "../lib/useHouseholdBasket";
+import { useOrderJournal } from "../lib/useOrderJournal";
+import { itemCatalog } from "../lib/itemCatalog";
+import { isWithin24Hours } from "../lib/householdBasket";
 
 // Helper to format human-readable time (e.g., "9:15 AM" or "Yesterday, 8:40 PM")
 function formatEventTime(isoStringOrText?: string): string {
@@ -139,19 +84,6 @@ function formatItemOrderedTime(isoStringOrText?: string): string {
   }
 }
 
-// Helper to check if an item was ordered within the past 24 hours (1 day retention)
-function isWithin24Hours(isoStringOrDate?: string): boolean {
-  if (!isoStringOrDate) return false;
-  try {
-    const d = new Date(isoStringOrDate);
-    const time = d.getTime();
-    if (isNaN(time)) return false;
-    const diff = Date.now() - time;
-    return diff >= 0 && diff <= 24 * 60 * 60 * 1000;
-  } catch {
-    return false;
-  }
-}
 
 // Helpers for Order History formatting: "Sep 12 · ₹2,840"
 function formatOrderHeaderDate(isoDateOrStr?: string): string {
@@ -216,30 +148,37 @@ function GroceryItemThumbnail({ itemName, category }: { itemName: string; catego
   );
 }
 
-// Initial sample items to populate the list on first load
-const INITIAL_ITEMS: GroceryItem[] = [];
-
 export default function GroceryAssistantApp() {
   const [activeTab, setActiveTab] = useState<"lira" | "rhythm" | "orders">("lira");
-  const [items, setItems] = useState<GroceryItem[]>(INITIAL_ITEMS);
   const [inputText, setInputText] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [copiedNotification, setCopiedNotification] = useState(false);
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
 
-  // Order history and active orders
-  const [orders, setOrders] = useState<HouseholdOrder[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("household_orders_cache");
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      } catch {}
-    }
-    return getDefaultHistoricalOrders();
-  });
+  // Deep Modules Hooks
+  const {
+    items,
+    pendingItems,
+    basketItems,
+    recentlyOrderedItems,
+    completedItems,
+    isCloudSynced,
+    addItems,
+    markAsOrdered: markItemAsOrderedInBasket,
+    undoOrdered: undoOrderedInBasket,
+    removeItem: removeItemFromBasket,
+    toggleDone: toggleItemDoneInBasket,
+    clearCompleted: clearCompletedInBasket
+  } = useHouseholdBasket();
+
+  const {
+    orders,
+    activeOrders,
+    recordItem: recordItemToJournal,
+    updateStatus: updateOrderStatusInJournal,
+    updateItemOutcome: updateItemOutcomeInJournal
+  } = useOrderJournal();
+
   const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
   const [ordersFilter, setOrdersFilter] = useState<"ALL" | "ORDER_PLACED" | "DELIVERED" | "CANCELLED">("ALL");
   const [ordersDisplayLimit, setOrdersDisplayLimit] = useState<number>(30);
@@ -251,62 +190,12 @@ export default function GroceryAssistantApp() {
   const [recentlyAddedAnimation, setRecentlyAddedAnimation] = useState<string | null>(null);
   const [deletingItemIds, setDeletingItemIds] = useState<Set<string>>(new Set());
   const [lastAddedItem, setLastAddedItem] = useState<string | null>(null);
-  const [isCloudSynced, setIsCloudSynced] = useState<boolean>(false);
-
-  // Gated order handoff state (Lira builds autonomously, then hands off with 'I’m done. Please proceed with order.')
-  const [handoffState, setHandoffState] = useState<BasketHandoffState>(() => initHandoffState(0));
-  const [acknowledgedNotificationIds, setAcknowledgedNotificationIds] = useState<Set<string>>(new Set());
-  const [browserNotificationPermission, setBrowserNotificationPermission] = useState<NotificationPermissionStatus>("default");
 
   // Collapsible section states to minimize visual clutter in Lira's view
   const [isRecommendationsExpanded, setIsRecommendationsExpanded] = useState<boolean>(false);
   const [isCategoryItemsExpanded, setIsCategoryItemsExpanded] = useState<boolean>(false);
 
-  // Load from localStorage on mount & sync with Supabase in real time
   useEffect(() => {
-    // 1. Initial fast local load
-    try {
-      const saved = localStorage.getItem("household_grocery_items");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setItems(parsed);
-        }
-      }
-      const savedHandoff = localStorage.getItem("household_basket_handoff_state");
-      if (savedHandoff) {
-        const parsedHandoff = JSON.parse(savedHandoff);
-        if (parsedHandoff && parsedHandoff.status) {
-          setHandoffState(parsedHandoff);
-        }
-      }
-      const savedAck = localStorage.getItem("household_ack_notifications");
-      if (savedAck) {
-        const parsedAck = JSON.parse(savedAck);
-        if (Array.isArray(parsedAck)) {
-          setAcknowledgedNotificationIds(new Set(parsedAck));
-        }
-      }
-      setBrowserNotificationPermission(getBrowserNotificationPermission());
-    } catch (e) {
-      console.error("Local load error", e);
-    }
-
-    // 2. Fetch fresh items and handoff state from Supabase
-    fetchGroceryItems().then((dbItems) => {
-      if (dbItems && dbItems.length > 0) {
-        setItems(dbItems);
-      }
-      setIsCloudSynced(true);
-    });
-
-    fetchHandoffStateDb().then((dbHandoff) => {
-      if (dbHandoff && dbHandoff.status) {
-        setHandoffState(dbHandoff);
-      }
-    });
-
-    // 3. Fetch dynamic category sections & rules from Supabase (continuous replenishment learning)
     fetchCategorySectionsDb().then((sections) => {
       if (sections && sections.length > 0) {
         const orderMap = new Map(DEFAULT_CATEGORY_SECTIONS.map((c, i) => [c.id, i]));
@@ -316,144 +205,7 @@ export default function GroceryAssistantApp() {
         setCategorySections(sorted as CategorySection[]);
       }
     });
-
-    // 4. Fetch household orders from Supabase & merge with default historical orders
-    fetchHouseholdOrders().then((dbOrders) => {
-      if (dbOrders && dbOrders.length > 0) {
-        setOrders((prev) => {
-          const dbIds = new Set(dbOrders.map((o) => o.orderId));
-          const merged = [...dbOrders];
-          for (const p of prev) {
-            if (!dbIds.has(p.orderId)) {
-              merged.push(p);
-            }
-          }
-          return merged;
-        });
-      }
-    });
-
-    // 5. Supabase Realtime multi-device subscription (Lira & Rohan stay synced)
-    const channel = supabase
-      .channel("household-grocery-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "grocery_items" },
-        (payload) => {
-          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
-            const raw = payload.new as DbGroceryItem;
-            if (raw.id === HANDOFF_RECORD_ID) {
-              if (raw.notes) {
-                try {
-                  const parsed = JSON.parse(raw.notes);
-                  if (parsed && parsed.status) {
-                    setHandoffState(parsed);
-                  }
-                } catch {}
-              }
-              return;
-            }
-            const newItem = toGroceryItem(raw);
-            if (payload.eventType === "INSERT") {
-              setItems((prev) => {
-                if (prev.some((x) => x.id === newItem.id)) return prev;
-                return [newItem, ...prev];
-              });
-            } else {
-              setItems((prev) =>
-                prev.map((x) => (x.id === newItem.id ? newItem : x))
-              );
-            }
-          } else if (payload.eventType === "DELETE") {
-            const oldId = (payload.old as { id: string }).id;
-            if (oldId === HANDOFF_RECORD_ID) return;
-            setItems((prev) => prev.filter((x) => x.id !== oldId));
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "household_orders" },
-        (payload) => {
-          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
-            const incoming = normalizeRawOrder(payload.new);
-            setOrders((prev) => {
-              const existingIdx = prev.findIndex((o) => o.orderId === incoming.orderId);
-              if (existingIdx >= 0) {
-                const next = [...prev];
-                next[existingIdx] = incoming;
-                return next;
-              }
-              return [incoming, ...prev];
-            });
-          } else if (payload.eventType === "DELETE") {
-            const oldId = (payload.old as { order_id?: string; id?: string }).order_id || (payload.old as any).id;
-            if (oldId) {
-              setOrders((prev) => prev.filter((o) => o.orderId !== oldId));
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
-
-  // Cache recent orders in localStorage for offline & instant render
-  useEffect(() => {
-    try {
-      localStorage.setItem("household_orders_cache", JSON.stringify(orders.slice(0, 100)));
-    } catch (e) {
-      console.error("Failed to cache orders", e);
-    }
-  }, [orders]);
-
-  // Save to localStorage on change as reliable backup
-  useEffect(() => {
-    try {
-      localStorage.setItem("household_grocery_items", JSON.stringify(items));
-    } catch (e) {
-      console.error("Failed to save items to localStorage", e);
-    }
-  }, [items]);
-
-  // Save handoff state to localStorage and Supabase on change so all devices stay in sync
-  useEffect(() => {
-    try {
-      localStorage.setItem("household_basket_handoff_state", JSON.stringify(handoffState));
-    } catch (e) {
-      console.error("Failed to save handoff state to localStorage", e);
-    }
-    // Cloud sync handoff state to Supabase
-    saveHandoffStateDb(handoffState);
-  }, [handoffState]);
-
-  // Derived filtered subsets
-  // pendingItems: items that need to be bought/ordered (excludes done and already ordered)
-  const pendingItems = useMemo(() => items.filter((it) => !it.isDone && !it.isOrdered), [items]);
-
-  // basketItems: all items visible in "Your Basket" (pending items + items marked as ordered within the last 24 hours)
-  const basketItems = useMemo(() => {
-    return items.filter((it) => {
-      if (it.isDone) return false;
-      if (!it.isOrdered) return true;
-      return isWithin24Hours(it.orderedAt);
-    });
-  }, [items]);
-
-  // Items marked as ordered within 24 hours (for checklist reference)
-  const recentlyOrderedItems = useMemo(() => {
-    return items.filter((it) => !it.isDone && it.isOrdered && isWithin24Hours(it.orderedAt));
-  }, [items]);
-
-  const completedItems = useMemo(() => items.filter((it) => it.isDone), [items]);
-
-  // Active orders in flight (ORDER_PLACED)
-  const activeOrders = useMemo(() => {
-    return orders.filter((o) => o.status === "ORDER_PLACED");
-  }, [orders]);
 
   // Current active (pending) item names for pattern matching
   const currentItemNames = useMemo(() => {
@@ -465,10 +217,10 @@ export default function GroceryAssistantApp() {
     return items.filter((it) => !it.isDone && it.isOrdered && isWithin24Hours(it.orderedAt)).map((it) => it.name);
   }, [items]);
 
-  // Intelligent Pattern Suggestions (reactively calculated from current active items + last added item + cadence replenishment)
+  // Intelligent Pattern Suggestions (computed via ItemCatalog)
   const patternSuggestions = useMemo(() => {
     if (currentItemNames.length === 0) return [];
-    const rawSuggestions = getMissingItemSuggestions(
+    const rawSuggestions = itemCatalog.getMissingItemSuggestions(
       currentItemNames,
       lastAddedItem,
       orders,
@@ -512,10 +264,9 @@ export default function GroceryAssistantApp() {
     };
   }, [categorySections, categorySearchQuery, selectedCategoryId]);
 
-  // Autonomous recommendations that Lira suggests based on co-occurrence & top household staples
-  // Passed activeOrders and orders so items currently in flight are not immediately re-added and due staples are prioritized
+  // Autonomous recommendations computed via ItemCatalog
   const autonomousRecs = useMemo(() => {
-    return getLiraAutonomousRecommendations(items, 6, activeOrders, orders);
+    return itemCatalog.getAutonomousRecommendations(items, 6, activeOrders, orders);
   }, [items, activeOrders, orders]);
 
   // Filtered orders for Order History tab (excluding any empty records)
@@ -536,55 +287,16 @@ export default function GroceryAssistantApp() {
     const parsedNames = parseNaturalLanguageList(text);
     if (parsedNames.length === 0) return;
 
-    const nowIso = new Date().toISOString();
-    const timeFormatted = formatEventTime(nowIso);
-
-    const newItems: GroceryItem[] = parsedNames.map((name, idx) => ({
-      id: `item-${Date.now()}-${idx}`,
-      name: name,
-      category: detectCategory(name),
-      addedBy: actualSender,
-      addedAt: timeFormatted,
-      createdAt: nowIso,
-      isDone: false
-    }));
-
-    setItems((prev) => [...newItems, ...prev]);
+    addItems(text, actualSender);
     setLastAddedItem(parsedNames[0]);
     setInputText("");
-    setHandoffState((prev) => registerBasketActivity(prev, pendingItems.length + newItems.length));
-
-    // Cloud sync
-    newItems.forEach((it) => upsertGroceryItem(it));
   };
 
-  // Add a specific single item (sync to Supabase)
+  // Add a specific single item
   const handleAddSingleItem = (name: string, addedBy?: "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion") => {
     const actualAddedBy = addedBy || currentBuilderPerson;
-    const isAlreadyPresent = items.some(
-      (it) => !it.isDone && it.name.toLowerCase().trim() === name.toLowerCase().trim()
-    );
-    if (isAlreadyPresent) return;
-
-    const nowIso = new Date().toISOString();
-    const timeFormatted = formatEventTime(nowIso);
-
-    const newItem: GroceryItem = {
-      id: `item-${Date.now()}-${Math.random()}`,
-      name: name,
-      category: detectCategory(name),
-      addedBy: actualAddedBy,
-      addedAt: timeFormatted,
-      createdAt: nowIso,
-      isDone: false
-    };
-
-    setItems((prev) => [newItem, ...prev]);
+    addItems([name], actualAddedBy);
     setLastAddedItem(name);
-    setHandoffState((prev) => registerBasketActivity(prev, pendingItems.length + 1));
-
-    // Cloud sync
-    upsertGroceryItem(newItem);
   };
 
   // Quick add from category sections with visual feedback
@@ -600,43 +312,13 @@ export default function GroceryAssistantApp() {
   // Autonomously add all currently recommended items to the basket
   const handleAutonomousAddAll = () => {
     if (autonomousRecs.length === 0) return;
-    const nowIso = new Date().toISOString();
-    const timeFormatted = formatEventTime(nowIso);
-
-    const newItems: GroceryItem[] = [];
-    autonomousRecs.forEach((rec, idx) => {
-      const isAlreadyPresent = items.some(
-        (it) => !it.isDone && it.name.toLowerCase().trim() === rec.name.toLowerCase().trim()
-      );
-      if (!isAlreadyPresent) {
-        newItems.push({
-          id: `item-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
-          name: rec.name,
-          category: rec.category || detectCategory(rec.name),
-          addedBy: currentBuilderPerson,
-          addedAt: timeFormatted,
-          createdAt: nowIso,
-          isDone: false
-        });
-      }
-    });
-
-    if (newItems.length > 0) {
-      setItems((prev) => [...newItems, ...prev]);
-      setLastAddedItem(newItems[0].name);
-      setHandoffState((prev) => registerBasketActivity(prev, pendingItems.length + newItems.length));
-      newItems.forEach((it) => upsertGroceryItem(it));
-    }
+    addItems(autonomousRecs.map((r) => r.name), currentBuilderPerson);
+    setLastAddedItem(autonomousRecs[0].name);
   };
 
   // Order lifecycle management handlers for Order History UI
   const handleUpdateOrderStatus = (orderId: string, status: OrderStatus) => {
-    setOrders((prev) => {
-      const next = prev.map((o) => (o.orderId === orderId ? updateOrderStatus(o, status) : o));
-      const target = next.find((o) => o.orderId === orderId);
-      if (target) updateHouseholdOrder(target);
-      return next;
-    });
+    updateOrderStatusInJournal(orderId, status);
   };
 
   const handleUpdateItemOutcome = (
@@ -644,14 +326,7 @@ export default function GroceryAssistantApp() {
     lineItemIdOrCanonical: string,
     outcome: OrderItemStatus
   ) => {
-    setOrders((prev) => {
-      const next = prev.map((o) =>
-        o.orderId === orderId ? updateOrderItemOutcome(o, lineItemIdOrCanonical, outcome) : o
-      );
-      const target = next.find((o) => o.orderId === orderId);
-      if (target) updateHouseholdOrder(target);
-      return next;
-    });
+    updateItemOutcomeInJournal(orderId, lineItemIdOrCanonical, outcome);
   };
 
   const toggleOrderExpanded = (orderId: string) => {
@@ -663,111 +338,48 @@ export default function GroceryAssistantApp() {
     });
   };
 
-  // Records an ordered / purchased item directly to Order History with smart 30-min grouping
-  const recordItemToOrderHistory = (targetItem: GroceryItem, orderedBy: string = "Rohan") => {
-    setOrders((prevOrders) => {
-      const { updatedOrders, modifiedOrder } = recordItemToOrders(prevOrders, targetItem, orderedBy);
-      saveHouseholdOrder(modifiedOrder);
-      if (typeof window !== "undefined") {
-        try {
-          localStorage.setItem("household_orders_cache", JSON.stringify(updatedOrders));
-        } catch {}
-      }
-      return updatedOrders;
-    });
-  };
-
-  // Toggle Done / Bought status (sync to Supabase & record to Order History)
+  // Toggle Done / Bought status (syncs via HouseholdBasket and records to OrderJournal)
   const toggleItemDone = (id: string) => {
     const target = items.find((it) => it.id === id);
     if (target) {
       const willBeDone = !target.isDone;
-      const nowIso = new Date().toISOString();
-      const updated: GroceryItem = {
-        ...target,
-        isDone: willBeDone,
-        purchasedAt: willBeDone ? nowIso : undefined
-      };
-      setItems((prev) =>
-        prev.map((it) => (it.id === id ? updated : it))
-      );
-      upsertGroceryItem(updated);
+      toggleItemDoneInBasket(id);
       if (willBeDone) {
-        recordItemToOrderHistory(target, "Rohan");
+        recordItemToJournal(target, "Rohan");
       }
     }
   };
 
   // Mark an item as already ordered directly from the live list
-  // Item remains visible with strikethrough for 24 hours & syncs to Order History
   const handleMarkAsOrdered = (id: string, orderedBy: "Rohan" | "Lira" = "Rohan") => {
     const target = items.find((it) => it.id === id);
     if (target) {
-      const nowIso = new Date().toISOString();
-      const updated: GroceryItem = {
-        ...target,
-        isOrdered: true,
-        orderedAt: nowIso,
-        orderedBy: orderedBy
-      };
-      setItems((prev) =>
-        prev.map((it) => (it.id === id ? updated : it))
-      );
-      const remainingPending = items.filter((it) => it.id !== id && !it.isDone && !it.isOrdered).length;
-      setHandoffState((hPrev) => registerBasketActivity(hPrev, remainingPending));
-      upsertGroceryItem(updated);
-      recordItemToOrderHistory(target, orderedBy);
+      markItemAsOrderedInBasket(id, orderedBy);
+      recordItemToJournal(target, orderedBy);
     }
   };
 
   // Undo marking an item as ordered, restoring it to pending
   const handleUndoOrdered = (id: string) => {
-    const target = items.find((it) => it.id === id);
-    if (target) {
-      const updated: GroceryItem = {
-        ...target,
-        isOrdered: false,
-        orderedAt: undefined,
-        orderedBy: undefined
-      };
-      setItems((prev) =>
-        prev.map((it) => (it.id === id ? updated : it))
-      );
-      const remainingPending = items.filter((it) => !it.isDone && (!it.isOrdered || it.id === id)).length;
-      setHandoffState((hPrev) => registerBasketActivity(hPrev, remainingPending));
-      upsertGroceryItem(updated);
-    }
+    undoOrderedInBasket(id);
   };
 
-  // Delete an item with prominent exit animation (sync to Supabase)
+  // Delete an item with prominent exit animation
   const deleteItem = (id: string) => {
-    // 1. Instantly mark as deleting to trigger CSS animation
     setDeletingItemIds((prev) => new Set([...prev, id]));
-
-    // 2. Remove from active state after animation completes
     setTimeout(() => {
-      setItems((prev) => {
-        const next = prev.filter((it) => it.id !== id);
-        const remainingPending = next.filter((it) => !it.isDone).length;
-        setHandoffState((hPrev) => registerBasketActivity(hPrev, remainingPending));
-        return next;
-      });
+      removeItemFromBasket(id);
       setDeletingItemIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
     }, 320);
-
-    // 3. Initiate cloud delete immediately in background
-    deleteGroceryItemDb(id);
   };
 
-  // Clear and archive completed items (sync to Supabase and log into household_orders for continuous learning)
+  // Clear completed items
   const clearCompleted = () => {
-    const toArchive = items.filter((it) => it.isDone);
-    setItems((prev) => prev.filter((it) => !it.isDone));
-    archiveCompletedRun(toArchive);
+    clearCompletedInBasket();
   };
 
   // Voice speech-to-text integration

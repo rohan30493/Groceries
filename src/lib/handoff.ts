@@ -1,7 +1,6 @@
-import { GroceryItem, patternRules, detectCategory, getMissingItemSuggestions } from "./patterns";
+import { GroceryItem } from "./patterns";
 import { HouseholdOrder } from "./orderLifecycle";
-import { isItemInActiveOrder } from "./purchaseMemory";
-import { calculateItemCadence, calculateReplenishmentScore } from "./replenishment";
+import { itemCatalog } from "./itemCatalog";
 
 export type BasketStatus = "idle" | "building" | "ready_for_order" | "ordered";
 
@@ -200,130 +199,10 @@ export function getLiraAutonomousRecommendations(
   activeOrders?: HouseholdOrder[],
   ordersHistory?: HouseholdOrder[]
 ): AutonomousRecommendation[] {
-  const currentItemNames = currentItems
-    .filter((it) => !it.isDone && !it.isOrdered)
-    .map((it) => it.name.toLowerCase().trim());
-  const existingSet = new Set(currentItemNames);
-
-  // Set of items already ordered by user within recent retention
-  const orderedSet = new Set(
-    currentItems
-      .filter((it) => !it.isDone && it.isOrdered)
-      .map((it) => it.name.toLowerCase().trim())
+  return itemCatalog.getAutonomousRecommendations(
+    currentItems,
+    limit,
+    activeOrders,
+    ordersHistory
   );
-
-  const isAlreadyInBasket = (candidate: string) => {
-    const cLower = candidate.toLowerCase().trim();
-    for (const inList of existingSet) {
-      if (inList.includes(cLower) || cLower.includes(inList)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const isAlreadyOrdered = (candidate: string) => {
-    const cLower = candidate.toLowerCase().trim();
-    for (const orderedItem of orderedSet) {
-      if (orderedItem.includes(cLower) || cLower.includes(orderedItem)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const isAlreadyInActiveOrder = (candidate: string) => {
-    if (!activeOrders || activeOrders.length === 0) return false;
-    return isItemInActiveOrder(candidate, activeOrders);
-  };
-
-  const isExcluded = (candidate: string) => {
-    return isAlreadyInBasket(candidate) || isAlreadyOrdered(candidate) || isAlreadyInActiveOrder(candidate);
-  };
-
-  interface ScoredCandidate {
-    name: string;
-    reason: string;
-    category: string;
-    score: number;
-  }
-
-  const candidateMap = new Map<string, ScoredCandidate>();
-
-  // 1. Check companion suggestions for current basket items (already cadence-ranked)
-  if (currentItems.length > 0) {
-    const rawSuggestions = getMissingItemSuggestions(
-      currentItems.filter((it) => !it.isDone && !it.isOrdered).map((it) => it.name),
-      null,
-      ordersHistory,
-      activeOrders,
-      Array.from(orderedSet)
-    );
-    for (const sug of rawSuggestions) {
-      const key = sug.item.toLowerCase().trim();
-      if (!isExcluded(sug.item) && !candidateMap.has(key)) {
-        candidateMap.set(key, {
-          name: sug.item,
-          reason: sug.reason,
-          category: detectCategory(sug.item),
-          score: sug.confidence
-        });
-      }
-    }
-  }
-
-  // 2. Add top household essentials evaluated with cadence replenishment
-  const staples = patternRules.top_staples || [];
-  for (const staple of staples) {
-    const key = staple.name.toLowerCase().trim();
-    if (!isExcluded(staple.name) && !candidateMap.has(key)) {
-      const stapleCadence = calculateItemCadence(staple.name, ordersHistory);
-      const stapleScore = calculateReplenishmentScore(stapleCadence, 0.5);
-
-      let reason = `High-frequency household staple (ordered ${staple.count}x)`;
-      if (stapleCadence.replenishmentStatus === "DUE_NOW") {
-        reason = `Due for replenishment (usually every ~${stapleCadence.typicalReorderDays} days)`;
-      } else if (stapleCadence.replenishmentStatus === "APPROACHING_DUE") {
-        reason = `Approaching replenishment (${stapleCadence.uiDueText || "soon"})`;
-      }
-
-      candidateMap.set(key, {
-        name: staple.name,
-        reason,
-        category: detectCategory(staple.name),
-        score: stapleScore
-      });
-    }
-  }
-
-  // 3. Ensure pet essentials are proactively evaluated
-  if (
-    !isExcluded("Cat Food") &&
-    !isExcluded("Sheba") &&
-    !candidateMap.has("cat food")
-  ) {
-    const petCadence = calculateItemCadence("Cat Food", ordersHistory);
-    const petScore = calculateReplenishmentScore(petCadence, 0.65);
-
-    let reason = "Cat food routine check for Samba & Milo";
-    if (petCadence.replenishmentStatus === "DUE_NOW") {
-      reason = "Cat food is due for replenishment for Samba & Milo";
-    }
-
-    candidateMap.set("cat food", {
-      name: "Cat Food",
-      reason,
-      category: "Pet Care & Household",
-      score: petScore
-    });
-  }
-
-  // Sort candidates by replenishment-adjusted score descending
-  const sorted = Array.from(candidateMap.values()).sort((a, b) => b.score - a.score);
-
-  return sorted.slice(0, limit).map(({ name, reason, category }) => ({
-    name,
-    reason,
-    category
-  }));
 }
