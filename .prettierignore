@@ -1,0 +1,5 @@
+package-lock.json
+data/**
+Gods Eye/**
+.next/**
+*.tsbuildinfo
