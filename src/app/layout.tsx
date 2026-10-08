@@ -3,7 +3,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "D718 Groceries | Smart Family Grocery List",
-  description: "Household Grocery Assistant with pattern-based missing item suggestions",
+  description:
+    "Household Grocery Assistant with pattern-based missing item suggestions",
 };
 
 export default function RootLayout({
@@ -14,9 +15,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
       </head>
-      <body className="min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-100 selection:text-emerald-900">
+      <body className="min-h-screen bg-slate-50 text-slate-900">
         {children}
       </body>
     </html>

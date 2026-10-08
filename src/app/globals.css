@@ -14,6 +14,11 @@ body {
   touch-action: manipulation;
 }
 
+::selection {
+  background-color: #a7f3d0; /* emerald-200 */
+  color: #064e3b; /* emerald-900 */
+}
+
 /* Ensure snappy first-tap response across mobile devices without zoom delay */
 button,
 a,
