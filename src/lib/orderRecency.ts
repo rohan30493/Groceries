@@ -1,23 +1,27 @@
 import { itemCatalog } from "./itemCatalog";
+import { HouseholdOrder, OrderLineItem } from "./orderLifecycle";
 
 export interface OrderItem {
   name: string;
   quantity?: number;
   price?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface HistoricalOrder {
   order_id?: string;
+  orderId?: string;
   id?: string;
   status?: string;
   placed_at?: string;
+  placedAt?: string;
   order_date?: string;
   delivery_date?: string;
   delivered_at?: string;
+  deliveredAt?: string;
   created_at?: string;
-  items?: OrderItem[];
-  [key: string]: any;
+  items?: Array<OrderItem | OrderLineItem>;
+  [key: string]: unknown;
 }
 
 /**
@@ -39,7 +43,10 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
   ["Coriander", ["coriander", "dhaniya", "dhania", "kothmir"]],
   ["Garlic", ["garlic", "lehsun", "lahsun"]],
   ["Apples", ["apple", "seb"]],
-  ["Lettuce / Salad Leaves", ["lettuce", "salad leave", "iceberg", "romaine", "arugula"]],
+  [
+    "Lettuce / Salad Leaves",
+    ["lettuce", "salad leave", "iceberg", "romaine", "arugula"],
+  ],
   ["Ginger", ["ginger", "adrak"]],
   ["Capsicum", ["capsicum", "bell pepper", "shimla mirch"]],
   ["Cabbage", ["cabbage", "patta gobi"]],
@@ -56,7 +63,17 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
 
   // Dairy, Bread & Eggs
   ["Fresh Paneer", ["paneer", "gowardhan", "malai paneer", "cottage cheese"]],
-  ["Milk", ["milk", "nandini goodlife", "akshayakalpa", "heritage", "toned milk", "cow milk"]],
+  [
+    "Milk",
+    [
+      "milk",
+      "nandini goodlife",
+      "akshayakalpa",
+      "heritage",
+      "toned milk",
+      "cow milk",
+    ],
+  ],
   ["Curd / Dahi", ["curd", "dahi"]],
   ["Eggs", ["egg", "eggoz", "hen fruit"]],
   ["Butter", ["butter", "amul butter"]],
@@ -65,22 +82,55 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
   ["Buttermilk", ["buttermilk", "chaas"]],
   ["Greek Yogurt", ["greek yogurt"]],
   ["Skyr", ["skyr"]],
-  ["Cheese", ["cheese", "cheddar", "mozzarella", "cheese slices", "shredded cheese", "cheese cubes"]],
-  ["Bread", ["bread", "milk bread", "brown bread", "whole wheat bread", "sandwich bread", "keto bread", "pav"]],
+  [
+    "Cheese",
+    [
+      "cheese",
+      "cheddar",
+      "mozzarella",
+      "cheese slices",
+      "shredded cheese",
+      "cheese cubes",
+    ],
+  ],
+  [
+    "Bread",
+    [
+      "bread",
+      "milk bread",
+      "brown bread",
+      "whole wheat bread",
+      "sandwich bread",
+      "keto bread",
+      "pav",
+    ],
+  ],
   ["Fresh Cream", ["fresh cream", "amul fresh cream", "cooking cream"]],
 
   // Atta, Rice, Oil & Dals
   ["Wheat Flour / Atta", ["atta", "wheat flour", "chakki fresh atta"]],
   ["Rice", ["basmati", "sona masoori", "sona masuri", "rice", "chawal"]],
   ["Masoor Dal", ["masoor"]],
-  ["Moong Dal", ["moong dal", "moong dhuli", "moong chilka", "green moong", "yellow moong"]],
+  [
+    "Moong Dal",
+    ["moong dal", "moong dhuli", "moong chilka", "green moong", "yellow moong"],
+  ],
   ["Toor / Arhar Dal", ["toor", "arhar", "tuvar"]],
   ["Chana Dal", ["chana dal"]],
   ["White Chana", ["white chana", "safed chana", "kabuli chana", "chole"]],
   ["Black Chana", ["black chana", "kala chana"]],
   ["Rajma", ["rajma", "kidney beans"]],
   ["Besan", ["besan", "gram flour"]],
-  ["Cooking Oil", ["sunflower oil", "mustard oil", "cooking oil", "groundnut oil", "refined oil"]],
+  [
+    "Cooking Oil",
+    [
+      "sunflower oil",
+      "mustard oil",
+      "cooking oil",
+      "groundnut oil",
+      "refined oil",
+    ],
+  ],
   ["Olive Oil", ["olive oil", "extra virgin olive oil"]],
   ["Poha", ["poha", "aval"]],
   ["Suji / Semolina", ["suji", "semolina", "rava"]],
@@ -91,7 +141,10 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
   // Masala & Dry Fruits
   ["Salt", ["salt", "namak", "rock salt"]],
   ["Turmeric", ["turmeric", "haldi"]],
-  ["Red Chilli Powder", ["red chilli powder", "chilli powder", "kashmiri mirch", "kashmiri chilli"]],
+  [
+    "Red Chilli Powder",
+    ["red chilli powder", "chilli powder", "kashmiri mirch", "kashmiri chilli"],
+  ],
   ["Coriander Powder", ["coriander powder", "dhaniya powder"]],
   ["Cumin Seeds", ["cumin seeds", "jeera whole", "zeera whole", "sabut jeera"]],
   ["Cumin / Jeera", ["cumin", "jeera", "zeera"]],
@@ -130,7 +183,10 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
   ["Stevia", ["stevia", "sugar free green"]],
 
   // Munchies & Biscuits
-  ["Roasted Peanuts", ["roasted peanut", "masala peanut", "salted peanut", "singdana"]],
+  [
+    "Roasted Peanuts",
+    ["roasted peanut", "masala peanut", "salted peanut", "singdana"],
+  ],
   ["Namkeen / Mixture", ["namkeen", "mixture", "bhujia", "sev"]],
   ["Biscuits", ["biscuit", "cookie", "marie", "parle-g", "monaco"]],
   ["Chips", ["chips", "crisps", "lays", "bingo", "doritos"]],
@@ -141,16 +197,21 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
   ["Cat Food", ["cat food", "sheba", "me-o", "whiskas", "drools cat"]],
   ["Cat Poop Bags", ["poop bag", "dog poop bag", "pet poop bag"]],
   ["Toilet Paper", ["toilet paper", "toilet roll", "toilet tissue roll"]],
-  ["Kitchen Roll", ["kitchen roll", "kitchen towel", "kitchen wipe", "sponge wipe"]],
+  [
+    "Kitchen Roll",
+    ["kitchen roll", "kitchen towel", "kitchen wipe", "sponge wipe"],
+  ],
   ["Colin / Glass Cleaner", ["colin", "glass cleaner"]],
   ["Dishwash", ["dishwash", "vim", "exo", "pril"]],
   ["Laundry Detergent", ["detergent", "surf excel", "ariel", "tide", "henko"]],
   ["Floor Cleaner", ["floor cleaner", "lizol", "nimyle"]],
   ["Handwash Liquid", ["handwash", "liquid handwash", "hand wash"]],
-  ["Tissues", ["tissue", "napkin", "facial tissue"]]
+  ["Tissues", ["tissue", "napkin", "facial tissue"]],
 ];
 
-const CANONICAL_NAMES_SET = new Set(CANONICAL_MATCH_RULES.map(([canon]) => canon.toLowerCase()));
+const CANONICAL_NAMES_SET = new Set(
+  CANONICAL_MATCH_RULES.map(([canon]) => canon.toLowerCase())
+);
 
 /**
  * Maps any variant/brand or raw item name to its normalized canonical identity.
@@ -183,7 +244,9 @@ export function toCanonicalItemName(rawName: string): string | null {
  * Checks whether an order is a valid delivered/completed order.
  * Ignores cancelled, returned, or failed orders.
  */
-export function isValidDeliveredOrder(order: HistoricalOrder): boolean {
+export type AnyOrder = HistoricalOrder | HouseholdOrder;
+
+export function isValidDeliveredOrder(order: AnyOrder): boolean {
   if (!order) return false;
   if (!order.status) return true;
   const s = order.status.toUpperCase();
@@ -196,15 +259,15 @@ export function isValidDeliveredOrder(order: HistoricalOrder): boolean {
 /**
  * Extracts a valid ISO date or timestamp string from an order record.
  */
-export function extractOrderDate(order: HistoricalOrder): string | null {
+export function extractOrderDate(order: AnyOrder): string | null {
   const d =
-    order.placed_at ||
-    (order as any).placedAt ||
-    order.order_date ||
-    order.delivery_date ||
-    order.delivered_at ||
-    (order as any).deliveredAt ||
-    order.created_at;
+    ("placed_at" in order && order.placed_at) ||
+    order.placedAt ||
+    ("order_date" in order && order.order_date) ||
+    ("delivery_date" in order && order.delivery_date) ||
+    ("delivered_at" in order && order.delivered_at) ||
+    order.deliveredAt ||
+    ("created_at" in order && order.created_at);
   return d || null;
 }
 
@@ -243,7 +306,9 @@ export function formatOrderRecency(
     orderDate.getDate()
   ).getTime();
 
-  const diffDays = Math.round((startOfNow - startOfOrder) / (1000 * 60 * 60 * 24));
+  const diffDays = Math.round(
+    (startOfNow - startOfOrder) / (1000 * 60 * 60 * 24)
+  );
 
   if (diffDays <= 0) {
     return "Last ordered today";
@@ -274,7 +339,8 @@ let PRECOMPUTED_LATEST_DATES: Map<string, Date> | null = null;
 function getPrecomputedDates(): Map<string, Date> {
   if (!PRECOMPUTED_LATEST_DATES) {
     PRECOMPUTED_LATEST_DATES = new Map();
-    const defaultOrders = itemCatalog.getDefaultHistoricalOrders() as unknown as HistoricalOrder[];
+    const defaultOrders =
+      itemCatalog.getDefaultHistoricalOrders() as unknown as HistoricalOrder[];
     for (const order of defaultOrders) {
       if (!isValidDeliveredOrder(order)) continue;
       const dateStr = extractOrderDate(order);
@@ -307,7 +373,7 @@ function getPrecomputedDates(): Map<string, Date> {
  */
 export function calculateItemLastOrdered(
   itemName: string,
-  orders?: HistoricalOrder[],
+  orders?: Array<HistoricalOrder | HouseholdOrder>,
   now: Date = new Date()
 ): string | null {
   const canon = toCanonicalItemName(itemName);

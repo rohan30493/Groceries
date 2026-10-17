@@ -2,22 +2,12 @@ import { GroceryItem } from "./patterns";
 import { toCanonicalItemName } from "./orderRecency";
 
 export type ItemLifecycleState =
-  | "SUGGESTED"
-  | "BASKET"
-  | "ORDER_PLACED"
-  | "DELIVERED"
-  | "CANCELLED";
+  "SUGGESTED" | "BASKET" | "ORDER_PLACED" | "DELIVERED" | "CANCELLED";
 
 export type OrderStatus =
-  | "ORDER_PLACED"
-  | "DELIVERED"
-  | "PARTIALLY_DELIVERED"
-  | "CANCELLED";
+  "ORDER_PLACED" | "DELIVERED" | "PARTIALLY_DELIVERED" | "CANCELLED";
 
-export type OrderItemStatus =
-  | "ORDER_PLACED"
-  | "DELIVERED"
-  | "CANCELLED";
+export type OrderItemStatus = "ORDER_PLACED" | "DELIVERED" | "CANCELLED";
 
 export interface OrderLineItem {
   id: string;
@@ -43,6 +33,41 @@ export interface HouseholdOrder {
   itemsCount: number;
   items: OrderLineItem[];
   orderedBy?: string;
+}
+
+export interface RawOrderItem {
+  id?: string | number;
+  name?: string;
+  product_name?: string;
+  quantity?: number;
+  unit?: string;
+  pack?: string;
+  pack_size?: string;
+  price?: number;
+  total?: number;
+  status?: string;
+  canonical_name?: string;
+  category?: string;
+  [key: string]: unknown;
+}
+
+export interface RawHouseholdOrder {
+  order_id?: string | number;
+  id?: string | number;
+  order_code?: string;
+  platform?: string;
+  status?: string;
+  placed_at?: string;
+  placedAt?: string;
+  order_date?: string;
+  delivery_date?: string;
+  delivered_at?: string;
+  deliveredAt?: string;
+  created_at?: string;
+  total_amount?: number;
+  ordered_by?: string;
+  items?: RawOrderItem[];
+  [key: string]: unknown;
 }
 
 /**
@@ -90,7 +115,13 @@ export function normalizeOrderStatus(rawStatus?: string): OrderStatus {
   if (s === "PARTIALLY_DELIVERED" || s === "PARTIAL") {
     return "PARTIALLY_DELIVERED";
   }
-  if (s === "ORDER_PLACED" || s === "PLACED" || s === "PENDING" || s === "PROCESSING" || s === "SHIPPED") {
+  if (
+    s === "ORDER_PLACED" ||
+    s === "PLACED" ||
+    s === "PENDING" ||
+    s === "PROCESSING" ||
+    s === "SHIPPED"
+  ) {
     return "ORDER_PLACED";
   }
   return "DELIVERED";
@@ -99,18 +130,26 @@ export function normalizeOrderStatus(rawStatus?: string): OrderStatus {
 /**
  * Parses quantity from a grocery item name if present (e.g. "Milk ×2" or "2 packets milk").
  */
-export function parseQuantityAndCleanName(rawName: string): { cleanName: string; quantity: number } {
+export function parseQuantityAndCleanName(rawName: string): {
+  cleanName: string;
+  quantity: number;
+} {
   let name = rawName.trim();
   let quantity = 1;
 
   // Match e.g. "Milk x2" or "Milk ×2" or "Eggs x 12" or "Milk 2 packs" or "Milk 2 packets"
-  const trailingMultiplier = name.match(/^(.*?)\s*(?:[×x*]\s*(\d+)|(\d+)\s*(?:packets?|packs?|pcs?|kg|litres?|l|boxes?|bottles?))$/i);
+  const trailingMultiplier = name.match(
+    /^(.*?)\s*(?:[×x*]\s*(\d+)|(\d+)\s*(?:packets?|packs?|pcs?|kg|litres?|l|boxes?|bottles?))$/i
+  );
   if (trailingMultiplier) {
     name = trailingMultiplier[1].trim();
-    quantity = parseInt(trailingMultiplier[2] || trailingMultiplier[3], 10) || 1;
+    quantity =
+      parseInt(trailingMultiplier[2] || trailingMultiplier[3], 10) || 1;
   } else {
     // Match e.g. "2 packets of milk", "3 avocados"
-    const leadingQty = name.match(/^(\d+)\s*(?:packets?|packs?|pcs?|kg|litres?|l)?\s*(?:of)?\s*(.+)$/i);
+    const leadingQty = name.match(
+      /^(\d+)\s*(?:packets?|packs?|pcs?|kg|litres?|l)?\s*(?:of)?\s*(.+)$/i
+    );
     if (leadingQty) {
       quantity = parseInt(leadingQty[1], 10) || 1;
       name = leadingQty[2].trim();
@@ -141,7 +180,7 @@ export function createOrderFromBasket(
       canonicalName: canonical,
       quantity: quantity,
       category: item.category,
-      status: "ORDER_PLACED"
+      status: "ORDER_PLACED",
     };
   });
 
@@ -154,7 +193,7 @@ export function createOrderFromBasket(
     totalAmount: 0,
     itemsCount: lineItems.length,
     items: lineItems,
-    orderedBy
+    orderedBy,
   };
 }
 
@@ -168,7 +207,9 @@ export function updateOrderItemOutcome(
 ): HouseholdOrder {
   const target = lineItemIdOrCanonical.toLowerCase().trim();
   const { cleanName: targetClean } = parseQuantityAndCleanName(target);
-  const targetCanonical = (toCanonicalItemName(targetClean) || targetClean).toLowerCase();
+  const targetCanonical = (
+    toCanonicalItemName(targetClean) || targetClean
+  ).toLowerCase();
   const nowIso = new Date().toISOString();
 
   const updatedItems = order.items.map((it) => {
@@ -188,7 +229,7 @@ export function updateOrderItemOutcome(
       return {
         ...it,
         status: newOutcome,
-        deliveredAt: newOutcome === "DELIVERED" ? nowIso : undefined
+        deliveredAt: newOutcome === "DELIVERED" ? nowIso : undefined,
       };
     }
     return it;
@@ -199,7 +240,7 @@ export function updateOrderItemOutcome(
     ...order,
     items: updatedItems,
     status: nextStatus,
-    deliveredAt: nextStatus === "DELIVERED" ? nowIso : order.deliveredAt
+    deliveredAt: nextStatus === "DELIVERED" ? nowIso : order.deliveredAt,
   };
 }
 
@@ -217,21 +258,24 @@ export function updateOrderStatus(
     nextItems = order.items.map((it) => ({
       ...it,
       status: "DELIVERED",
-      deliveredAt: it.deliveredAt || nowIso
+      deliveredAt: it.deliveredAt || nowIso,
     }));
   } else if (newStatus === "CANCELLED") {
     nextItems = order.items.map((it) => ({
       ...it,
       status: "CANCELLED",
-      deliveredAt: undefined
+      deliveredAt: undefined,
     }));
   }
 
   return {
     ...order,
     status: newStatus,
-    deliveredAt: newStatus === "DELIVERED" ? (order.deliveredAt || nowIso) : order.deliveredAt,
-    items: nextItems
+    deliveredAt:
+      newStatus === "DELIVERED"
+        ? order.deliveredAt || nowIso
+        : order.deliveredAt,
+    items: nextItems,
   };
 }
 
@@ -258,11 +302,12 @@ export function recordItemToOrders(
     quantity: quantity,
     category: item.category,
     status: "DELIVERED",
-    deliveredAt: nowIso
+    deliveredAt: nowIso,
   };
 
   const recentIndex = orders.findIndex((ord) => {
-    if (ord.platform !== "HOUSEHOLD_APP" && ord.platform !== "Zepto") return false;
+    if (ord.platform !== "HOUSEHOLD_APP" && ord.platform !== "Zepto")
+      return false;
     const orderTime = new Date(ord.placedAt).getTime();
     if (isNaN(orderTime)) return false;
     return nowMs - orderTime <= windowMs;
@@ -271,12 +316,19 @@ export function recordItemToOrders(
   if (recentIndex >= 0) {
     const existing = orders[recentIndex];
     const exists = existing.items.some(
-      (it) => it.id === item.id || it.canonicalName.toLowerCase() === canonical.toLowerCase()
+      (it) =>
+        it.id === item.id ||
+        it.canonicalName.toLowerCase() === canonical.toLowerCase()
     );
     const nextItems = exists
       ? existing.items.map((it) =>
-          it.id === item.id || it.canonicalName.toLowerCase() === canonical.toLowerCase()
-            ? { ...it, status: "DELIVERED" as OrderItemStatus, deliveredAt: nowIso }
+          it.id === item.id ||
+          it.canonicalName.toLowerCase() === canonical.toLowerCase()
+            ? {
+                ...it,
+                status: "DELIVERED" as OrderItemStatus,
+                deliveredAt: nowIso,
+              }
             : it
         )
       : [...existing.items, lineItem];
@@ -286,10 +338,12 @@ export function recordItemToOrders(
       items: nextItems,
       itemsCount: nextItems.length,
       status: "DELIVERED",
-      deliveredAt: nowIso
+      deliveredAt: nowIso,
     };
 
-    const updatedOrders = orders.map((o, idx) => (idx === recentIndex ? modifiedOrder : o));
+    const updatedOrders = orders.map((o, idx) =>
+      idx === recentIndex ? modifiedOrder : o
+    );
     return { updatedOrders, modifiedOrder };
   } else {
     const orderId = `ord-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
@@ -303,7 +357,7 @@ export function recordItemToOrders(
       totalAmount: 0,
       itemsCount: 1,
       items: [lineItem],
-      orderedBy
+      orderedBy,
     };
     const updatedOrders = [modifiedOrder, ...orders];
     return { updatedOrders, modifiedOrder };

@@ -502,10 +502,43 @@ export default function GroceryAssistantApp() {
   // Voice speech-to-text integration
   const toggleVoiceInput = () => {
     if (typeof window === "undefined") return;
+
+    interface BrowserSpeechRecognitionEvent {
+      results: {
+        [index: number]: {
+          [index: number]: {
+            transcript: string;
+          };
+        };
+      };
+    }
+
+    interface BrowserSpeechRecognitionInstance {
+      lang: string;
+      interimResults: boolean;
+      maxAlternatives: number;
+      onstart: () => void;
+      onresult: (event: BrowserSpeechRecognitionEvent) => void;
+      onerror: () => void;
+      onend: () => void;
+      start: () => void;
+      stop: () => void;
+    }
+
+    type BrowserSpeechRecognitionConstructor =
+      new () => BrowserSpeechRecognitionInstance;
+
     const SpeechRecognition =
-      (window as unknown as { SpeechRecognition?: any }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: any })
-        .webkitSpeechRecognition;
+      (
+        window as unknown as {
+          SpeechRecognition?: BrowserSpeechRecognitionConstructor;
+        }
+      ).SpeechRecognition ||
+      (
+        window as unknown as {
+          webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor;
+        }
+      ).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert(
@@ -529,8 +562,8 @@ export default function GroceryAssistantApp() {
         setIsListening(true);
       };
 
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
+      recognition.onresult = (event: BrowserSpeechRecognitionEvent) => {
+        const transcript = event.results[0]?.[0]?.transcript || "";
         const detected = parseNaturalLanguageList(transcript);
         if (detected.length > 0) {
           const formatted = detected.join(", ");

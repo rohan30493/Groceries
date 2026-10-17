@@ -4,8 +4,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   HouseholdBasket,
   BasketSnapshot,
+  BasketHandoffState,
   SupabaseBasketStore,
-  BrowserNotificationAdapter
+  BrowserNotificationAdapter,
 } from "./householdBasket";
 import { GroceryItem } from "./patterns";
 
@@ -18,17 +19,21 @@ export function useHouseholdBasket() {
     );
   }
   const basket = basketRef.current;
-  const [snapshot, setSnapshot] = useState<BasketSnapshot>(() => basket.getSnapshot());
+  const [snapshot, setSnapshot] = useState<BasketSnapshot>(() =>
+    basket.getSnapshot()
+  );
 
   useEffect(() => {
     // Read local cache for instantaneous initial render
     let cachedItems: GroceryItem[] | undefined;
-    let cachedHandoff: any;
+    let cachedHandoff: BasketHandoffState | undefined;
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem("household_grocery_items");
         if (saved) cachedItems = JSON.parse(saved);
-        const savedHandoff = localStorage.getItem("household_basket_handoff_state");
+        const savedHandoff = localStorage.getItem(
+          "household_basket_handoff_state"
+        );
         if (savedHandoff) cachedHandoff = JSON.parse(savedHandoff);
       } catch {}
     }
@@ -37,8 +42,14 @@ export function useHouseholdBasket() {
       setSnapshot(snap);
       if (typeof window !== "undefined") {
         try {
-          localStorage.setItem("household_grocery_items", JSON.stringify(snap.items));
-          localStorage.setItem("household_basket_handoff_state", JSON.stringify(snap.handoffState));
+          localStorage.setItem(
+            "household_grocery_items",
+            JSON.stringify(snap.items)
+          );
+          localStorage.setItem(
+            "household_basket_handoff_state",
+            JSON.stringify(snap.handoffState)
+          );
         } catch {}
       }
     });
@@ -51,21 +62,33 @@ export function useHouseholdBasket() {
   }, [basket]);
 
   const addItems = useCallback(
-    (textOrNames: string | string[], sender?: "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion") =>
-      basket.addItems(textOrNames, sender),
+    (
+      textOrNames: string | string[],
+      sender?: "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion"
+    ) => basket.addItems(textOrNames, sender),
     [basket]
   );
 
   const markAsOrdered = useCallback(
-    (id: string, orderedBy: "Rohan" | "Lira" = "Rohan") => basket.markAsOrdered(id, orderedBy),
+    (id: string, orderedBy: "Rohan" | "Lira" = "Rohan") =>
+      basket.markAsOrdered(id, orderedBy),
     [basket]
   );
 
-  const undoOrdered = useCallback((id: string) => basket.undoOrdered(id), [basket]);
+  const undoOrdered = useCallback(
+    (id: string) => basket.undoOrdered(id),
+    [basket]
+  );
 
-  const removeItem = useCallback((id: string) => basket.removeItem(id), [basket]);
+  const removeItem = useCallback(
+    (id: string) => basket.removeItem(id),
+    [basket]
+  );
 
-  const toggleDone = useCallback((id: string) => basket.toggleDone(id), [basket]);
+  const toggleDone = useCallback(
+    (id: string) => basket.toggleDone(id),
+    [basket]
+  );
 
   const clearCompleted = useCallback(() => basket.clearCompleted(), [basket]);
 
@@ -97,6 +120,6 @@ export function useHouseholdBasket() {
     handoff,
     placeOrder,
     acknowledgeNotification,
-    requestNotificationPermission
+    requestNotificationPermission,
   };
 }

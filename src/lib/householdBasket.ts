@@ -1,4 +1,8 @@
-import { GroceryItem, detectCategory, parseNaturalLanguageList } from "./patterns";
+import {
+  GroceryItem,
+  detectCategory,
+  parseNaturalLanguageList,
+} from "./patterns";
 import {
   BasketHandoffState,
   BasketStatus,
@@ -8,19 +12,20 @@ import {
   canPlaceOrder,
   executePlaceOrder,
   resetBasketState,
-  LIRA_HANDOFF_MESSAGE
+  LIRA_HANDOFF_MESSAGE,
 } from "./handoff";
+export type { BasketHandoffState };
 import {
   HandoffNotification,
   estimateBasketValue,
   evaluateHandoffNotification,
-  formatNotificationPreview
+  formatNotificationPreview,
 } from "./handoffNotification";
 import {
   NotificationPermissionStatus,
   getBrowserNotificationPermission,
   requestNotificationPermission,
-  sendBrowserHandoffNotification
+  sendBrowserHandoffNotification,
 } from "./pushNotifications";
 import {
   supabase,
@@ -34,7 +39,7 @@ import {
   upsertGroceryItem,
   deleteGroceryItemDb,
   clearCompletedItemsDb,
-  archiveCompletedRun
+  archiveCompletedRun,
 } from "./supabase";
 
 export interface BasketSnapshot {
@@ -58,7 +63,10 @@ export interface BasketStore {
   archiveCompleted(items: GroceryItem[]): Promise<void>;
   saveHandoffState(state: BasketHandoffState): Promise<void>;
   subscribe(
-    onItemChange: (type: "INSERT" | "UPDATE" | "DELETE", item: GroceryItem | { id: string }) => void,
+    onItemChange: (
+      type: "INSERT" | "UPDATE" | "DELETE",
+      item: GroceryItem | { id: string }
+    ) => void,
     onHandoffChange: (state: BasketHandoffState) => void
   ): () => void;
 }
@@ -120,7 +128,10 @@ export class SupabaseBasketStore implements BasketStore {
   }
 
   subscribe(
-    onItemChange: (type: "INSERT" | "UPDATE" | "DELETE", item: GroceryItem | { id: string }) => void,
+    onItemChange: (
+      type: "INSERT" | "UPDATE" | "DELETE",
+      item: GroceryItem | { id: string }
+    ) => void,
     onHandoffChange: (state: BasketHandoffState) => void
   ): () => void {
     const channel = supabase
@@ -129,7 +140,10 @@ export class SupabaseBasketStore implements BasketStore {
         "postgres_changes",
         { event: "*", schema: "public", table: "grocery_items" },
         (payload) => {
-          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+          if (
+            payload.eventType === "INSERT" ||
+            payload.eventType === "UPDATE"
+          ) {
             const raw = payload.new as DbGroceryItem;
             if (raw.id === HANDOFF_RECORD_ID) {
               if (raw.notes) {
@@ -167,11 +181,17 @@ export class InMemoryBasketStore implements BasketStore {
   private items: Map<string, GroceryItem> = new Map();
   private handoffState: BasketHandoffState = initHandoffState(0);
   private listeners: Array<{
-    onItemChange: (type: "INSERT" | "UPDATE" | "DELETE", item: GroceryItem | { id: string }) => void;
+    onItemChange: (
+      type: "INSERT" | "UPDATE" | "DELETE",
+      item: GroceryItem | { id: string }
+    ) => void;
     onHandoffChange: (state: BasketHandoffState) => void;
   }> = [];
 
-  constructor(initialItems: GroceryItem[] = [], initialHandoff?: BasketHandoffState) {
+  constructor(
+    initialItems: GroceryItem[] = [],
+    initialHandoff?: BasketHandoffState
+  ) {
     for (const it of initialItems) {
       this.items.set(it.id, { ...it });
     }
@@ -219,7 +239,10 @@ export class InMemoryBasketStore implements BasketStore {
   }
 
   subscribe(
-    onItemChange: (type: "INSERT" | "UPDATE" | "DELETE", item: GroceryItem | { id: string }) => void,
+    onItemChange: (
+      type: "INSERT" | "UPDATE" | "DELETE",
+      item: GroceryItem | { id: string }
+    ) => void,
     onHandoffChange: (state: BasketHandoffState) => void
   ): () => void {
     const entry = { onItemChange, onHandoffChange };
@@ -303,7 +326,10 @@ export class HouseholdBasket {
    * Initializes the basket with optional cached items and handoff state,
    * then connects to the store and real-time subscription.
    */
-  async initialize(cachedItems?: GroceryItem[], cachedHandoff?: BasketHandoffState): Promise<void> {
+  async initialize(
+    cachedItems?: GroceryItem[],
+    cachedHandoff?: BasketHandoffState
+  ): Promise<void> {
     if (cachedItems && cachedItems.length > 0) {
       this.items = [...cachedItems];
     }
@@ -322,7 +348,7 @@ export class HouseholdBasket {
     // Fetch initial fresh data
     const [freshItems, freshHandoff] = await Promise.all([
       this.store.fetchItems().catch(() => [] as GroceryItem[]),
-      this.store.fetchHandoffState().catch(() => null)
+      this.store.fetchHandoffState().catch(() => null),
     ]);
 
     if (freshItems && freshItems.length > 0) {
@@ -373,7 +399,7 @@ export class HouseholdBasket {
       handoffState: { ...this.handoffState },
       activeNotification,
       notificationPermission: this.notifications.getPermission(),
-      isCloudSynced: this.isCloudSynced
+      isCloudSynced: this.isCloudSynced,
     };
   }
 
@@ -410,7 +436,8 @@ export class HouseholdBasket {
 
       // Deduplicate against active items
       const isDuplicate = this.items.some(
-        (it) => !it.isDone && it.name.toLowerCase().trim() === trimmed.toLowerCase()
+        (it) =>
+          !it.isDone && it.name.toLowerCase().trim() === trimmed.toLowerCase()
       );
       if (isDuplicate) continue;
 
@@ -421,7 +448,7 @@ export class HouseholdBasket {
         addedBy,
         addedAt: nowIso,
         createdAt: nowIso,
-        isDone: false
+        isDone: false,
       };
       created.push(item);
     }
@@ -429,7 +456,9 @@ export class HouseholdBasket {
     if (created.length === 0) return [];
 
     this.items = [...created, ...this.items];
-    const pendingCount = this.items.filter((it) => !it.isDone && !it.isOrdered).length;
+    const pendingCount = this.items.filter(
+      (it) => !it.isDone && !it.isOrdered
+    ).length;
     this.handoffState = registerBasketActivity(this.handoffState, pendingCount);
 
     this.notifySubscribers();
@@ -437,7 +466,7 @@ export class HouseholdBasket {
     // Persist
     await Promise.all([
       ...created.map((it) => this.store.saveItem(it)),
-      this.store.saveHandoffState(this.handoffState)
+      this.store.saveHandoffState(this.handoffState),
     ]);
 
     return created;
@@ -459,18 +488,20 @@ export class HouseholdBasket {
       ...target,
       isOrdered: true,
       orderedAt: nowIso,
-      orderedBy
+      orderedBy,
     };
 
     this.items = this.items.map((it) => (it.id === id ? updated : it));
-    const pendingCount = this.items.filter((it) => !it.isDone && !it.isOrdered).length;
+    const pendingCount = this.items.filter(
+      (it) => !it.isDone && !it.isOrdered
+    ).length;
     this.handoffState = registerBasketActivity(this.handoffState, pendingCount);
 
     this.notifySubscribers();
 
     await Promise.all([
       this.store.saveItem(updated),
-      this.store.saveHandoffState(this.handoffState)
+      this.store.saveHandoffState(this.handoffState),
     ]);
 
     return updated;
@@ -487,18 +518,20 @@ export class HouseholdBasket {
       ...target,
       isOrdered: false,
       orderedAt: undefined,
-      orderedBy: undefined
+      orderedBy: undefined,
     };
 
     this.items = this.items.map((it) => (it.id === id ? updated : it));
-    const pendingCount = this.items.filter((it) => !it.isDone && !it.isOrdered).length;
+    const pendingCount = this.items.filter(
+      (it) => !it.isDone && !it.isOrdered
+    ).length;
     this.handoffState = registerBasketActivity(this.handoffState, pendingCount);
 
     this.notifySubscribers();
 
     await Promise.all([
       this.store.saveItem(updated),
-      this.store.saveHandoffState(this.handoffState)
+      this.store.saveHandoffState(this.handoffState),
     ]);
 
     return updated;
@@ -509,14 +542,16 @@ export class HouseholdBasket {
    */
   async removeItem(id: string): Promise<void> {
     this.items = this.items.filter((it) => it.id !== id);
-    const pendingCount = this.items.filter((it) => !it.isDone && !it.isOrdered).length;
+    const pendingCount = this.items.filter(
+      (it) => !it.isDone && !it.isOrdered
+    ).length;
     this.handoffState = registerBasketActivity(this.handoffState, pendingCount);
 
     this.notifySubscribers();
 
     await Promise.all([
       this.store.deleteItem(id),
-      this.store.saveHandoffState(this.handoffState)
+      this.store.saveHandoffState(this.handoffState),
     ]);
   }
 
@@ -531,18 +566,20 @@ export class HouseholdBasket {
     const updated: GroceryItem = {
       ...target,
       isDone: willBeDone,
-      purchasedAt: willBeDone ? new Date().toISOString() : undefined
+      purchasedAt: willBeDone ? new Date().toISOString() : undefined,
     };
 
     this.items = this.items.map((it) => (it.id === id ? updated : it));
-    const pendingCount = this.items.filter((it) => !it.isDone && !it.isOrdered).length;
+    const pendingCount = this.items.filter(
+      (it) => !it.isDone && !it.isOrdered
+    ).length;
     this.handoffState = registerBasketActivity(this.handoffState, pendingCount);
 
     this.notifySubscribers();
 
     await Promise.all([
       this.store.saveItem(updated),
-      this.store.saveHandoffState(this.handoffState)
+      this.store.saveHandoffState(this.handoffState),
     ]);
 
     return updated;
@@ -569,16 +606,21 @@ export class HouseholdBasket {
   async handoff(): Promise<void> {
     const pending = this.items.filter((it) => !it.isDone && !it.isOrdered);
     if (pending.length === 0) {
-      throw new Error("Cannot hand off an empty basket. Please add items first.");
+      throw new Error(
+        "Cannot hand off an empty basket. Please add items first."
+      );
     }
 
-    this.handoffState = liraCompleteAndHandoff(this.handoffState, pending.length);
+    this.handoffState = liraCompleteAndHandoff(
+      this.handoffState,
+      pending.length
+    );
     const estimatedValue = estimateBasketValue(pending);
 
     // Trigger browser notification
     this.notifications.sendNotification({
       itemCount: pending.length,
-      estimatedValue
+      estimatedValue,
     });
 
     this.notifySubscribers();
@@ -630,7 +672,9 @@ export class HouseholdBasket {
       const incoming = itemOrId as GroceryItem;
       const exists = this.items.some((x) => x.id === incoming.id);
       if (exists) {
-        this.items = this.items.map((x) => (x.id === incoming.id ? incoming : x));
+        this.items = this.items.map((x) =>
+          x.id === incoming.id ? incoming : x
+        );
       } else {
         this.items = [incoming, ...this.items];
       }

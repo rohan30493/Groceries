@@ -7,14 +7,10 @@ import {
   updateOrderStatus,
   updateOrderItemOutcome,
   recordItemToOrders,
-  computeOrderStatus
+  computeOrderStatus,
 } from "./orderLifecycle";
 import { itemCatalog } from "./itemCatalog";
-import {
-  supabase,
-  saveHouseholdOrder,
-  fetchHouseholdOrders
-} from "./supabase";
+import { supabase, saveHouseholdOrder, fetchHouseholdOrders } from "./supabase";
 
 export interface OrderStore {
   fetchOrders(): Promise<HouseholdOrder[]>;
@@ -73,7 +69,10 @@ export class SupabaseOrderStore implements OrderStore {
         } else {
           list.unshift(order);
         }
-        localStorage.setItem("household_orders_cache", JSON.stringify(list.slice(0, 100)));
+        localStorage.setItem(
+          "household_orders_cache",
+          JSON.stringify(list.slice(0, 100))
+        );
       } catch {}
     }
     return success;
@@ -91,13 +90,20 @@ export class SupabaseOrderStore implements OrderStore {
         "postgres_changes",
         { event: "*", schema: "public", table: "household_orders" },
         (payload) => {
-          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+          if (
+            payload.eventType === "INSERT" ||
+            payload.eventType === "UPDATE"
+          ) {
             const incoming = itemCatalog.normalizeRawOrder(payload.new);
             onOrderChange(payload.eventType, incoming);
           } else if (payload.eventType === "DELETE") {
+            const oldRecord = payload.old as {
+              order_id?: string;
+              id?: string;
+              orderId?: string;
+            } | null;
             const oldId =
-              (payload.old as { order_id?: string; id?: string }).order_id ||
-              (payload.old as any).id;
+              oldRecord?.order_id || oldRecord?.id || oldRecord?.orderId;
             if (oldId) {
               onOrderChange("DELETE", { orderId: oldId });
             }
@@ -118,7 +124,10 @@ export class SupabaseOrderStore implements OrderStore {
 export class InMemoryOrderStore implements OrderStore {
   private orders: Map<string, HouseholdOrder> = new Map();
   private listeners: Array<
-    (type: "INSERT" | "UPDATE" | "DELETE", order: HouseholdOrder | { orderId: string }) => void
+    (
+      type: "INSERT" | "UPDATE" | "DELETE",
+      order: HouseholdOrder | { orderId: string }
+    ) => void
   > = [];
 
   constructor(initialOrders: HouseholdOrder[] = []) {
@@ -256,7 +265,9 @@ export class OrderJournal {
       this.timeProvider()
     );
 
-    const wasGrouped = this.orders.some((o) => o.orderId === modifiedOrder.orderId);
+    const wasGrouped = this.orders.some(
+      (o) => o.orderId === modifiedOrder.orderId
+    );
     this.orders = updatedOrders;
     this.notifySubscribers();
 
@@ -291,7 +302,11 @@ export class OrderJournal {
     const target = this.orders.find((o) => o.orderId === orderId);
     if (!target) return;
 
-    const updated = updateOrderItemOutcome(target, lineItemIdOrCanonical, outcome);
+    const updated = updateOrderItemOutcome(
+      target,
+      lineItemIdOrCanonical,
+      outcome
+    );
     this.orders = this.orders.map((o) => (o.orderId === orderId ? updated : o));
     this.notifySubscribers();
 

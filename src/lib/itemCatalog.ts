@@ -6,7 +6,9 @@ import {
   OrderLineItem,
   OrderItemStatus,
   OrderStatus,
-  normalizeOrderStatus
+  normalizeOrderStatus,
+  RawHouseholdOrder,
+  RawOrderItem,
 } from "./orderLifecycle";
 
 export interface ResolvedProduct {
@@ -16,10 +18,7 @@ export interface ResolvedProduct {
 }
 
 export type ReplenishmentStatus =
-  | "DUE_NOW"
-  | "APPROACHING_DUE"
-  | "NOT_DUE"
-  | "INSUFFICIENT_HISTORY";
+  "DUE_NOW" | "APPROACHING_DUE" | "NOT_DUE" | "INSUFFICIENT_HISTORY";
 
 export interface ItemCadenceInfo {
   canonicalName: string;
@@ -90,7 +89,10 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
   ["Coriander", ["coriander", "dhaniya", "dhania", "kothmir"]],
   ["Garlic", ["garlic", "lehsun", "lahsun"]],
   ["Apples", ["apple", "seb"]],
-  ["Lettuce / Salad Leaves", ["lettuce", "salad leave", "iceberg", "romaine", "arugula"]],
+  [
+    "Lettuce / Salad Leaves",
+    ["lettuce", "salad leave", "iceberg", "romaine", "arugula"],
+  ],
   ["Ginger", ["ginger", "adrak"]],
   ["Capsicum", ["capsicum", "bell pepper", "shimla mirch"]],
   ["Cabbage", ["cabbage", "patta gobi"]],
@@ -107,22 +109,56 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
 
   // Dairy, Bread & Eggs
   ["Fresh Paneer", ["paneer", "gowardhan", "malai paneer", "cottage cheese"]],
-  ["Milk", ["milk", "nandini goodlife", "akshayakalpa", "heritage", "toned milk", "cow milk"]],
+  [
+    "Milk",
+    [
+      "milk",
+      "nandini goodlife",
+      "akshayakalpa",
+      "heritage",
+      "toned milk",
+      "cow milk",
+    ],
+  ],
   ["Curd / Dahi", ["curd", "dahi"]],
   ["Eggs", ["egg", "eggs", "country egg", "white egg"]],
-  ["Bread", ["bread", "whole wheat bread", "white bread", "multigrain", "pav", "burger bun"]],
+  [
+    "Bread",
+    [
+      "bread",
+      "whole wheat bread",
+      "white bread",
+      "multigrain",
+      "pav",
+      "burger bun",
+    ],
+  ],
   ["Butter", ["butter", "amul butter"]],
   ["Cheese Slices", ["cheese slice", "cheddar slice"]],
   ["Greek Yogurt / Epigamia", ["epigamia", "greek yogurt"]],
 
   // Atta, Rice, Oil & Dals
-  ["Atta / Wheat Flour", ["atta", "aashirvaad atta", "wheat flour", "chakki atta"]],
+  [
+    "Atta / Wheat Flour",
+    ["atta", "aashirvaad atta", "wheat flour", "chakki atta"],
+  ],
   ["Basmati Rice", ["basmati", "daawat", "india gate", "biryani rice"]],
   ["Sona Masoori Rice", ["sona masoori", "raw rice", "boiled rice"]],
   ["Toor Dal", ["toor dal", "arhar dal", "tuvar"]],
   ["Moong Dal", ["moong dal", "yellow moong", "split moong"]],
   ["Chana Dal", ["chana dal", "bengal gram"]],
-  ["Cooking Oil", ["oil", "fortune sunlite", "sunflower oil", "mustard oil", "groundnut oil", "olive oil", "ghee"]],
+  [
+    "Cooking Oil",
+    [
+      "oil",
+      "fortune sunlite",
+      "sunflower oil",
+      "mustard oil",
+      "groundnut oil",
+      "olive oil",
+      "ghee",
+    ],
+  ],
   ["Sugar", ["sugar", "cheeni", "shakar"]],
   ["Salt", ["salt", "tata salt", "namak"]],
 
@@ -137,23 +173,83 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
   // Tea, Coffee & Beverages
   ["Tea / Chai Patti", ["tea", "chai", "red label", "taj mahal", "tata tea"]],
   ["Coffee Powder", ["coffee", "nescafe", "bru", "instant coffee"]],
-  ["Coconut Water", ["coconut water", "tender coconut", "raw pressery coconut"]],
+  [
+    "Coconut Water",
+    ["coconut water", "tender coconut", "raw pressery coconut"],
+  ],
 
   // Snacks & Munchies
-  ["Biscuits / Cookies", ["biscuit", "cookie", "hide & seek", "bourbon", "marie light", "parle-g", "monaco", "krackjack", "good day"]],
+  [
+    "Biscuits / Cookies",
+    [
+      "biscuit",
+      "cookie",
+      "hide & seek",
+      "bourbon",
+      "marie light",
+      "parle-g",
+      "monaco",
+      "krackjack",
+      "good day",
+    ],
+  ],
   ["Makhana", ["makhana", "fox nut", "lotus seeds"]],
-  ["Dry Fruits & Nuts", ["almond", "badam", "cashew", "kaju", "walnut", "akhrot", "raisin", "kishmish"]],
+  [
+    "Dry Fruits & Nuts",
+    [
+      "almond",
+      "badam",
+      "cashew",
+      "kaju",
+      "walnut",
+      "akhrot",
+      "raisin",
+      "kishmish",
+    ],
+  ],
   ["Potato Chips", ["chips", "lays", "doritos", "bingo", "pringles"]],
   ["Instant Noodles", ["maggi", "noodles", "yippee"]],
 
   // Pet Care & Household Essentials
-  ["Cat Food", ["cat food", "whiskas", "sheba", "purina", "felix", "drools cat", "royal canin", "cat treat"]],
+  [
+    "Cat Food",
+    [
+      "cat food",
+      "whiskas",
+      "sheba",
+      "purina",
+      "felix",
+      "drools cat",
+      "royal canin",
+      "cat treat",
+    ],
+  ],
   ["Cat Litter", ["cat litter", "bentonite", "tofu litter"]],
   ["Dishwash Liquid", ["dishwash", "vim", "pril", "exo"]],
-  ["Detergent", ["detergent", "surf excel", "ariel", "tide", "liquid detergent", "front load", "top load"]],
+  [
+    "Detergent",
+    [
+      "detergent",
+      "surf excel",
+      "ariel",
+      "tide",
+      "liquid detergent",
+      "front load",
+      "top load",
+    ],
+  ],
   ["Toilet Cleaner", ["harpic", "toilet cleaner", "sanifresh"]],
   ["Garbage Bags", ["garbage bag", "trash bag", "dustbin cover"]],
-  ["Kitchen Tissues / Paper Towels", ["kitchen towel", "kitchen roll", "tissue paper", "paper roll", "facial tissue"]]
+  [
+    "Kitchen Tissues / Paper Towels",
+    [
+      "kitchen towel",
+      "kitchen roll",
+      "tissue paper",
+      "paper roll",
+      "facial tissue",
+    ],
+  ],
 ];
 
 export function calculateMedian(numbers: number[]): number | null {
@@ -185,13 +281,19 @@ export function getCalendarDayDiff(
     d.getDate()
   ).getTime();
 
-  return Math.max(0, Math.round((refMidnight - dMidnight) / (1000 * 60 * 60 * 24)));
+  return Math.max(
+    0,
+    Math.round((refMidnight - dMidnight) / (1000 * 60 * 60 * 24))
+  );
 }
 
 /**
  * Parses quantity indicators from item name and cleans the product name.
  */
-export function parseQuantityAndCleanName(rawName: string): { cleanName: string; quantity: number } {
+export function parseQuantityAndCleanName(rawName: string): {
+  cleanName: string;
+  quantity: number;
+} {
   if (!rawName) return { cleanName: "", quantity: 1 };
 
   let text = rawName.trim();
@@ -205,23 +307,48 @@ export function parseQuantityAndCleanName(rawName: string): { cleanName: string;
   }
 
   // Multiplier pattern like "x 2", "2x"
-  const multiplierMatch = text.match(/(?:^|\s)x\s*(\d+)(?:\s|$)/i) || text.match(/(?:^|\s)(\d+)\s*x(?:\s|$)/i);
+  const multiplierMatch =
+    text.match(/(?:^|\s)x\s*(\d+)(?:\s|$)/i) ||
+    text.match(/(?:^|\s)(\d+)\s*x(?:\s|$)/i);
   if (multiplierMatch) {
     quantity = parseInt(multiplierMatch[1], 10) || quantity;
-    text = text.replace(/(?:^|\s)x\s*\d+(?:\s|$)/i, " ").replace(/(?:^|\s)\d+\s*x(?:\s|$)/i, " ").trim();
+    text = text
+      .replace(/(?:^|\s)x\s*\d+(?:\s|$)/i, " ")
+      .replace(/(?:^|\s)\d+\s*x(?:\s|$)/i, " ")
+      .trim();
   }
 
   // Remove trailing weight/volume descriptors for cleaner canonical matching (e.g., "500g", "1 kg", "200ml")
   const cleaned = text
-    .replace(/\s*\(\s*\d+\s*(?:g|kg|gm|ml|l|ltr|pcs|piece|pieces|packs?)\s*\)/gi, "")
+    .replace(
+      /\s*\(\s*\d+\s*(?:g|kg|gm|ml|l|ltr|pcs|piece|pieces|packs?)\s*\)/gi,
+      ""
+    )
     .replace(/\s+-\s+\d+\s*(?:g|kg|gm|ml|l|ltr|pcs|piece|pieces|packs?)$/gi, "")
     .replace(/\s+/g, " ")
     .trim();
 
   return {
     cleanName: cleaned || rawName.trim(),
-    quantity: Math.max(1, quantity)
+    quantity: Math.max(1, quantity),
   };
+}
+
+export interface CompanionRule {
+  companion: string;
+  confidence: number;
+}
+
+export interface StapleRule {
+  name: string;
+  count: number;
+  category?: string;
+}
+
+export interface PatternRulesData {
+  companions?: Record<string, CompanionRule[]>;
+  top_staples?: StapleRule[];
+  [key: string]: unknown;
 }
 
 /**
@@ -235,33 +362,38 @@ export class ItemCatalog {
   private canonicalMap: Map<string, string[]> = new Map();
   private defaultOrders: HouseholdOrder[] = [];
   private canonicalPriceMap: Map<string, number> = new Map();
-  private patternRules: any;
-  private categorySections: any[];
+  private patternRules: PatternRulesData;
+  private categorySections: unknown[];
 
   constructor() {
-    this.patternRules = patternRulesRaw;
-    this.categorySections = categorySectionsRaw;
+    this.patternRules = patternRulesRaw as unknown as PatternRulesData;
+    this.categorySections = categorySectionsRaw as unknown[];
     this.initCanonicalMap();
     this.ingestUnifiedOrders();
   }
 
   private initCanonicalMap(): void {
     for (const [canonical, aliases] of CANONICAL_MATCH_RULES) {
-      this.canonicalMap.set(canonical, aliases.map((a) => a.toLowerCase().trim()));
+      this.canonicalMap.set(
+        canonical,
+        aliases.map((a) => a.toLowerCase().trim())
+      );
     }
   }
 
   private ingestUnifiedOrders(): void {
-    const rawList = unifiedOrdersRaw as any[];
+    const rawList = unifiedOrdersRaw as unknown as RawHouseholdOrder[];
     this.defaultOrders = rawList.map((raw) => this.normalizeRawOrder(raw));
 
     for (const order of rawList) {
-      if (order.status === "CANCELLED" || order.status === "RETURN_TO_ORIGIN") continue;
+      if (order.status === "CANCELLED" || order.status === "RETURN_TO_ORIGIN")
+        continue;
       for (const it of order.items || []) {
         if (!it || !it.name) continue;
         const resolved = this.resolve(it.name);
         if (!resolved.canonicalName) continue;
-        const price = typeof it.price === "number" && it.price > 0 ? it.price : 0;
+        const price =
+          typeof it.price === "number" && it.price > 0 ? it.price : 0;
         if (price > 0 && !this.canonicalPriceMap.has(resolved.canonicalName)) {
           this.canonicalPriceMap.set(resolved.canonicalName, price);
         }
@@ -269,52 +401,64 @@ export class ItemCatalog {
     }
   }
 
-  normalizeRawOrder(rawOrder: any): HouseholdOrder {
-    const orderId = String(rawOrder.order_id || rawOrder.id || `ord-${Math.random().toString(36).slice(2, 8)}`);
+  normalizeRawOrder(rawOrder: RawHouseholdOrder): HouseholdOrder {
+    const orderId = String(
+      rawOrder.order_id ||
+        rawOrder.id ||
+        `ord-${Math.random().toString(36).slice(2, 8)}`
+    );
     const platform = rawOrder.platform || "Zepto";
     const rawStatus = rawOrder.status;
     const placedAt =
       rawOrder.placed_at ||
+      rawOrder.placedAt ||
       rawOrder.order_date ||
       rawOrder.delivery_date ||
       rawOrder.delivered_at ||
+      rawOrder.deliveredAt ||
       rawOrder.created_at ||
       new Date().toISOString();
     const totalAmount = Number(rawOrder.total_amount || 0);
 
-    const items: OrderLineItem[] = (rawOrder.items || []).map((it: any, idx: number) => {
-      const rawName = it.name || it.product_name || "Unknown Item";
-      const { cleanName, quantity: parsedQty } = parseQuantityAndCleanName(rawName);
-      const quantity = Number(it.quantity || parsedQty || 1);
-      const resolved = this.resolve(cleanName);
-      const canonical = it.canonical_name || resolved.canonicalName || cleanName;
+    const items: OrderLineItem[] = (rawOrder.items || []).map(
+      (it: RawOrderItem, idx: number) => {
+        const rawName = it.name || it.product_name || "Unknown Item";
+        const { cleanName, quantity: parsedQty } =
+          parseQuantityAndCleanName(rawName);
+        const quantity = Number(it.quantity || parsedQty || 1);
+        const resolved = this.resolve(cleanName);
+        const canonical =
+          it.canonical_name || resolved.canonicalName || cleanName;
 
-      let itemStatus: OrderItemStatus = "DELIVERED";
-      if (it.status) {
-        const s = String(it.status).toUpperCase();
-        if (s === "CANCELLED" || s === "REFUNDED" || s === "FAILED") itemStatus = "CANCELLED";
-        else if (s === "ORDER_PLACED" || s === "PENDING") itemStatus = "ORDER_PLACED";
-        else itemStatus = "DELIVERED";
-      } else if (rawStatus) {
-        const parentStatus = normalizeOrderStatus(rawStatus);
-        if (parentStatus === "CANCELLED") itemStatus = "CANCELLED";
-        else if (parentStatus === "ORDER_PLACED") itemStatus = "ORDER_PLACED";
-        else itemStatus = "DELIVERED";
+        let itemStatus: OrderItemStatus = "DELIVERED";
+        if (it.status) {
+          const s = String(it.status).toUpperCase();
+          if (s === "CANCELLED" || s === "REFUNDED" || s === "FAILED")
+            itemStatus = "CANCELLED";
+          else if (s === "ORDER_PLACED" || s === "PENDING")
+            itemStatus = "ORDER_PLACED";
+          else itemStatus = "DELIVERED";
+        } else if (rawStatus) {
+          const parentStatus = normalizeOrderStatus(rawStatus);
+          if (parentStatus === "CANCELLED") itemStatus = "CANCELLED";
+          else if (parentStatus === "ORDER_PLACED") itemStatus = "ORDER_PLACED";
+          else itemStatus = "DELIVERED";
+        }
+
+        return {
+          id: String(it.id || `${orderId}-it-${idx}`),
+          name: rawName,
+          canonicalName: canonical,
+          quantity,
+          unit: it.unit || it.pack || undefined,
+          price: it.price !== undefined ? Number(it.price) : undefined,
+          total: it.total !== undefined ? Number(it.total) : undefined,
+          status: itemStatus,
+          deliveredAt: itemStatus === "DELIVERED" ? placedAt : undefined,
+          category: it.category || undefined,
+        };
       }
-
-      return {
-        id: String(it.id || `${orderId}-it-${idx}`),
-        name: rawName,
-        canonicalName: canonical,
-        quantity,
-        unit: it.unit || it.pack || undefined,
-        price: it.price !== undefined ? Number(it.price) : undefined,
-        total: it.total !== undefined ? Number(it.total) : undefined,
-        status: itemStatus,
-        deliveredAt: itemStatus === "DELIVERED" ? placedAt : undefined,
-        category: it.category || undefined
-      };
-    });
+    );
 
     let status: OrderStatus = "DELIVERED";
     if (rawStatus) {
@@ -331,7 +475,7 @@ export class ItemCatalog {
       totalAmount,
       itemsCount: items.length,
       items,
-      orderedBy: rawOrder.ordered_by || "Rohan"
+      orderedBy: rawOrder.ordered_by || "Rohan",
     };
   }
 
@@ -368,16 +512,29 @@ export class ItemCatalog {
     return this.defaultOrders;
   }
 
-  isItemInActiveOrder(itemName: string, activeOrders: HouseholdOrder[]): boolean {
+  isItemInActiveOrder(
+    itemName: string,
+    activeOrders: HouseholdOrder[]
+  ): boolean {
     if (!activeOrders || activeOrders.length === 0) return false;
-    const resolvedTarget = this.resolve(itemName).canonicalName.toLowerCase().trim();
+    const resolvedTarget = this.resolve(itemName)
+      .canonicalName.toLowerCase()
+      .trim();
 
     for (const order of activeOrders) {
       if (order.status !== "ORDER_PLACED") continue;
       for (const item of order.items || []) {
         if (item.status === "CANCELLED") continue;
-        const canonItem = (item.canonicalName || this.resolve(item.name).canonicalName).toLowerCase().trim();
-        if (canonItem === resolvedTarget || canonItem.includes(resolvedTarget) || resolvedTarget.includes(canonItem)) {
+        const canonItem = (
+          item.canonicalName || this.resolve(item.name).canonicalName
+        )
+          .toLowerCase()
+          .trim();
+        if (
+          canonItem === resolvedTarget ||
+          canonItem.includes(resolvedTarget) ||
+          resolvedTarget.includes(canonItem)
+        ) {
           return true;
         }
       }
@@ -385,9 +542,15 @@ export class ItemCatalog {
     return false;
   }
 
-  getCadence(itemName: string, customOrders?: HouseholdOrder[]): ItemCadenceInfo {
+  getCadence(
+    itemName: string,
+    customOrders?: HouseholdOrder[]
+  ): ItemCadenceInfo {
     const resolved = this.resolve(itemName).canonicalName;
-    const targetOrders = customOrders && customOrders.length > 0 ? customOrders : this.defaultOrders;
+    const targetOrders =
+      customOrders && customOrders.length > 0
+        ? customOrders
+        : this.defaultOrders;
 
     const targetCanonical = resolved.toLowerCase().trim();
     const purchaseDates: Date[] = [];
@@ -403,7 +566,11 @@ export class ItemCatalog {
 
       for (const it of order.items || []) {
         if (it.status !== "DELIVERED") continue;
-        const itCanonical = (it.canonicalName || this.resolve(it.name).canonicalName).toLowerCase().trim();
+        const itCanonical = (
+          it.canonicalName || this.resolve(it.name).canonicalName
+        )
+          .toLowerCase()
+          .trim();
         if (itCanonical === targetCanonical) {
           purchaseDates.push(orderDate);
           break;
@@ -411,14 +578,20 @@ export class ItemCatalog {
       }
     }
 
-    const uniqueDates = Array.from(new Set(purchaseDates.map((d) => d.toISOString().split("T")[0])))
+    const uniqueDates = Array.from(
+      new Set(purchaseDates.map((d) => d.toISOString().split("T")[0]))
+    )
       .map((d) => new Date(d))
       .sort((a, b) => a.getTime() - b.getTime());
 
     const purchaseCount = uniqueDates.length;
     const lastDeliveredDate =
-      uniqueDates.length > 0 ? uniqueDates[uniqueDates.length - 1].toISOString() : null;
-    const daysSinceLastDelivery = lastDeliveredDate ? getCalendarDayDiff(lastDeliveredDate) : null;
+      uniqueDates.length > 0
+        ? uniqueDates[uniqueDates.length - 1].toISOString()
+        : null;
+    const daysSinceLastDelivery = lastDeliveredDate
+      ? getCalendarDayDiff(lastDeliveredDate)
+      : null;
 
     if (uniqueDates.length < 3) {
       return {
@@ -431,20 +604,24 @@ export class ItemCatalog {
         purchaseCount,
         intervals: [],
         uiCadenceText: null,
-        uiDueText: null
+        uiDueText: null,
       };
     }
 
     const intervals: number[] = [];
     for (let i = 1; i < uniqueDates.length; i++) {
       const diffDays = Math.round(
-        (uniqueDates[i].getTime() - uniqueDates[i - 1].getTime()) / (1000 * 60 * 60 * 24)
+        (uniqueDates[i].getTime() - uniqueDates[i - 1].getTime()) /
+          (1000 * 60 * 60 * 24)
       );
       if (diffDays > 0) intervals.push(diffDays);
     }
 
     const medianInterval = calculateMedian(intervals) || 7;
-    const daysUntilDue = daysSinceLastDelivery !== null ? medianInterval - daysSinceLastDelivery : null;
+    const daysUntilDue =
+      daysSinceLastDelivery !== null
+        ? medianInterval - daysSinceLastDelivery
+        : null;
 
     let replenishmentStatus: ReplenishmentStatus = "NOT_DUE";
     let uiDueText: string | null = null;
@@ -452,7 +629,10 @@ export class ItemCatalog {
     if (daysUntilDue !== null) {
       if (daysUntilDue <= 0) {
         replenishmentStatus = "DUE_NOW";
-        uiDueText = daysUntilDue === 0 ? "Due today" : `Overdue by ${Math.abs(daysUntilDue)}d`;
+        uiDueText =
+          daysUntilDue === 0
+            ? "Due today"
+            : `Overdue by ${Math.abs(daysUntilDue)}d`;
       } else if (daysUntilDue <= 2) {
         replenishmentStatus = "APPROACHING_DUE";
         uiDueText = `Due in ${daysUntilDue}d`;
@@ -472,11 +652,14 @@ export class ItemCatalog {
       purchaseCount,
       intervals,
       uiCadenceText: `Every ~${medianInterval} days`,
-      uiDueText
+      uiDueText,
     };
   }
 
-  getReplenishmentScore(cadence: ItemCadenceInfo, baseScore: number = 0.5): number {
+  getReplenishmentScore(
+    cadence: ItemCadenceInfo,
+    baseScore: number = 0.5
+  ): number {
     switch (cadence.replenishmentStatus) {
       case "DUE_NOW":
         return Math.min(1.0, baseScore + 0.45);
@@ -493,16 +676,23 @@ export class ItemCatalog {
 
   getRecency(itemName: string, customOrders?: HouseholdOrder[]): string | null {
     const cadence = this.getCadence(itemName, customOrders);
-    if (!cadence.lastDeliveredDate || cadence.daysSinceLastDelivery === null) return null;
+    if (!cadence.lastDeliveredDate || cadence.daysSinceLastDelivery === null)
+      return null;
     const days = cadence.daysSinceLastDelivery;
     if (days === 0) return "Ordered today";
     if (days === 1) return "Ordered yesterday";
     return `Ordered ${days} days ago`;
   }
 
-  getPurchaseMemory(itemName: string, customOrders?: HouseholdOrder[]): CanonicalItemPurchaseMemory | null {
+  getPurchaseMemory(
+    itemName: string,
+    customOrders?: HouseholdOrder[]
+  ): CanonicalItemPurchaseMemory | null {
     const resolved = this.resolve(itemName).canonicalName;
-    const targetOrders = customOrders && customOrders.length > 0 ? customOrders : this.defaultOrders;
+    const targetOrders =
+      customOrders && customOrders.length > 0
+        ? customOrders
+        : this.defaultOrders;
     const targetCanonical = resolved.toLowerCase().trim();
 
     const recentPurchases: RecentPurchaseRecord[] = [];
@@ -514,10 +704,19 @@ export class ItemCatalog {
     for (const order of targetOrders) {
       const orderDate = order.placedAt;
       for (const it of order.items || []) {
-        const itCanon = (it.canonicalName || this.resolve(it.name).canonicalName).toLowerCase().trim();
-        if (itCanon === targetCanonical || itCanon.includes(targetCanonical) || targetCanonical.includes(itCanon)) {
+        const itCanon = (
+          it.canonicalName || this.resolve(it.name).canonicalName
+        )
+          .toLowerCase()
+          .trim();
+        if (
+          itCanon === targetCanonical ||
+          itCanon.includes(targetCanonical) ||
+          targetCanonical.includes(itCanon)
+        ) {
           if (!lastOrderedDate) lastOrderedDate = orderDate;
-          if (it.status === "DELIVERED" && !lastDeliveredDate) lastDeliveredDate = orderDate;
+          if (it.status === "DELIVERED" && !lastDeliveredDate)
+            lastDeliveredDate = orderDate;
           if (it.status === "DELIVERED") {
             deliveredCount++;
             totalQty += it.quantity;
@@ -530,7 +729,7 @@ export class ItemCatalog {
             quantity: it.quantity,
             price: it.price,
             itemStatus: it.status,
-            orderStatus: order.status
+            orderStatus: order.status,
           });
         }
       }
@@ -546,8 +745,9 @@ export class ItemCatalog {
       historicalDeliveredCount: deliveredCount,
       historicalQuantity: totalQty,
       recentPurchases,
-      mostRecentOrderResultedInDelivery: recentPurchases[0]?.itemStatus === "DELIVERED",
-      cadenceDays: this.getCadence(itemName, customOrders).typicalReorderDays
+      mostRecentOrderResultedInDelivery:
+        recentPurchases[0]?.itemStatus === "DELIVERED",
+      cadenceDays: this.getCadence(itemName, customOrders).typicalReorderDays,
     };
   }
 
@@ -560,7 +760,9 @@ export class ItemCatalog {
   ): CompanionSuggestion[] {
     const activeNames = currentItems.map((n) => n.toLowerCase().trim());
     const activeSet = new Set(activeNames);
-    const orderedSet = new Set((orderedItemNames || []).map((n) => n.toLowerCase().trim()));
+    const orderedSet = new Set(
+      (orderedItemNames || []).map((n) => n.toLowerCase().trim())
+    );
 
     const isExcluded = (candidate: string) => {
       const cLower = candidate.toLowerCase().trim();
@@ -570,14 +772,17 @@ export class ItemCatalog {
       for (const ordered of orderedSet) {
         if (ordered.includes(cLower) || cLower.includes(ordered)) return true;
       }
-      if (activeOrders && this.isItemInActiveOrder(candidate, activeOrders)) return true;
+      if (activeOrders && this.isItemInActiveOrder(candidate, activeOrders))
+        return true;
       return false;
     };
 
     const suggestions: Map<string, CompanionSuggestion> = new Map();
     const companionsMap = this.patternRules.companions || {};
 
-    const itemsToEvaluate = lastAddedItem ? [lastAddedItem, ...currentItems] : currentItems;
+    const itemsToEvaluate = lastAddedItem
+      ? [lastAddedItem, ...currentItems]
+      : currentItems;
 
     for (const item of itemsToEvaluate) {
       const resolved = this.resolve(item).canonicalName;
@@ -605,16 +810,22 @@ export class ItemCatalog {
           cadenceText: cadence.uiCadenceText,
           dueText: cadence.uiDueText,
           replenishmentStatus: cadence.replenishmentStatus,
-          daysUntilDue: cadence.daysUntilDue
+          daysUntilDue: cadence.daysUntilDue,
         });
       }
     }
 
-    return Array.from(suggestions.values()).sort((a, b) => b.confidence - a.confidence);
+    return Array.from(suggestions.values()).sort(
+      (a, b) => b.confidence - a.confidence
+    );
   }
 
   getAutonomousRecommendations(
-    currentItems: Array<{ name: string; isDone?: boolean; isOrdered?: boolean }>,
+    currentItems: Array<{
+      name: string;
+      isDone?: boolean;
+      isOrdered?: boolean;
+    }>,
     limit: number = 6,
     activeOrders?: HouseholdOrder[],
     ordersHistory?: HouseholdOrder[]
@@ -637,7 +848,8 @@ export class ItemCatalog {
       for (const ordered of orderedSet) {
         if (ordered.includes(cLower) || cLower.includes(ordered)) return true;
       }
-      if (activeOrders && this.isItemInActiveOrder(candidate, activeOrders)) return true;
+      if (activeOrders && this.isItemInActiveOrder(candidate, activeOrders))
+        return true;
       return false;
     };
 
@@ -666,7 +878,7 @@ export class ItemCatalog {
             name: c.item,
             reason: c.reason,
             category: "Staples",
-            score: c.confidence
+            score: c.confidence,
           });
         }
       }
@@ -691,13 +903,17 @@ export class ItemCatalog {
           name: staple.name,
           reason,
           category: "Staples",
-          score
+          score,
         });
       }
     }
 
     // 3. Pet essentials check
-    if (!isExcluded("Cat Food") && !isExcluded("Sheba") && !candidateMap.has("cat food")) {
+    if (
+      !isExcluded("Cat Food") &&
+      !isExcluded("Sheba") &&
+      !candidateMap.has("cat food")
+    ) {
       const petCadence = this.getCadence("Cat Food", ordersHistory);
       const petScore = this.getReplenishmentScore(petCadence, 0.65);
       candidateMap.set("cat food", {
@@ -707,16 +923,18 @@ export class ItemCatalog {
             ? "Cat food is due for replenishment for Samba & Milo"
             : "Cat food routine check for Samba & Milo",
         category: "Pet Care & Household",
-        score: petScore
+        score: petScore,
       });
     }
 
-    const sorted = Array.from(candidateMap.values()).sort((a, b) => b.score - a.score);
+    const sorted = Array.from(candidateMap.values()).sort(
+      (a, b) => b.score - a.score
+    );
 
     return sorted.slice(0, limit).map(({ name, reason, category }) => ({
       name,
       reason,
-      category
+      category,
     }));
   }
 }

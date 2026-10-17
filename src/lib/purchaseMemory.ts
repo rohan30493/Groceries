@@ -5,7 +5,8 @@ import {
   OrderStatus,
   normalizeOrderStatus,
   computeOrderStatus,
-  parseQuantityAndCleanName
+  parseQuantityAndCleanName,
+  RawHouseholdOrder,
 } from "./orderLifecycle";
 import { toCanonicalItemName } from "./orderRecency";
 import { itemCatalog } from "./itemCatalog";
@@ -34,69 +35,11 @@ export interface CanonicalItemPurchaseMemory {
 }
 
 /**
- * Normalizes legacy or raw orders (e.g. From unified_orders.json or Supabase) into the structured HouseholdOrder model.
+ * Normalizes legacy or raw orders (e.g. from unified_orders.json or Supabase) into the structured HouseholdOrder model.
+ * Delegates directly to ItemCatalog to preserve single source of truth for canonical normalization.
  */
-export function normalizeRawOrder(rawOrder: any): HouseholdOrder {
-  const orderId = String(rawOrder.order_id || rawOrder.id || `ord-${Math.random().toString(36).slice(2, 8)}`);
-  const platform = rawOrder.platform || "Zepto";
-  const rawStatus = rawOrder.status;
-  const placedAt = rawOrder.placed_at || rawOrder.order_date || rawOrder.delivery_date || rawOrder.delivered_at || rawOrder.created_at || new Date().toISOString();
-  const totalAmount = Number(rawOrder.total_amount || 0);
-
-  const items: OrderLineItem[] = (rawOrder.items || []).map((it: any, idx: number) => {
-    const rawName = it.name || it.product_name || "Unknown Item";
-    const { cleanName, quantity: parsedQty } = parseQuantityAndCleanName(rawName);
-    const quantity = Number(it.quantity || parsedQty || 1);
-    const canonical = it.canonical_name || toCanonicalItemName(cleanName) || cleanName;
-
-    // Determine line item outcome
-    let itemStatus: OrderItemStatus = "DELIVERED";
-    if (it.status) {
-      const s = String(it.status).toUpperCase();
-      if (s === "CANCELLED" || s === "REFUNDED" || s === "FAILED") itemStatus = "CANCELLED";
-      else if (s === "ORDER_PLACED" || s === "PENDING") itemStatus = "ORDER_PLACED";
-      else itemStatus = "DELIVERED";
-    } else if (rawStatus) {
-      const parentStatus = normalizeOrderStatus(rawStatus);
-      if (parentStatus === "CANCELLED") itemStatus = "CANCELLED";
-      else if (parentStatus === "ORDER_PLACED") itemStatus = "ORDER_PLACED";
-      else itemStatus = "DELIVERED";
-    } else {
-      itemStatus = "DELIVERED";
-    }
-
-    return {
-      id: it.id || `line-${orderId}-${idx}`,
-      name: rawName,
-      canonicalName: canonical,
-      quantity,
-      unit: it.pack_size || it.unit,
-      price: it.price ? Number(it.price) : undefined,
-      total: it.total ? Number(it.total) : undefined,
-      status: itemStatus,
-      deliveredAt: itemStatus === "DELIVERED" ? (rawOrder.delivered_at || placedAt) : undefined,
-      category: it.category
-    };
-  });
-
-  const finalStatus: OrderStatus = rawStatus
-    ? normalizeOrderStatus(rawStatus)
-    : items.length > 0
-    ? computeOrderStatus(items)
-    : "DELIVERED";
-
-  return {
-    orderId,
-    orderCode: rawOrder.order_code,
-    platform,
-    status: finalStatus,
-    placedAt,
-    deliveredAt: finalStatus === "DELIVERED" ? (rawOrder.delivered_at || placedAt) : undefined,
-    totalAmount,
-    itemsCount: items.length,
-    items,
-    orderedBy: rawOrder.ordered_by || (rawOrder.platform === "HOUSEHOLD_APP" ? "Rohan" : undefined)
-  };
+export function normalizeRawOrder(rawOrder: RawHouseholdOrder): HouseholdOrder {
+  return itemCatalog.normalizeRawOrder(rawOrder);
 }
 
 /**
@@ -111,7 +54,9 @@ export function getActiveOrders(orders: HouseholdOrder[]): HouseholdOrder[] {
  */
 export function getActiveOrderItems(orders: HouseholdOrder[]): OrderLineItem[] {
   const active = getActiveOrders(orders);
-  return active.flatMap((o) => o.items.filter((it) => it.status === "ORDER_PLACED"));
+  return active.flatMap((o) =>
+    o.items.filter((it) => it.status === "ORDER_PLACED")
+  );
 }
 
 /**
@@ -123,13 +68,22 @@ export function isItemInActiveOrder(
 ): boolean {
   if (!candidateName || !candidateName.trim()) return false;
   const { cleanName } = parseQuantityAndCleanName(candidateName);
-  const targetCanonical = (toCanonicalItemName(cleanName) || cleanName).toLowerCase().trim();
+  const targetCanonical = (toCanonicalItemName(cleanName) || cleanName)
+    .toLowerCase()
+    .trim();
 
   const activeItems = getActiveOrderItems(orders);
   for (const it of activeItems) {
-    const itCanon = (it.canonicalName || toCanonicalItemName(it.name) || it.name).toLowerCase().trim();
+    const itCanon = (
+      it.canonicalName ||
+      toCanonicalItemName(it.name) ||
+      it.name
+    )
+      .toLowerCase()
+      .trim();
     if (itCanon === targetCanonical) return true;
-    if (itCanon.includes(targetCanonical) || targetCanonical.includes(itCanon)) return true;
+    if (itCanon.includes(targetCanonical) || targetCanonical.includes(itCanon))
+      return true;
   }
 
   return false;
@@ -144,13 +98,18 @@ export function isItemInBasket(
 ): boolean {
   if (!candidateName || !candidateName.trim() || !basketItems) return false;
   const { cleanName } = parseQuantityAndCleanName(candidateName);
-  const targetCanonical = (toCanonicalItemName(cleanName) || cleanName).toLowerCase().trim();
+  const targetCanonical = (toCanonicalItemName(cleanName) || cleanName)
+    .toLowerCase()
+    .trim();
 
   for (const item of basketItems) {
     const { cleanName: itemClean } = parseQuantityAndCleanName(item.name);
-    const itCanon = (toCanonicalItemName(itemClean) || itemClean).toLowerCase().trim();
+    const itCanon = (toCanonicalItemName(itemClean) || itemClean)
+      .toLowerCase()
+      .trim();
     if (itCanon === targetCanonical) return true;
-    if (itCanon.includes(targetCanonical) || targetCanonical.includes(itCanon)) return true;
+    if (itCanon.includes(targetCanonical) || targetCanonical.includes(itCanon))
+      return true;
   }
 
   return false;
@@ -160,7 +119,9 @@ export function isItemInBasket(
  * Gets all line items that were actually delivered across all orders.
  * Ignores suggested, basket, active (ORDER_PLACED), and cancelled items.
  */
-export function getDeliveredPurchases(orders: HouseholdOrder[]): OrderLineItem[] {
+export function getDeliveredPurchases(
+  orders: HouseholdOrder[]
+): OrderLineItem[] {
   const deliveredList: OrderLineItem[] = [];
   for (const order of orders) {
     if (order.status === "CANCELLED") continue;
@@ -198,7 +159,8 @@ export function buildPurchaseMemory(
     const orderDate = order.placedAt;
 
     for (const item of order.items) {
-      const canonical = item.canonicalName || toCanonicalItemName(item.name) || item.name;
+      const canonical =
+        item.canonicalName || toCanonicalItemName(item.name) || item.name;
       const key = canonical.toLowerCase().trim();
 
       let record = memoryMap.get(key);
@@ -211,7 +173,7 @@ export function buildPurchaseMemory(
           historicalDeliveredCount: 0,
           historicalQuantity: 0,
           recentPurchases: [],
-          mostRecentOrderResultedInDelivery: null
+          mostRecentOrderResultedInDelivery: null,
         };
         memoryMap.set(key, record);
       }
@@ -222,9 +184,10 @@ export function buildPurchaseMemory(
 
       // Check item-level outcome
       if (item.status === "DELIVERED") {
-        record.lastDeliveredDate = item.deliveredAt || order.deliveredAt || orderDate;
+        record.lastDeliveredDate =
+          item.deliveredAt || order.deliveredAt || orderDate;
         record.historicalDeliveredCount += 1;
-        record.historicalQuantity += (item.quantity || 1);
+        record.historicalQuantity += item.quantity || 1;
         record.mostRecentOrderResultedInDelivery = true;
 
         record.recentPurchases.unshift({
@@ -235,7 +198,7 @@ export function buildPurchaseMemory(
           quantity: item.quantity || 1,
           price: item.price,
           itemStatus: "DELIVERED",
-          orderStatus: order.status
+          orderStatus: order.status,
         });
       } else if (item.status === "CANCELLED") {
         record.mostRecentOrderResultedInDelivery = false;
@@ -258,7 +221,9 @@ export function buildPurchaseMemory(
         let totalDiffDays = 0;
         let intervals = 0;
         for (let i = 0; i < dates.length - 1; i++) {
-          const diffDays = Math.round((dates[i] - dates[i + 1]) / (1000 * 60 * 60 * 24));
+          const diffDays = Math.round(
+            (dates[i] - dates[i + 1]) / (1000 * 60 * 60 * 24)
+          );
           if (diffDays > 0) {
             totalDiffDays += diffDays;
             intervals++;
@@ -283,7 +248,9 @@ export function getCanonicalPurchaseMemory(
 ): CanonicalItemPurchaseMemory | null {
   if (!candidateName || !candidateName.trim()) return null;
   const { cleanName } = parseQuantityAndCleanName(candidateName);
-  const targetCanonical = (toCanonicalItemName(cleanName) || cleanName).toLowerCase().trim();
+  const targetCanonical = (toCanonicalItemName(cleanName) || cleanName)
+    .toLowerCase()
+    .trim();
 
   const memory = buildPurchaseMemory(orders);
 
