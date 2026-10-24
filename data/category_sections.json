@@ -163,7 +163,7 @@
         "name": "Mandarin Orange",
         "icon": "🍊",
         "orderCount": 14,
-        "imageUrl": "https://d69ugcdrlg41w.cloudfront.net/0e0f895a-663a-4968-8c70-965a13e03bf8.png"
+        "imageUrl": "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?w=200&auto=format&fit=crop&q=80"
       },
       {
         "name": "Kiwi",
@@ -176,7 +176,7 @@
         "icon": "🍆",
         "orderCount": 34,
         "subtitle": "Purple / Bharta",
-        "imageUrl": "https://d69ugcdrlg41w.cloudfront.net/d71cbab1-3b8c-4ef2-90e1-cf8f75b097c2.jpg"
+        "imageUrl": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=200&auto=format&fit=crop&q=80"
       }
     ]
   },
@@ -487,7 +487,7 @@
         "name": "Cashews",
         "icon": "🥜",
         "orderCount": 15,
-        "imageUrl": "https://images.unsplash.com/photo-1536591375315-1b838404a37b?w=200&auto=format&fit=crop&q=80"
+        "imageUrl": "https://images.unsplash.com/photo-1509358271058-acd22cc93898?w=200&auto=format&fit=crop&q=80"
       },
       {
         "name": "Walnuts",
@@ -591,7 +591,7 @@
         "name": "Honey",
         "icon": "🍯",
         "orderCount": 10,
-        "imageUrl": "https://d69ugcdrlg41w.cloudfront.net/b3f41c30-160f-4ec0-aeb7-658d8dcec0fb.png"
+        "imageUrl": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=200&auto=format&fit=crop&q=80"
       }
     ]
   },

@@ -176,16 +176,18 @@ function BrowseItemThumbnail({
   imageUrl?: string;
 }) {
   const [hasError, setHasError] = useState(false);
+  const visual = useMemo(() => getItemVisual(name), [name]);
+  const effectiveImageUrl = imageUrl || visual.imageUrl;
 
   useEffect(() => {
     setHasError(false);
-  }, [imageUrl, name]);
+  }, [effectiveImageUrl, name]);
 
   return (
     <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
-      {imageUrl && !hasError ? (
+      {effectiveImageUrl && !hasError ? (
         <img
-          src={imageUrl}
+          src={effectiveImageUrl}
           alt={name}
           loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
@@ -193,7 +195,7 @@ function BrowseItemThumbnail({
         />
       ) : (
         <span className="text-2xl select-none leading-none">
-          {icon || "🛒"}
+          {icon || visual.icon || "🛒"}
         </span>
       )}
     </div>
