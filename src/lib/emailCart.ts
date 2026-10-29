@@ -1,4 +1,3 @@
-import { ImapFlow } from "imapflow";
 import { GroceryItem, detectCategory, CATEGORY_ICONS } from "./patterns";
 import { estimateBasketValue } from "./handoffNotification";
 
@@ -25,8 +24,6 @@ const CATEGORY_ORDER = [
   "Pet Care & Household",
   "Other Items",
 ];
-
-export const EMAIL_CART_COOLDOWN_MS = 60 * 60_000;
 
 export interface CartEmailContent {
   recipient: string;
@@ -128,20 +125,6 @@ export function buildCartEmail(
   };
 }
 
-/**
- * Best-effort rate limit for the public send endpoint: true when a send
- * happened within the minimum interval. Serverless instances each track
- * their own last-send time, so this throttles bursts rather than acting
- * as a hard global limit.
- */
-export function isEmailCartRateLimited(
-  lastSentAtMs: number,
-  nowMs: number,
-  minIntervalMs: number = EMAIL_CART_COOLDOWN_MS
-): boolean {
-  return nowMs - lastSentAtMs < minIntervalMs;
-}
-
 export interface EmailCartState {
   lastSentAt: string | null;
   lastHash: string | null;
@@ -185,118 +168,11 @@ export function shouldSkipDuplicateSend(
   return nowMs - lastMs < windowMs;
 }
 
-/**
- * Durable one-hour cooldown, anchored in Gmail itself: every send through
- * this feature lands in the account's Sent mail, so the most recent Sent
- * copy of this feature's fixed subject marker is the authoritative
- * last-send time. The scan is restricted to the fixed sender, fixed
- * recipient and fixed marker inside the cooldown window, and only the
- * message's internal date is read - never any mail content.
- */
-export const EMAIL_CART_SUBJECT_PREFIX = "Grocery cart ready";
-
-export interface CartCooldownStatus {
-  limited: boolean;
-  retryAt: Date | null;
-}
-
-export interface SentScanClient {
-  connect(): Promise<void>;
-  getMailboxLock(path: string): Promise<{ release: () => void }>;
-  search(
-    query: { to: string; from: string; subject: string; sentSince: Date },
-    options: { uid: true }
-  ): Promise<number[] | false | undefined>;
-  fetchOne(
-    uid: number,
-    query: { internalDate: true },
-    options: { uid: true }
-  ): Promise<{ internalDate?: string | Date } | false>;
-  logout(): Promise<void>;
-}
-
-export type SentScanClientFactory = (auth: {
-  user: string;
-  pass: string;
-}) => SentScanClient;
-
-const defaultSentScanFactory: SentScanClientFactory = (auth) =>
-  new ImapFlow({
-    host: "imap.gmail.com",
-    port: 993,
-    secure: true,
-    auth,
-    logger: false,
-  });
-
-/**
- * Reports whether another cart email is still inside the cooldown window,
- * based on the newest matching Sent copy. Throws on any IMAP failure so
- * callers fail closed (no send) instead of risking an uncontrolled send.
- */
-export async function checkCartEmailCooldown(
-  auth: { user: string; pass: string },
-  recipient: string,
-  now: Date = new Date(),
-  cooldownMs: number = EMAIL_CART_COOLDOWN_MS,
-  createClient: SentScanClientFactory = defaultSentScanFactory
-): Promise<CartCooldownStatus> {
-  const client = createClient(auth);
-  await client.connect();
-  try {
-    const lock = await client.getMailboxLock("[Gmail]/Sent Mail");
-    try {
-      const since = new Date(now.getTime() - cooldownMs);
-      const uids = await client.search(
-        {
-          to: recipient,
-          from: auth.user,
-          subject: EMAIL_CART_SUBJECT_PREFIX,
-          sentSince: since,
-        },
-        { uid: true }
-      );
-      if (!uids || uids.length === 0) {
-        return { limited: false, retryAt: null };
-      }
-      const latest = await client.fetchOne(
-        uids[uids.length - 1],
-        { internalDate: true },
-        { uid: true }
-      );
-      const raw = latest ? latest.internalDate : undefined;
-      const sentAt =
-        raw instanceof Date
-          ? raw
-          : typeof raw === "string"
-            ? new Date(raw)
-            : null;
-      if (!sentAt || Number.isNaN(sentAt.getTime())) {
-        // A match exists but its date is unreadable: stay conservative.
-        return { limited: true, retryAt: null };
-      }
-      const retryAt = new Date(sentAt.getTime() + cooldownMs);
-      return retryAt.getTime() > now.getTime()
-        ? { limited: true, retryAt }
-        : { limited: false, retryAt: null };
-    } finally {
-      lock.release();
-    }
-  } finally {
-    try {
-      await client.logout();
-    } catch {
-      // best-effort logout; cooldown decision is already made
-    }
-  }
-}
-
 export const EMAIL_CART_MUTEX_TTL_MS = 5 * 60_000;
 
 export interface CartEmailSendDeps {
   recipient: string;
   now: () => number;
-  checkCooldown: () => Promise<CartCooldownStatus>;
   fetchState: () => Promise<EmailCartState | null>;
   claimLock: (
     expected: EmailCartState | null,
@@ -313,42 +189,28 @@ export interface CartEmailSendDeps {
 export type CartEmailSendResult =
   | { kind: "sent" }
   | { kind: "no-pending" }
-  | { kind: "cooldown"; retryAt: string | null }
-  | { kind: "in-progress" }
-  | { kind: "unavailable" };
+  | { kind: "duplicate" }
+  | { kind: "in-progress" };
 
 /**
- * Orchestrates one button-triggered send. Order matters:
- * 1. The Gmail-Sent cooldown is the durable authority; any failure reading
- *    it fails closed (no send) rather than risking an unthrottled send.
- * 2. The Supabase sentinel row is a short-lived in-flight mutex only
- *    (best effort): it stops overlapping clicks from double-sending while
- *    a fresh send is still propagating to Sent. On success the lock is
- *    HELD until its TTL as a grace window; on failure it is released so a
- *    genuine retry is possible. A wiped lock only shortens this grace
- *    window - the Gmail-Sent cooldown still applies.
+ * Orchestrates one button-triggered send. There is no time-based global
+ * cooldown; abuse posture for this public endpoint is:
+ * 1. The Supabase sentinel row is a short-lived in-flight mutex (best
+ *    effort, not a hardened global rate bound): overlapping clicks cannot
+ *    double-send, and a fresh state row blocks re-sends for its TTL.
+ * 2. A recent identical cart (same pending-content hash inside the dedupe
+ *    window) is skipped so repeat clicks do not spam the same email; new
+ *    or changed items always send.
+ * The recipient is fixed server-side and the cart is re-read server-side.
  */
 export async function executeCartEmailSend(
   deps: CartEmailSendDeps
 ): Promise<CartEmailSendResult> {
-  let cooldown: CartCooldownStatus;
-  try {
-    cooldown = await deps.checkCooldown();
-  } catch {
-    return { kind: "unavailable" };
-  }
-  if (cooldown.limited) {
-    return {
-      kind: "cooldown",
-      retryAt: cooldown.retryAt ? cooldown.retryAt.toISOString() : null,
-    };
-  }
-
   const state = await deps.fetchState();
   const nowMs = deps.now();
   if (state?.lastSentAt) {
-    const lockMs = Date.parse(state.lastSentAt);
-    if (!Number.isNaN(lockMs) && nowMs - lockMs < EMAIL_CART_MUTEX_TTL_MS) {
+    const stateMs = Date.parse(state.lastSentAt);
+    if (!Number.isNaN(stateMs) && nowMs - stateMs < EMAIL_CART_MUTEX_TTL_MS) {
       return { kind: "in-progress" };
     }
   }
@@ -369,9 +231,18 @@ export async function executeCartEmailSend(
       await safeRelease(deps, acquired, state);
       return { kind: "no-pending" };
     }
+    const hash = computeCartHash(items);
+    if (shouldSkipDuplicateSend(state, hash, nowMs)) {
+      await safeRelease(deps, acquired, state);
+      return { kind: "duplicate" };
+    }
     await deps.send(email);
-    // Lock intentionally held: covers the gap until the Sent copy is
-    // visible to the cooldown scan.
+    // Record the sent cart's hash as the dedupe anchor; the fresh
+    // timestamp also holds the in-flight grace window for its TTL.
+    await safeRelease(deps, acquired, {
+      lastSentAt: new Date(nowMs).toISOString(),
+      lastHash: hash,
+    });
     return { kind: "sent" };
   } catch (err) {
     await safeRelease(deps, acquired, state);

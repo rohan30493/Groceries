@@ -3,14 +3,11 @@ import assert from "node:assert/strict";
 import {
   buildCartEmail,
   computeCartHash,
-  isEmailCartRateLimited,
   shouldSkipDuplicateSend,
-  checkCartEmailCooldown,
   executeCartEmailSend,
   CartEmailSendDeps,
-  CartCooldownStatus,
   EmailCartState,
-  EMAIL_CART_COOLDOWN_MS,
+  EMAIL_CART_MUTEX_TTL_MS,
   EMAIL_CART_DEDUPE_WINDOW_MS,
 } from "../src/lib/emailCart";
 import { GroceryItem } from "../src/lib/patterns";
@@ -124,33 +121,6 @@ describe("buildCartEmail", () => {
   });
 });
 
-describe("isEmailCartRateLimited", () => {
-  it("throttles a send within the minimum interval", () => {
-    const t0 = 1_000_000;
-    assert.equal(isEmailCartRateLimited(t0, t0 + 1_000), true);
-    assert.equal(
-      isEmailCartRateLimited(t0, t0 + EMAIL_CART_COOLDOWN_MS - 1),
-      true
-    );
-  });
-
-  it("allows a send after the minimum interval", () => {
-    const t0 = 1_000_000;
-    assert.equal(
-      isEmailCartRateLimited(t0, t0 + EMAIL_CART_COOLDOWN_MS),
-      false
-    );
-    assert.equal(
-      isEmailCartRateLimited(t0, t0 + EMAIL_CART_COOLDOWN_MS + 1),
-      false
-    );
-  });
-
-  it("allows the first send (never sent before)", () => {
-    assert.equal(isEmailCartRateLimited(0, Date.now()), false);
-  });
-});
-
 describe("computeCartHash", () => {
   it("is stable regardless of item order", () => {
     const a = makeItem({ id: "a1", name: "Milk" });
@@ -223,115 +193,16 @@ describe("shouldSkipDuplicateSend", () => {
   });
 });
 
-describe("checkCartEmailCooldown", () => {
-  const AUTH = { user: "sender@example.com", pass: "secret-value" };
-
-  function fakeClient(behavior: {
-    searchResult?: number[] | false;
-    internalDate?: Date;
-    failConnect?: boolean;
-  }) {
-    const calls: string[] = [];
-    const factory = () => ({
-      connect: async () => {
-        calls.push("connect");
-        if (behavior.failConnect) throw new Error("imap down");
-      },
-      getMailboxLock: async () => {
-        calls.push("lock");
-        return {
-          release: () => {
-            calls.push("release");
-          },
-        };
-      },
-      search: async () => behavior.searchResult ?? false,
-      fetchOne: async () => ({ internalDate: behavior.internalDate }),
-      logout: async () => {
-        calls.push("logout");
-      },
-    });
-    return { factory, calls };
-  }
-
-  it("is not limited when no matching sent mail exists", async () => {
-    const { factory, calls } = fakeClient({ searchResult: false });
-    const status = await checkCartEmailCooldown(
-      AUTH,
-      RECIPIENT,
-      NOW,
-      3_600_000,
-      factory
-    );
-    assert.deepEqual(status, { limited: false, retryAt: null });
-    assert.deepEqual(calls, ["connect", "lock", "release", "logout"]);
-  });
-
-  it("is limited with retryAt when a match was sent inside the window", async () => {
-    const sentAt = new Date(NOW.getTime() - 10 * 60_000);
-    const { factory } = fakeClient({
-      searchResult: [11, 12],
-      internalDate: sentAt,
-    });
-    const status = await checkCartEmailCooldown(
-      AUTH,
-      RECIPIENT,
-      NOW,
-      3_600_000,
-      factory
-    );
-    assert.equal(status.limited, true);
-    assert.equal(status.retryAt?.getTime(), sentAt.getTime() + 3_600_000);
-  });
-
-  it("is not limited when the latest match is older than the window", async () => {
-    const sentAt = new Date(NOW.getTime() - 2 * 3_600_000);
-    const { factory } = fakeClient({ searchResult: [7], internalDate: sentAt });
-    const status = await checkCartEmailCooldown(
-      AUTH,
-      RECIPIENT,
-      NOW,
-      3_600_000,
-      factory
-    );
-    assert.deepEqual(status, { limited: false, retryAt: null });
-  });
-
-  it("stays conservative when a matched mail has no readable date", async () => {
-    const { factory } = fakeClient({
-      searchResult: [3],
-      internalDate: undefined,
-    });
-    const status = await checkCartEmailCooldown(
-      AUTH,
-      RECIPIENT,
-      NOW,
-      3_600_000,
-      factory
-    );
-    assert.equal(status.limited, true);
-    assert.equal(status.retryAt, null);
-  });
-
-  it("propagates IMAP failures so callers fail closed", async () => {
-    const { factory } = fakeClient({ failConnect: true });
-    await assert.rejects(() =>
-      checkCartEmailCooldown(AUTH, RECIPIENT, NOW, 3_600_000, factory)
-    );
-  });
-});
-
 describe("executeCartEmailSend", () => {
-  function makeDeps(overrides: Partial<CartEmailSendDeps> = {}) {
-    let stored: EmailCartState | null = null;
+  function makeDeps(
+    overrides: Partial<CartEmailSendDeps> = {},
+    initialState: EmailCartState | null = null
+  ) {
+    let stored: EmailCartState | null = initialState;
     const events: string[] = [];
     const deps: CartEmailSendDeps = {
       recipient: RECIPIENT,
       now: () => NOW.getTime(),
-      checkCooldown: async (): Promise<CartCooldownStatus> => ({
-        limited: false,
-        retryAt: null,
-      }),
       fetchState: async () => stored,
       // Models the atomicity of the real conditional UPDATE: the whole
       // compare-and-set happens without yielding, so a second caller that
@@ -356,12 +227,14 @@ describe("executeCartEmailSend", () => {
     return { deps, events, getState: () => stored };
   }
 
-  it("sends once and holds the lock as a grace window on success", async () => {
+  it("sends once and records the cart hash on success", async () => {
     const { deps, events, getState } = makeDeps();
     const result = await executeCartEmailSend(deps);
     assert.equal(result.kind, "sent");
-    assert.deepEqual(events, ["claim", "send"]);
-    assert.notEqual(getState(), null);
+    assert.deepEqual(events, ["claim", "send", "release"]);
+    const state = getState();
+    assert.ok(state?.lastSentAt);
+    assert.ok(state?.lastHash && state.lastHash !== "__send_lock__");
   });
 
   it("lets exactly one of two racing sends through", async () => {
@@ -372,7 +245,7 @@ describe("executeCartEmailSend", () => {
     ]);
     const kinds = [a.kind, b.kind].sort();
     assert.deepEqual(kinds, ["in-progress", "sent"]);
-    assert.deepEqual(events, ["claim", "send"]);
+    assert.deepEqual(events, ["claim", "send", "release"]);
   });
 
   it("blocks a later send while a fresh lock exists", async () => {
@@ -380,31 +253,51 @@ describe("executeCartEmailSend", () => {
     await executeCartEmailSend(deps);
     const second = await executeCartEmailSend(deps);
     assert.equal(second.kind, "in-progress");
-    assert.deepEqual(events, ["claim", "send"]);
+    assert.deepEqual(events, ["claim", "send", "release"]);
   });
 
-  it("returns cooldown without claiming when Gmail shows a recent send", async () => {
-    const retryAt = new Date(NOW.getTime() + 30 * 60_000);
-    const { deps, events } = makeDeps({
-      checkCooldown: async () => ({ limited: true, retryAt }),
+  it("skips an identical cart sent recently, without sending", async () => {
+    const t0 = NOW.getTime();
+    const items = [makeItem({ id: "milk-1", name: "Milk 1L" })];
+    const first = makeDeps({ now: () => t0, loadItems: async () => items });
+    const sent = await executeCartEmailSend(first.deps);
+    assert.equal(sent.kind, "sent");
+    const stored = first.getState();
+
+    const later = t0 + EMAIL_CART_MUTEX_TTL_MS + 60_000;
+    const second = makeDeps(
+      { now: () => later, loadItems: async () => items },
+      stored
+    );
+    const result = await executeCartEmailSend(second.deps);
+    assert.equal(result.kind, "duplicate");
+    assert.deepEqual(second.events, ["claim", "release"]);
+    assert.ok(later - t0 < EMAIL_CART_DEDUPE_WINDOW_MS);
+  });
+
+  it("sends a changed cart even inside the dedupe window", async () => {
+    const t0 = NOW.getTime();
+    const first = makeDeps({
+      now: () => t0,
+      loadItems: async () => [makeItem({ id: "milk-1", name: "Milk 1L" })],
     });
-    const result = await executeCartEmailSend(deps);
-    assert.equal(result.kind, "cooldown");
-    if (result.kind === "cooldown") {
-      assert.equal(result.retryAt, retryAt.toISOString());
-    }
-    assert.deepEqual(events, []);
-  });
+    await executeCartEmailSend(first.deps);
+    const stored = first.getState();
 
-  it("fails closed when the cooldown check throws", async () => {
-    const { deps, events } = makeDeps({
-      checkCooldown: async () => {
-        throw new Error("imap down");
+    const later = t0 + EMAIL_CART_MUTEX_TTL_MS + 60_000;
+    const second = makeDeps(
+      {
+        now: () => later,
+        loadItems: async () => [
+          makeItem({ id: "milk-1", name: "Milk 1L" }),
+          makeItem({ id: "eggs-12", name: "Eggs 12" }),
+        ],
       },
-    });
-    const result = await executeCartEmailSend(deps);
-    assert.equal(result.kind, "unavailable");
-    assert.deepEqual(events, []);
+      stored
+    );
+    const result = await executeCartEmailSend(second.deps);
+    assert.equal(result.kind, "sent");
+    assert.deepEqual(second.events, ["claim", "send", "release"]);
   });
 
   it("releases the lock when the send fails", async () => {

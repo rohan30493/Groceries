@@ -9,7 +9,6 @@ import {
 import {
   CartEmailSendDeps,
   EmailCartState,
-  checkCartEmailCooldown,
   executeCartEmailSend,
 } from "../../../lib/emailCart";
 
@@ -27,9 +26,9 @@ function readEmailEnv(): { user: string; pass: string; to: string } | null {
 /**
  * GET /api/email-cart
  *
- * Read-only cooldown status for the button. Returns only a remaining-seconds
- * number - no email addresses, no mail content, no credentials. -1 means a
- * recent send was detected but its exact time was not readable.
+ * Read-only readiness probe: verifies the configured Gmail SMTP login with
+ * nodemailer's verify (connection + AUTH only - no message is sent).
+ * Returns no addresses, mail content or credentials.
  */
 export async function GET() {
   const env = readEmailEnv();
@@ -40,21 +39,25 @@ export async function GET() {
     );
   }
   try {
-    const status = await checkCartEmailCooldown(
-      { user: env.user, pass: env.pass },
-      env.to
-    );
-    const remaining =
-      status.limited && status.retryAt
-        ? Math.max(0, Math.ceil((status.retryAt.getTime() - Date.now()) / 1000))
-        : status.limited
-          ? -1
-          : 0;
-    return NextResponse.json({
-      ok: true,
-      cooldownSecondsRemaining: remaining,
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: env.user, pass: env.pass },
     });
-  } catch {
+    await transporter.verify();
+    console.error("[email-cart] SMTP verify: OK");
+    return NextResponse.json({ ok: true, cooldownSecondsRemaining: 0 });
+  } catch (err) {
+    // Strictly sanitized diagnostics: error class only, never server
+    // responses, hosts, addresses or credential material.
+    const name = err instanceof Error ? err.name : "unknown";
+    const shape = err as { code?: unknown; responseCode?: unknown };
+    const code =
+      typeof shape.code === "string" && /^[A-Z0-9_]{2,24}$/.test(shape.code)
+        ? ` ${shape.code}`
+        : "";
+    const rsp =
+      typeof shape.responseCode === "number" ? ` ${shape.responseCode}` : "";
+    console.error(`[email-cart] SMTP verify failed: ${name}${code}${rsp}`);
     return NextResponse.json(
       { ok: false, error: "Email status unavailable." },
       { status: 503 }
@@ -70,10 +73,9 @@ export async function GET() {
  * - Items are re-read from Supabase here; nothing in the request body is
  *   used, so no one can inject content.
  * - Recipient is fixed server-side via EMAIL_TO; no one can redirect it.
- * - A one-hour cooldown is enforced against the account's own Gmail Sent
- *   mail (durable across devices, redeploys and database wipes); when that
- *   check cannot be completed the send fails closed.
- * - A best-effort Supabase mutex stops overlapping clicks double-sending.
+ * - A best-effort Supabase mutex stops overlapping clicks double-sending,
+ *   and an identical cart sent within the last 15 minutes is skipped. This
+ *   is duplicate-click protection, not a hardened global rate limit.
  */
 export async function POST() {
   const env = readEmailEnv();
@@ -88,8 +90,6 @@ export async function POST() {
   const deps: CartEmailSendDeps = {
     recipient: env.to,
     now: () => Date.now(),
-    checkCooldown: () =>
-      checkCartEmailCooldown({ user: env.user, pass: env.pass }, env.to),
     fetchState: () => fetchEmailCartStateDb(),
     claimLock: (expected: EmailCartState | null, acquired: EmailCartState) =>
       claimEmailCartSendDb(expected, acquired),
@@ -120,12 +120,11 @@ export async function POST() {
           { ok: false, error: "No pending items to send." },
           { status: 400 }
         );
-      case "cooldown":
+      case "duplicate":
         return NextResponse.json(
           {
             ok: false,
-            error: "A cart email was sent within the last hour.",
-            retryAt: result.retryAt,
+            error: "This cart was already emailed recently.",
           },
           { status: 429 }
         );
@@ -137,17 +136,15 @@ export async function POST() {
           },
           { status: 429 }
         );
-      case "unavailable":
-        return NextResponse.json(
-          {
-            ok: false,
-            error: "Could not verify the send cooldown. Try again shortly.",
-          },
-          { status: 503 }
-        );
     }
   } catch (err) {
-    console.error("[email-cart] send failed:", err);
+    const name = err instanceof Error ? err.name : "unknown";
+    const code =
+      typeof (err as { code?: unknown }).code === "string" &&
+      /^[A-Z0-9_]{2,24}$/.test((err as { code: string }).code)
+        ? ` ${(err as { code: string }).code}`
+        : "";
+    console.error(`[email-cart] send failed: ${name}${code}`);
     return NextResponse.json(
       { ok: false, error: "Could not send the email." },
       { status: 502 }
