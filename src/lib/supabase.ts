@@ -3,9 +3,14 @@ import { GroceryItem, detectCategory } from "./patterns";
 import { HouseholdOrder } from "./orderLifecycle";
 import { normalizeRawOrder } from "./purchaseMemory";
 import { BasketHandoffState } from "./handoff";
+import { EmailCartState } from "./emailCart";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ymtzcoftaofshockhpck.supabase.co";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_iNliYMfe5w_0jDajihxS5Q_MYgrm5F3";
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  "https://ymtzcoftaofshockhpck.supabase.co";
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "sb_publishable_iNliYMfe5w_0jDajihxS5Q_MYgrm5F3";
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -33,7 +38,8 @@ export function toGroceryItem(db: DbGroceryItem): GroceryItem {
       const parsed = JSON.parse(db.notes);
       if (parsed.purchased_at) purchasedAt = parsed.purchased_at;
       if (parsed.user_note !== undefined) customNote = parsed.user_note;
-      if (parsed.is_ordered !== undefined) isOrdered = Boolean(parsed.is_ordered);
+      if (parsed.is_ordered !== undefined)
+        isOrdered = Boolean(parsed.is_ordered);
       if (parsed.ordered_at) orderedAt = parsed.ordered_at;
       if (parsed.ordered_by) orderedBy = parsed.ordered_by;
     } catch {
@@ -43,7 +49,9 @@ export function toGroceryItem(db: DbGroceryItem): GroceryItem {
 
   const detected = detectCategory(db.name);
   const resolvedCategory =
-    !db.category || db.category === "Other Items" || (detected !== "Other Items" && db.category !== detected)
+    !db.category ||
+    db.category === "Other Items" ||
+    (detected !== "Other Items" && db.category !== detected)
       ? detected
       : db.category;
 
@@ -51,7 +59,9 @@ export function toGroceryItem(db: DbGroceryItem): GroceryItem {
     id: db.id,
     name: db.name,
     category: resolvedCategory,
-    addedBy: (db.added_by as "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion") || "Lira",
+    addedBy:
+      (db.added_by as "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion") ||
+      "Lira",
     addedAt: db.added_at,
     isDone: db.is_done,
     purchasedAt: purchasedAt,
@@ -59,7 +69,7 @@ export function toGroceryItem(db: DbGroceryItem): GroceryItem {
     notes: customNote,
     isOrdered,
     orderedAt,
-    orderedBy
+    orderedBy,
   };
 }
 
@@ -70,7 +80,7 @@ export function toDbItem(item: GroceryItem): DbGroceryItem {
     user_note: item.notes || null,
     is_ordered: item.isOrdered || null,
     ordered_at: item.orderedAt || null,
-    ordered_by: item.orderedBy || null
+    ordered_by: item.orderedBy || null,
   });
 
   return {
@@ -81,7 +91,7 @@ export function toDbItem(item: GroceryItem): DbGroceryItem {
     added_at: item.addedAt,
     is_done: item.isDone,
     notes: notesPayload,
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   };
 }
 
@@ -92,6 +102,7 @@ export async function fetchGroceryItems(): Promise<GroceryItem[]> {
       .from("grocery_items")
       .select("*")
       .neq("id", "__household_handoff_state__")
+      .neq("id", "__email_cart_state__")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -119,7 +130,10 @@ export async function upsertGroceryItem(item: GroceryItem) {
 // Delete item
 export async function deleteGroceryItemDb(id: string) {
   try {
-    const { error } = await supabase.from("grocery_items").delete().eq("id", id);
+    const { error } = await supabase
+      .from("grocery_items")
+      .delete()
+      .eq("id", id);
     if (error) console.error("Error deleting from Supabase:", error.message);
   } catch (err) {
     console.warn("Supabase delete failed:", err);
@@ -129,7 +143,10 @@ export async function deleteGroceryItemDb(id: string) {
 // Clear all completed items
 export async function clearCompletedItemsDb() {
   try {
-    const { error } = await supabase.from("grocery_items").delete().eq("is_done", true);
+    const { error } = await supabase
+      .from("grocery_items")
+      .delete()
+      .eq("is_done", true);
     if (error) console.error("Error clearing completed items:", error.message);
   } catch (err) {
     console.warn("Supabase clear completed failed:", err);
@@ -140,9 +157,15 @@ export async function clearCompletedItemsDb() {
 export async function clearActiveBasketDb(itemIds?: string[]) {
   try {
     if (itemIds && itemIds.length > 0) {
-      const filtered = itemIds.filter((id) => id !== "__household_handoff_state__");
+      const filtered = itemIds.filter(
+        (id) =>
+          id !== "__household_handoff_state__" && id !== "__email_cart_state__"
+      );
       if (filtered.length > 0) {
-        const { error } = await supabase.from("grocery_items").delete().in("id", filtered);
+        const { error } = await supabase
+          .from("grocery_items")
+          .delete()
+          .in("id", filtered);
         if (error) console.error("Error clearing basket items:", error.message);
       }
     } else {
@@ -150,6 +173,7 @@ export async function clearActiveBasketDb(itemIds?: string[]) {
         .from("grocery_items")
         .delete()
         .neq("id", "__household_handoff_state__")
+        .neq("id", "__email_cart_state__")
         .eq("is_done", false);
       if (error) console.error("Error clearing basket items:", error.message);
     }
@@ -159,7 +183,9 @@ export async function clearActiveBasketDb(itemIds?: string[]) {
 }
 
 // Save a household order with normalized line items to household_orders
-export async function saveHouseholdOrder(order: HouseholdOrder): Promise<boolean> {
+export async function saveHouseholdOrder(
+  order: HouseholdOrder
+): Promise<boolean> {
   try {
     const payload = {
       order_id: order.orderId,
@@ -177,8 +203,8 @@ export async function saveHouseholdOrder(order: HouseholdOrder): Promise<boolean
         total: it.total,
         status: it.status,
         delivered_at: it.deliveredAt,
-        category: it.category
-      }))
+        category: it.category,
+      })),
     };
     const { error } = await supabase.from("household_orders").upsert(payload);
     if (error) {
@@ -192,7 +218,9 @@ export async function saveHouseholdOrder(order: HouseholdOrder): Promise<boolean
   }
 }
 
-export async function updateHouseholdOrder(order: HouseholdOrder): Promise<boolean> {
+export async function updateHouseholdOrder(
+  order: HouseholdOrder
+): Promise<boolean> {
   return saveHouseholdOrder(order);
 }
 
@@ -233,14 +261,19 @@ export async function archiveCompletedRun(completedItems: GroceryItem[]) {
         category: it.category,
         added_by: it.addedBy,
         added_at: it.addedAt,
-        purchased_at: it.purchasedAt || new Date().toISOString()
-      }))
+        purchased_at: it.purchasedAt || new Date().toISOString(),
+      })),
     };
 
     // 1. Insert completed order into household_orders
-    const { error: orderErr } = await supabase.from("household_orders").insert(orderRecord);
+    const { error: orderErr } = await supabase
+      .from("household_orders")
+      .insert(orderRecord);
     if (orderErr) {
-      console.warn("Could not archive order to household_orders:", orderErr.message);
+      console.warn(
+        "Could not archive order to household_orders:",
+        orderErr.message
+      );
     }
 
     // 2. Clear completed items from grocery_items
@@ -282,6 +315,95 @@ export async function fetchPatternRulesDb() {
 }
 
 export const HANDOFF_RECORD_ID = "__household_handoff_state__";
+export const EMAIL_CART_STATE_ID = "__email_cart_state__";
+
+// Fetch the email-cart send state (rate limit + dedupe bookkeeping)
+export async function fetchEmailCartStateDb(): Promise<EmailCartState | null> {
+  try {
+    const { data, error } = await supabase
+      .from("grocery_items")
+      .select("notes")
+      .eq("id", EMAIL_CART_STATE_ID)
+      .single();
+
+    if (error || !data || !data.notes) return null;
+    const parsed = JSON.parse(data.notes);
+    if (parsed && typeof parsed === "object" && "lastSentAt" in parsed) {
+      return parsed as EmailCartState;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Compare-and-swap claim on the send slot: updates the state row only if
+ * its notes still match `expected`, so concurrent sends cannot both pass
+ * the rate-limit check. Returns true when this caller won the slot.
+ * Key order in the JSON payload is fixed so the equality check is stable.
+ */
+export async function claimEmailCartSendDb(
+  expected: EmailCartState | null,
+  next: EmailCartState
+): Promise<boolean> {
+  const now = new Date().toISOString();
+  const payload = {
+    id: EMAIL_CART_STATE_ID,
+    name: "__EMAIL_CART_STATE__",
+    category: "System",
+    added_by: "Lira",
+    added_at: now,
+    is_done: false,
+    notes: `{"lastSentAt":${JSON.stringify(next.lastSentAt)},"lastHash":${JSON.stringify(next.lastHash)}}`,
+    updated_at: now,
+  };
+  const expectedNotes = expected
+    ? `{"lastSentAt":${JSON.stringify(expected.lastSentAt)},"lastHash":${JSON.stringify(expected.lastHash)}}`
+    : null;
+
+  try {
+    if (expected === null) {
+      // First send ever: insert; a conflict means another sender won.
+      const { error } = await supabase.from("grocery_items").insert(payload);
+      return !error;
+    }
+    const { data, error } = await supabase
+      .from("grocery_items")
+      .update(payload)
+      .eq("id", EMAIL_CART_STATE_ID)
+      .eq("notes", expectedNotes as string)
+      .select("id");
+    return !error && Array.isArray(data) && data.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+// Best-effort rollback of a claim when the actual send fails
+export async function releaseEmailCartSendDb(
+  claimed: EmailCartState,
+  restore: EmailCartState | null
+): Promise<void> {
+  try {
+    if (restore === null) {
+      await supabase
+        .from("grocery_items")
+        .delete()
+        .eq("id", EMAIL_CART_STATE_ID);
+      return;
+    }
+    const restoreNotes = `{"lastSentAt":${JSON.stringify(restore.lastSentAt)},"lastHash":${JSON.stringify(restore.lastHash)}}`;
+    const claimedNotes = `{"lastSentAt":${JSON.stringify(claimed.lastSentAt)},"lastHash":${JSON.stringify(claimed.lastHash)}}`;
+    await supabase
+      .from("grocery_items")
+      .update({ notes: restoreNotes, updated_at: new Date().toISOString() })
+      .eq("id", EMAIL_CART_STATE_ID)
+      .eq("notes", claimedNotes);
+  } catch (err) {
+    console.warn("releaseEmailCartSendDb failed:", err);
+  }
+}
 
 // Save basket handoff state to Supabase so it synchronizes across all devices
 export async function saveHandoffStateDb(handoffState: BasketHandoffState) {
@@ -294,10 +416,11 @@ export async function saveHandoffStateDb(handoffState: BasketHandoffState) {
       added_at: handoffState.handoffAt || new Date().toISOString(),
       is_done: handoffState.status === "ordered",
       notes: JSON.stringify(handoffState),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
     const { error } = await supabase.from("grocery_items").upsert(payload);
-    if (error) console.error("Error syncing handoff state to Supabase:", error.message);
+    if (error)
+      console.error("Error syncing handoff state to Supabase:", error.message);
   } catch (err) {
     console.warn("saveHandoffStateDb failed:", err);
   }
@@ -323,4 +446,3 @@ export async function fetchHandoffStateDb(): Promise<BasketHandoffState | null> 
     return null;
   }
 }
-

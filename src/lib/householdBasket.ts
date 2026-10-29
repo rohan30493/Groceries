@@ -29,6 +29,7 @@ import {
 } from "./pushNotifications";
 import {
   supabase,
+  EMAIL_CART_STATE_ID,
   HANDOFF_RECORD_ID,
   DbGroceryItem,
   toGroceryItem,
@@ -158,6 +159,7 @@ export class SupabaseBasketStore implements BasketStore {
             payload.eventType === "UPDATE"
           ) {
             const raw = payload.new as DbGroceryItem;
+            if (raw.id === EMAIL_CART_STATE_ID) return;
             if (raw.id === HANDOFF_RECORD_ID) {
               if (raw.notes) {
                 try {
@@ -173,7 +175,8 @@ export class SupabaseBasketStore implements BasketStore {
             onItemChange(payload.eventType, item);
           } else if (payload.eventType === "DELETE") {
             const oldId = (payload.old as { id: string }).id;
-            if (oldId === HANDOFF_RECORD_ID) return;
+            if (oldId === HANDOFF_RECORD_ID || oldId === EMAIL_CART_STATE_ID)
+              return;
             onItemChange("DELETE", { id: oldId });
           }
         }

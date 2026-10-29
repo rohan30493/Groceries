@@ -10,6 +10,7 @@ import {
   Mic,
   MicOff,
   Copy,
+  Mail,
   RotateCcw,
   Lightbulb,
   Heart,
@@ -209,6 +210,9 @@ export default function GroceryAssistantApp() {
   const [inputText, setInputText] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [copiedNotification, setCopiedNotification] = useState(false);
+  const [emailCartState, setEmailCartState] = useState<
+    "idle" | "sending" | "sent" | "error" | "cooldown"
+  >("idle");
   const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(
     new Set()
   );
@@ -662,6 +666,26 @@ export default function GroceryAssistantApp() {
     navigator.clipboard.writeText(clipboardText);
     setCopiedNotification(true);
     setTimeout(() => setCopiedNotification(false), 2500);
+  };
+
+  // Email the ready cart to Rohan via the app's own send route. The server
+  // re-reads the cart itself, so this only ever sends the real list.
+  const handleEmailCart = async () => {
+    if (emailCartState === "sending") return;
+    setEmailCartState("sending");
+    try {
+      const res = await fetch("/api/email-cart", { method: "POST" });
+      if (res.ok) {
+        setEmailCartState("sent");
+      } else if (res.status === 429) {
+        setEmailCartState("cooldown");
+      } else {
+        setEmailCartState("error");
+      }
+    } catch {
+      setEmailCartState("error");
+    }
+    setTimeout(() => setEmailCartState("idle"), 4000);
   };
 
   // Group basket items by category, sorted with active items first, ordered items at bottom
@@ -1159,6 +1183,37 @@ export default function GroceryAssistantApp() {
                         <Copy className="w-3.5 h-3.5" />
                         <span>
                           {copiedNotification ? "Copied!" : "Copy for WhatsApp"}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleEmailCart}
+                        disabled={
+                          pendingItems.length === 0 ||
+                          emailCartState === "sending"
+                        }
+                        aria-label="Email Rohan the grocery list"
+                        className={`flex items-center gap-1.5 px-3 py-1.5 active:scale-95 text-xs font-semibold rounded-xl transition-all disabled:active:scale-100 ${
+                          emailCartState === "sent"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : emailCartState === "cooldown"
+                              ? "bg-amber-100 text-amber-800"
+                              : emailCartState === "error"
+                                ? "bg-rose-100 text-rose-700"
+                                : "bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-slate-100 disabled:text-slate-400"
+                        }`}
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                        <span>
+                          {emailCartState === "sending"
+                            ? "Sending..."
+                            : emailCartState === "sent"
+                              ? "Emailed to Rohan"
+                              : emailCartState === "cooldown"
+                                ? "Emailed - 1h cooldown"
+                                : emailCartState === "error"
+                                  ? "Email failed - retry"
+                                  : "Email Rohan"}
                         </span>
                       </button>
                       {completedItems.length > 0 && (
@@ -2208,4 +2263,4 @@ export default function GroceryAssistantApp() {
       </main>
     </div>
   );
-        }
+}
