@@ -45,7 +45,7 @@ import { OrderStatus, OrderItemStatus } from "../lib/orderLifecycle";
 import { useHouseholdBasket } from "../lib/useHouseholdBasket";
 import { useOrderJournal } from "../lib/useOrderJournal";
 import { itemCatalog } from "../lib/itemCatalog";
-import { isWithin24Hours } from "../lib/householdBasket";
+import { isWithin24Hours, isVisibleInBasket } from "../lib/householdBasket";
 
 // Helper to format human-readable time (e.g., "9:15 AM" or "Yesterday, 8:40 PM")
 function formatEventTime(isoStringOrText?: string): string {
@@ -259,6 +259,7 @@ export default function GroceryAssistantApp() {
     new Set()
   );
   const [lastAddedItem, setLastAddedItem] = useState<string | null>(null);
+  const [duplicateNotice, setDuplicateNotice] = useState<string[]>([]);
 
   // Collapsible section states to minimize visual clutter in Lira's view
   const [isRecommendationsExpanded, setIsRecommendationsExpanded] =
@@ -387,7 +388,7 @@ export default function GroceryAssistantApp() {
     activeTab === "rhythm" ? "Rhythm" : "Lira";
 
   // Add multiple items from input bar or speech
-  const handleAddItems = (
+  const handleAddItems = async (
     text: string,
     sender?: "Lira" | "Rhythm" | "Rohan"
   ) => {
@@ -397,19 +398,31 @@ export default function GroceryAssistantApp() {
     const parsedNames = parseNaturalLanguageList(text);
     if (parsedNames.length === 0) return;
 
-    addItems(text, actualSender);
-    setLastAddedItem(parsedNames[0]);
-    setInputText("");
+    const created = await addItems(text, actualSender);
+    const createdNames = new Set(
+      created.map((c) => c.name.toLowerCase().trim())
+    );
+    const skipped = parsedNames.filter(
+      (n) => !createdNames.has(n.toLowerCase().trim())
+    );
+    setDuplicateNotice(skipped);
+    if (created.length > 0) {
+      setLastAddedItem(created[0].name);
+      setInputText("");
+    }
   };
 
   // Add a specific single item
-  const handleAddSingleItem = (
+  const handleAddSingleItem = async (
     name: string,
     addedBy?: "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion"
   ) => {
     const actualAddedBy = addedBy || currentBuilderPerson;
-    addItems([name], actualAddedBy);
-    setLastAddedItem(name);
+    const created = await addItems([name], actualAddedBy);
+    setDuplicateNotice(created.length === 0 ? [name] : []);
+    if (created.length > 0) {
+      setLastAddedItem(created[0].name);
+    }
   };
 
   // Quick add from category sections with visual feedback
@@ -1368,7 +1381,10 @@ export default function GroceryAssistantApp() {
                   <div className="relative">
                     <textarea
                       value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
+                      onChange={(e) => {
+                        setInputText(e.target.value);
+                        if (duplicateNotice.length > 0) setDuplicateNotice([]);
+                      }}
                       placeholder="Type or paste items (e.g. Paneer, Tomatoes, Curd, Eggs)..."
                       rows={2}
                       className={`w-full text-sm p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent placeholder:text-slate-400 bg-slate-50/50 focus:bg-white transition-all ${
@@ -1378,6 +1394,19 @@ export default function GroceryAssistantApp() {
                       }`}
                     />
                   </div>
+
+                  {duplicateNotice.length > 0 && (
+                    <div
+                      role="status"
+                      className="mt-2 p-2 border rounded-xl animate-fadeIn bg-amber-50/80 border-amber-200"
+                    >
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-800">
+                        <span>
+                          Already on your list: {duplicateNotice.join(", ")}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {detectedPreview.length > 1 && (
                     <div
@@ -1647,7 +1676,7 @@ export default function GroceryAssistantApp() {
                               ({ item: it, categoryName }) => {
                                 const isAlreadyInList = items.some(
                                   (item) =>
-                                    !item.isDone &&
+                                    isVisibleInBasket(item) &&
                                     item.name.toLowerCase().trim() ===
                                       it.name.toLowerCase().trim()
                                 );
@@ -1748,7 +1777,7 @@ export default function GroceryAssistantApp() {
                           categoryBrowseData.activeCategory?.items.map((it) => {
                             const isAlreadyInList = items.some(
                               (item) =>
-                                !item.isDone &&
+                                isVisibleInBasket(item) &&
                                 item.name.toLowerCase().trim() ===
                                   it.name.toLowerCase().trim()
                             );
@@ -2179,4 +2208,4 @@ export default function GroceryAssistantApp() {
       </main>
     </div>
   );
-}
+        }
