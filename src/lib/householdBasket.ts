@@ -95,6 +95,19 @@ export function isWithin24Hours(isoStringOrDate?: string): boolean {
 }
 
 /**
+ * Single source of truth for whether an item is visible in the active basket
+ * view: pending items, plus ordered items still inside their 24h
+ * strikethrough window. The snapshot, duplicate detection, and the browse
+ * "In List" badge all use this predicate so an item the user cannot see
+ * never silently blocks re-adding it.
+ */
+export function isVisibleInBasket(item: GroceryItem): boolean {
+  if (item.isDone) return false;
+  if (!item.isOrdered) return true;
+  return isWithin24Hours(item.orderedAt);
+}
+
+/**
  * Production Supabase implementation of BasketStore.
  * Hides all notes JSON serialization, magic record ids, and raw Supabase channels.
  */
@@ -374,11 +387,7 @@ export class HouseholdBasket {
 
   getSnapshot(): BasketSnapshot {
     const pendingItems = this.items.filter((it) => !it.isDone && !it.isOrdered);
-    const basketItems = this.items.filter((it) => {
-      if (it.isDone) return false;
-      if (!it.isOrdered) return true;
-      return isWithin24Hours(it.orderedAt);
-    });
+    const basketItems = this.items.filter((it) => isVisibleInBasket(it));
     const recentlyOrderedItems = this.items.filter(
       (it) => !it.isDone && it.isOrdered && isWithin24Hours(it.orderedAt)
     );
@@ -434,10 +443,12 @@ export class HouseholdBasket {
       const trimmed = name.trim();
       if (!trimmed) continue;
 
-      // Deduplicate against active items
+      // Deduplicate against items currently visible in the basket. Stale
+      // ordered items hidden after their 24h window must not block re-adding.
       const isDuplicate = this.items.some(
         (it) =>
-          !it.isDone && it.name.toLowerCase().trim() === trimmed.toLowerCase()
+          isVisibleInBasket(it) &&
+          it.name.toLowerCase().trim() === trimmed.toLowerCase()
       );
       if (isDuplicate) continue;
 
