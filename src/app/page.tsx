@@ -1210,7 +1210,7 @@ export default function GroceryAssistantApp() {
                             : emailCartState === "sent"
                               ? "Emailed to Rohan"
                               : emailCartState === "cooldown"
-                                ? "Emailed recently"
+                                ? "Sending in progress"
                                 : emailCartState === "error"
                                   ? "Email failed - retry"
                                   : "Email Rohan"}

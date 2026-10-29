@@ -148,26 +148,6 @@ export function computeCartHash(items: GroceryItem[]): string {
   return (hash >>> 0).toString(16);
 }
 
-export const EMAIL_CART_DEDUPE_WINDOW_MS = 15 * 60_000;
-
-/**
- * True when the same cart content was already sent within the dedupe
- * window, so a repeat click does not spam an identical email. New or
- * changed items produce a new hash and always send.
- */
-export function shouldSkipDuplicateSend(
-  state: EmailCartState | null,
-  hash: string,
-  nowMs: number,
-  windowMs: number = EMAIL_CART_DEDUPE_WINDOW_MS
-): boolean {
-  if (!state || !state.lastSentAt || !state.lastHash) return false;
-  if (state.lastHash !== hash) return false;
-  const lastMs = Date.parse(state.lastSentAt);
-  if (Number.isNaN(lastMs)) return false;
-  return nowMs - lastMs < windowMs;
-}
-
 export const EMAIL_CART_MUTEX_TTL_MS = 5 * 60_000;
 
 export interface CartEmailSendDeps {
@@ -187,20 +167,15 @@ export interface CartEmailSendDeps {
 }
 
 export type CartEmailSendResult =
-  | { kind: "sent" }
-  | { kind: "no-pending" }
-  | { kind: "duplicate" }
-  | { kind: "in-progress" };
+  { kind: "sent" } | { kind: "no-pending" } | { kind: "in-progress" };
 
 /**
  * Orchestrates one button-triggered send. There is no time-based global
- * cooldown; abuse posture for this public endpoint is:
- * 1. The Supabase sentinel row is a short-lived in-flight mutex (best
- *    effort, not a hardened global rate bound): overlapping clicks cannot
- *    double-send, and a fresh state row blocks re-sends for its TTL.
- * 2. A recent identical cart (same pending-content hash inside the dedupe
- *    window) is skipped so repeat clicks do not spam the same email; new
- *    or changed items always send.
+ * cooldown or resend restriction; the only safeguard is the Supabase
+ * sentinel row as a short-lived in-flight mutex (best effort, not a
+ * hardened rate bound): while one send is executing, overlapping clicks
+ * see in-progress instead of sending twice. Once a send completes the
+ * slot is released, so a deliberate later click always sends again.
  * The recipient is fixed server-side and the cart is re-read server-side.
  */
 export async function executeCartEmailSend(
@@ -231,18 +206,10 @@ export async function executeCartEmailSend(
       await safeRelease(deps, acquired, state);
       return { kind: "no-pending" };
     }
-    const hash = computeCartHash(items);
-    if (shouldSkipDuplicateSend(state, hash, nowMs)) {
-      await safeRelease(deps, acquired, state);
-      return { kind: "duplicate" };
-    }
     await deps.send(email);
-    // Record the sent cart's hash as the dedupe anchor; the fresh
-    // timestamp also holds the in-flight grace window for its TTL.
-    await safeRelease(deps, acquired, {
-      lastSentAt: new Date(nowMs).toISOString(),
-      lastHash: hash,
-    });
+    // Send complete: release the slot so a deliberate resend is never
+    // blocked. Only an actually in-flight send holds it.
+    await safeRelease(deps, acquired, state);
     return { kind: "sent" };
   } catch (err) {
     await safeRelease(deps, acquired, state);

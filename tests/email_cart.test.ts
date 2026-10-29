@@ -3,12 +3,10 @@ import assert from "node:assert/strict";
 import {
   buildCartEmail,
   computeCartHash,
-  shouldSkipDuplicateSend,
   executeCartEmailSend,
   CartEmailSendDeps,
   EmailCartState,
   EMAIL_CART_MUTEX_TTL_MS,
-  EMAIL_CART_DEDUPE_WINDOW_MS,
 } from "../src/lib/emailCart";
 import { GroceryItem } from "../src/lib/patterns";
 
@@ -155,44 +153,6 @@ describe("computeCartHash", () => {
   });
 });
 
-describe("shouldSkipDuplicateSend", () => {
-  const hash = "abc123";
-  const t0 = Date.parse("2026-10-29T09:45:00+05:30");
-
-  it("skips an identical cart sent moments ago", () => {
-    const state = { lastSentAt: new Date(t0).toISOString(), lastHash: hash };
-    assert.equal(shouldSkipDuplicateSend(state, hash, t0 + 60_000), true);
-  });
-
-  it("allows the same cart after the dedupe window", () => {
-    const state = { lastSentAt: new Date(t0).toISOString(), lastHash: hash };
-    assert.equal(
-      shouldSkipDuplicateSend(
-        state,
-        hash,
-        t0 + EMAIL_CART_DEDUPE_WINDOW_MS + 1
-      ),
-      false
-    );
-  });
-
-  it("allows a changed cart immediately", () => {
-    const state = { lastSentAt: new Date(t0).toISOString(), lastHash: hash };
-    assert.equal(
-      shouldSkipDuplicateSend(state, "different", t0 + 60_000),
-      false
-    );
-  });
-
-  it("allows when there is no prior send state", () => {
-    assert.equal(shouldSkipDuplicateSend(null, hash, t0), false);
-    assert.equal(
-      shouldSkipDuplicateSend({ lastSentAt: null, lastHash: null }, hash, t0),
-      false
-    );
-  });
-});
-
 describe("executeCartEmailSend", () => {
   function makeDeps(
     overrides: Partial<CartEmailSendDeps> = {},
@@ -227,14 +187,12 @@ describe("executeCartEmailSend", () => {
     return { deps, events, getState: () => stored };
   }
 
-  it("sends once and records the cart hash on success", async () => {
+  it("sends once and releases the slot on success", async () => {
     const { deps, events, getState } = makeDeps();
     const result = await executeCartEmailSend(deps);
     assert.equal(result.kind, "sent");
     assert.deepEqual(events, ["claim", "send", "release"]);
-    const state = getState();
-    assert.ok(state?.lastSentAt);
-    assert.ok(state?.lastHash && state.lastHash !== "__send_lock__");
+    assert.equal(getState(), null);
   });
 
   it("lets exactly one of two racing sends through", async () => {
@@ -248,15 +206,25 @@ describe("executeCartEmailSend", () => {
     assert.deepEqual(events, ["claim", "send", "release"]);
   });
 
-  it("blocks a later send while a fresh lock exists", async () => {
-    const { deps, events } = makeDeps();
-    await executeCartEmailSend(deps);
+  it("reports in-progress while a send is still executing", async () => {
+    let releaseSend: () => void = () => {};
+    const { deps } = makeDeps({
+      send: async () => {
+        await new Promise<void>((resolve) => {
+          releaseSend = resolve;
+        });
+      },
+    });
+    const first = executeCartEmailSend(deps);
+    await new Promise((resolve) => setTimeout(resolve, 10));
     const second = await executeCartEmailSend(deps);
     assert.equal(second.kind, "in-progress");
-    assert.deepEqual(events, ["claim", "send", "release"]);
+    releaseSend();
+    const result = await first;
+    assert.equal(result.kind, "sent");
   });
 
-  it("skips an identical cart sent recently, without sending", async () => {
+  it("allows a deliberate resend once the in-flight slot clears", async () => {
     const t0 = NOW.getTime();
     const items = [makeItem({ id: "milk-1", name: "Milk 1L" })];
     const first = makeDeps({ now: () => t0, loadItems: async () => items });
@@ -267,32 +235,6 @@ describe("executeCartEmailSend", () => {
     const later = t0 + EMAIL_CART_MUTEX_TTL_MS + 60_000;
     const second = makeDeps(
       { now: () => later, loadItems: async () => items },
-      stored
-    );
-    const result = await executeCartEmailSend(second.deps);
-    assert.equal(result.kind, "duplicate");
-    assert.deepEqual(second.events, ["claim", "release"]);
-    assert.ok(later - t0 < EMAIL_CART_DEDUPE_WINDOW_MS);
-  });
-
-  it("sends a changed cart even inside the dedupe window", async () => {
-    const t0 = NOW.getTime();
-    const first = makeDeps({
-      now: () => t0,
-      loadItems: async () => [makeItem({ id: "milk-1", name: "Milk 1L" })],
-    });
-    await executeCartEmailSend(first.deps);
-    const stored = first.getState();
-
-    const later = t0 + EMAIL_CART_MUTEX_TTL_MS + 60_000;
-    const second = makeDeps(
-      {
-        now: () => later,
-        loadItems: async () => [
-          makeItem({ id: "milk-1", name: "Milk 1L" }),
-          makeItem({ id: "eggs-12", name: "Eggs 12" }),
-        ],
-      },
       stored
     );
     const result = await executeCartEmailSend(second.deps);

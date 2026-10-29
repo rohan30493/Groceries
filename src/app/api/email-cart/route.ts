@@ -73,9 +73,8 @@ export async function GET() {
  * - Items are re-read from Supabase here; nothing in the request body is
  *   used, so no one can inject content.
  * - Recipient is fixed server-side via EMAIL_TO; no one can redirect it.
- * - A best-effort Supabase mutex stops overlapping clicks double-sending,
- *   and an identical cart sent within the last 15 minutes is skipped. This
- *   is duplicate-click protection, not a hardened global rate limit.
+ * - A best-effort Supabase mutex stops overlapping clicks double-sending
+ *   while a send is in flight. There is no timed resend restriction.
  */
 export async function POST() {
   const env = readEmailEnv();
@@ -119,14 +118,6 @@ export async function POST() {
         return NextResponse.json(
           { ok: false, error: "No pending items to send." },
           { status: 400 }
-        );
-      case "duplicate":
-        return NextResponse.json(
-          {
-            ok: false,
-            error: "This cart was already emailed recently.",
-          },
-          { status: 429 }
         );
       case "in-progress":
         return NextResponse.json(
