@@ -44,7 +44,6 @@ export async function GET() {
       auth: { user: env.user, pass: env.pass },
     });
     await transporter.verify();
-    console.error("[email-cart] SMTP verify: OK");
     return NextResponse.json({ ok: true, cooldownSecondsRemaining: 0 });
   } catch (err) {
     // Strictly sanitized diagnostics: error class only, never server
