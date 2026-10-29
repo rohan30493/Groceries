@@ -54,28 +54,7 @@ export async function GET() {
       ok: true,
       cooldownSecondsRemaining: remaining,
     });
-  } catch (err) {
-    // Strictly sanitized diagnostics: error class only, never server
-    // responses, hosts, addresses or credential material.
-    const name = err instanceof Error ? err.name : "unknown";
-    const shape = err as {
-      code?: unknown;
-      responseStatus?: unknown;
-      authenticationFailed?: unknown;
-    };
-    const code =
-      typeof shape.code === "string" && /^[A-Z0-9_]{2,24}$/.test(shape.code)
-        ? ` ${shape.code}`
-        : "";
-    const rsp =
-      typeof shape.responseStatus === "string" &&
-      /^[A-Z]{2,8}$/.test(shape.responseStatus)
-        ? ` ${shape.responseStatus}`
-        : "";
-    const auth = shape.authenticationFailed === true ? " authFailed" : "";
-    console.error(
-      `[email-cart] GET status check failed: ${name}${code}${rsp}${auth}`
-    );
+  } catch {
     return NextResponse.json(
       { ok: false, error: "Email status unavailable." },
       { status: 503 }
