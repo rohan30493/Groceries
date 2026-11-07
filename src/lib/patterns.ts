@@ -97,13 +97,182 @@ export interface ItemVisual {
 
 // Flat lookup cache for catalog items & categories
 const CATALOG_ITEMS: CategoryItemDef[] = [];
+const CATALOG_MAP = new Map<string, CategoryItemDef>();
 const ITEM_TO_CATEGORY_MAP: Record<string, string> = {};
+
 CATEGORY_SECTIONS.forEach((cat) => {
   cat.items.forEach((it) => {
     CATALOG_ITEMS.push(it);
+    CATALOG_MAP.set(it.name.toLowerCase().trim(), it);
+    it.name.split("/").forEach((p) => {
+      CATALOG_MAP.set(p.trim().toLowerCase(), it);
+    });
     ITEM_TO_CATEGORY_MAP[it.name.toLowerCase()] = cat.name;
   });
 });
+
+// Canonical alias dictionary with word-boundary matching.
+// Specific disambiguations placed first to avoid false positives.
+const ITEM_ALIASES: Array<[string[], string]> = [
+  // Disambiguations first (more specific)
+  [["cherry tomato", "cherry tomatoes", "baby tomato"], "Cherry Tomatoes"],
+  [["peanut butter"], "Peanut Butter"],
+  [["olive oil", "extra virgin olive oil"], "Olive Oil"],
+  [["coconut milk", "almond milk", "soya milk", "oat milk"], "Milk"],
+  [
+    [
+      "red chilli powder",
+      "lal mirch",
+      "kashmiri mirch",
+      "chilli powder",
+      "deggi mirch",
+      "teekha lal",
+    ],
+    "Red Chilli Powder",
+  ],
+  [
+    ["green chilli", "green chillies", "green chili", "hari mirch"],
+    "Green Chillies",
+  ],
+  [["spring onion", "hara pyaz"], "Onions"],
+  [
+    [
+      "kitchen roll",
+      "kitchen towel",
+      "paper towel",
+      "paper towels",
+      "paper roll",
+    ],
+    "Kitchen Roll",
+  ],
+  [["toilet paper", "toilet roll", "toilet tissue"], "Toilet Paper"],
+  [["glass cleaner", "colin"], "Colin / Glass Cleaner"],
+  [["floor cleaner", "lizol"], "Floor Cleaner"],
+  [["eggplant", "brinjal", "baingan", "aubergine"], "Brinjal / Eggplant"],
+
+  // Single word & standard staples
+  [["egg", "eggs", "anda", "ande", "white egg", "country egg"], "Eggs"],
+  [["raisin", "raisins", "kishmish"], "Raisins"],
+  [
+    [
+      "mustard seed",
+      "mustard seeds",
+      "sarson",
+      "rai",
+      "sarso",
+      "black mustard",
+    ],
+    "Mustard Seeds",
+  ],
+  [
+    ["atta", "wheat flour", "gehun ka atta", "gehu", "chakki atta"],
+    "Wheat Flour / Atta",
+  ],
+  [
+    [
+      "cooking oil",
+      "sunflower oil",
+      "mustard oil",
+      "groundnut oil",
+      "refined oil",
+      "oil",
+    ],
+    "Cooking Oil",
+  ],
+  [["butter", "makkhan", "makhan"], "Butter"],
+  [["ghee", "desi ghee", "cow ghee"], "Ghee"],
+  [["milk", "doodh", "toned milk", "cow milk"], "Milk"],
+  [
+    ["bread", "pav", "bun", "sliced bread", "brown bread", "white bread"],
+    "Bread",
+  ],
+  [["salt", "namak", "sendha namak", "rock salt", "pink salt"], "Salt"],
+  [["tomato", "tomatoes", "tamatar"], "Tomatoes"],
+  [["onion", "onions", "pyaz", "pyaaz"], "Onions"],
+  [["potato", "potatoes", "aloo", "batata"], "Potatoes"],
+  [["chilli", "chillies", "mirch", "mirchi"], "Green Chillies"],
+  [
+    [
+      "coriander",
+      "coriander leaves",
+      "dhaniya",
+      "dhania",
+      "kothmir",
+      "cilantro",
+    ],
+    "Coriander",
+  ],
+  [["coriander powder", "dhaniya powder", "dhania powder"], "Coriander Powder"],
+  [["ginger", "adrak"], "Ginger"],
+  [["garlic", "lehsun", "lahsun"], "Garlic"],
+  [["turmeric", "haldi", "turmeric powder", "haldi powder"], "Turmeric"],
+  [["jeera", "cumin", "cumin seeds", "zeera"], "Cumin Seeds"],
+  [["jeera powder", "cumin powder"], "Cumin / Jeera"],
+  [["cardamom", "elaichi", "green cardamom"], "Cardamom"],
+  [["cinnamon", "dalchini", "cinnamon stick", "cinnamon sticks"], "Cinnamon"],
+  [["clove", "cloves", "laung", "lavang"], "Cloves"],
+  [["banana", "bananas", "kela", "yelakki", "robusta"], "Bananas"],
+  [["apple", "apples", "seb"], "Apples"],
+  [["cucumber", "kheera", "kakdi"], "Cucumber"],
+  [["palak", "spinach"], "Palak / Spinach"],
+  [["cauliflower", "gobi", "phool gobi"], "Cauliflower"],
+  [["cabbage", "patta gobi"], "Cabbage"],
+  [["capsicum", "shimla mirch", "bell pepper"], "Capsicum"],
+  [["lemon", "lemons", "nimbu", "lime"], "Lemons"],
+  [["bhindi", "bindi", "okra", "lady finger"], "Lady Finger / Bhindi"],
+  [["lauki", "bottle gourd", "doodhi", "ghea"], "Lauki / Bottle Gourd"],
+  [["tori", "thori", "turai", "ridge gourd"], "Ridge Gourd / Tori"],
+  [["french beans", "beans", "haricot"], "French Beans"],
+  [["lettuce", "iceberg", "salad leaves", "romaine"], "Lettuce / Salad Leaves"],
+  [["mushroom", "mushrooms", "button mushroom"], "Mushrooms"],
+  [["pomegranate", "anar"], "Pomegranate"],
+  [["orange", "mandarin", "santra", "kinnow"], "Mandarin Orange"],
+  [["kiwi"], "Kiwi"],
+  [["tea", "chai", "chai patti"], "Tea"],
+  [["coffee", "nescafe", "bru", "instant coffee"], "Coffee"],
+  [["rice", "basmati", "chawal"], "Rice"],
+  [["paneer", "cottage cheese"], "Fresh Paneer"],
+  [["dahi", "curd", "yogurt"], "Curd / Dahi"],
+  [["chips", "potato chips", "lays", "wafers"], "Chips"],
+  [["biscuit", "biscuits", "cookie", "cookies", "parle g", "rusk"], "Biscuits"],
+  [["tissue", "tissues", "napkin", "napkins", "tissue paper"], "Tissues"],
+  [["dishwash", "vim", "pril", "exo"], "Dishwash"],
+  [
+    ["detergent", "surf excel", "ariel", "tide", "washing powder"],
+    "Laundry Detergent",
+  ],
+  [["almond", "almonds", "badam"], "Almonds"],
+  [["cashew", "cashews", "kaju"], "Cashews"],
+  [["walnut", "walnuts", "akhrot"], "Walnuts"],
+  [["date", "dates", "khajur", "khajoor"], "Dates"],
+  [["makhana", "foxnuts", "foxnut", "lotus seeds"], "Foxnuts / Makhana"],
+  [["peanut", "peanuts", "roasted peanuts", "singdana"], "Roasted Peanuts"],
+  [["namkeen", "mixture", "bhujia", "sev"], "Namkeen / Mixture"],
+  [["popcorn"], "Popcorn"],
+  [["jam", "fruit jam"], "Jam"],
+  [["ketchup", "tomato ketchup"], "Ketchup"],
+  [["mayo", "mayonnaise"], "Mayonnaise"],
+  [["honey", "madhu", "shahad"], "Honey"],
+  [["cat food", "whiskas", "sheba"], "Cat Food"],
+  [["stevia"], "Stevia"],
+  [["pasta sauce"], "Pasta Sauce"],
+  [["hot sauce", "sriracha"], "Hot Sauce"],
+  [["soy sauce", "soya sauce"], "Soy Sauce"],
+  [["chutney"], "Chutney"],
+  [["batter", "dosa batter", "idli batter"], "Dosa & Idli Batter"],
+  [["poha", "aval"], "Poha"],
+  [["suji", "sooji", "rava", "semolina"], "Suji / Semolina"],
+  [["oats", "rolled oats"], "Oats"],
+  [["sugar", "cheeni", "shakar"], "Sugar"],
+  [["besan", "gram flour"], "Besan"],
+  [["rajma", "kidney beans"], "Rajma"],
+  [["masoor", "masoor dal"], "Masoor Dal"],
+  [["moong", "moong dal"], "Moong Dal"],
+  [["toor dal", "arhar dal"], "Toor / Arhar Dal"],
+  [["chana dal"], "Chana Dal"],
+  [["white chana", "kabuli chana", "chole"], "White Chana"],
+  [["black chana", "kala chana"], "Black Chana"],
+];
 
 /**
  * Resolves product image and icon for an item name by matching against catalog with aliases & fuzzy matches
@@ -119,80 +288,42 @@ export function getItemVisual(
 
   const clean = itemName.toLowerCase().trim();
 
-  // 1. Direct match against catalog items
-  for (const catItem of CATALOG_ITEMS) {
-    const catNameLower = catItem.name.toLowerCase();
+  // 1. Direct exact match against catalog items and subparts
+  const exact = CATALOG_MAP.get(clean);
+  if (exact) {
+    return { imageUrl: exact.imageUrl, icon: exact.icon || "🛒" };
+  }
 
-    // Exact match
-    if (catNameLower === clean) {
-      return { imageUrl: catItem.imageUrl, icon: catItem.icon || "🛒" };
-    }
-
-    // Split aliases (e.g. "Lady Finger / Bhindi" -> "lady finger", "bhindi")
-    const parts = catNameLower.split("/").map((p) => p.trim());
-    for (const p of parts) {
-      if (p === clean || clean === p) {
-        return { imageUrl: catItem.imageUrl, icon: catItem.icon || "🛒" };
+  // 2. Alias match with word boundary
+  for (const [kwList, target] of ITEM_ALIASES) {
+    for (const kw of kwList) {
+      const reg = new RegExp(
+        `\\b${kw.replace(/[-\\/\\\\^$*+?.()|[\\]{}]/g, "\\$&")}\\b`,
+        "i"
+      );
+      if (reg.test(clean)) {
+        const cat = CATALOG_MAP.get(target.toLowerCase());
+        if (cat) {
+          return { imageUrl: cat.imageUrl, icon: cat.icon || "🛒" };
+        }
       }
     }
   }
 
-  // 2. Substring & keyword match against catalog
+  // 3. Word-boundary match against catalog item names & parts (no accidental substring overlaps)
   for (const catItem of CATALOG_ITEMS) {
-    const catNameLower = catItem.name.toLowerCase();
-    const parts = catNameLower.split("/").map((p) => p.trim());
+    const parts = catItem.name.split("/").map((p) => p.trim().toLowerCase());
     for (const p of parts) {
-      if (p.length > 2 && (clean.includes(p) || p.includes(clean))) {
-        return { imageUrl: catItem.imageUrl, icon: catItem.icon || "🛒" };
+      if (p.length > 2) {
+        const reg = new RegExp(
+          `\\b${p.replace(/[-\\/\\\\^$*+?.()|[\\]{}]/g, "\\$&")}\\b`,
+          "i"
+        );
+        if (reg.test(clean)) {
+          return { imageUrl: catItem.imageUrl, icon: catItem.icon || "🛒" };
+        }
       }
     }
-  }
-
-  // 3. Common grocery aliases
-  if (
-    clean.includes("brinjal") ||
-    clean.includes("eggplant") ||
-    clean.includes("baingan")
-  ) {
-    return {
-      imageUrl:
-        "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=200&auto=format&fit=crop&q=80",
-      icon: "🍆",
-    };
-  }
-  if (
-    clean.includes("bindi") ||
-    clean.includes("bhindi") ||
-    clean.includes("okra")
-  ) {
-    const bhindi = CATALOG_ITEMS.find((c) =>
-      c.name.toLowerCase().includes("bhindi")
-    );
-    if (bhindi) return { imageUrl: bhindi.imageUrl, icon: bhindi.icon || "🫛" };
-  }
-  if (
-    clean.includes("butter") &&
-    !clean.includes("peanut") &&
-    !clean.includes("milk")
-  ) {
-    const butter = CATALOG_ITEMS.find((c) => c.name.toLowerCase() === "butter");
-    if (butter) return { imageUrl: butter.imageUrl, icon: butter.icon || "🧈" };
-  }
-  if (
-    clean.includes("bread") ||
-    clean.includes("pav") ||
-    clean.includes("bun")
-  ) {
-    const bread = CATALOG_ITEMS.find((c) =>
-      c.name.toLowerCase().includes("bread")
-    );
-    if (bread) return { imageUrl: bread.imageUrl, icon: bread.icon || "🍞" };
-  }
-  if (clean.includes("chilli") || clean.includes("mirch")) {
-    const chilli = CATALOG_ITEMS.find((c) =>
-      c.name.toLowerCase().includes("green chillies")
-    );
-    if (chilli) return { imageUrl: chilli.imageUrl, icon: chilli.icon || "🌶️" };
   }
 
   // 4. Fallback to category icon
@@ -202,140 +333,253 @@ export function getItemVisual(
 }
 
 export function detectCategory(itemName: string): string {
-  const lower = itemName.toLowerCase();
+  const clean = itemName.trim().toLowerCase();
 
-  // Exact or contains match from canonical catalog
-  for (const [canonical, catName] of Object.entries(ITEM_TO_CATEGORY_MAP)) {
-    if (lower.includes(canonical) || canonical.includes(lower)) {
-      return String(catName);
+  // 1. Alias lookup with word boundaries (handles Egg vs Eggplant, Rai vs Raisins, etc.)
+  for (const [aliases, target] of ITEM_ALIASES) {
+    for (const a of aliases) {
+      const reg = new RegExp(
+        `\\b${a.replace(/[-\\/\\\\^$*+?.()|[\\]{}]/g, "\\$&")}\\b`,
+        "i"
+      );
+      if (reg.test(clean)) {
+        const cat = ITEM_TO_CATEGORY_MAP[target.toLowerCase()];
+        if (cat) return cat;
+      }
     }
   }
 
+  // 2. Exact match from canonical catalog
+  if (ITEM_TO_CATEGORY_MAP[clean]) {
+    return ITEM_TO_CATEGORY_MAP[clean];
+  }
+
+  // 3. Word-boundary match against catalog items
+  for (const catItem of CATALOG_ITEMS) {
+    const parts = catItem.name.split("/").map((p) => p.trim().toLowerCase());
+    for (const p of parts) {
+      if (p.length > 2) {
+        const reg = new RegExp(
+          `\\b${p.replace(/[-\\/\\\\^$*+?.()|[\\]{}]/g, "\\$&")}\\b`,
+          "i"
+        );
+        if (reg.test(clean)) {
+          const cat = ITEM_TO_CATEGORY_MAP[catItem.name.toLowerCase()];
+          if (cat) return cat;
+        }
+      }
+    }
+  }
+
+  // 4. Keyword heuristics with word boundaries to prevent substring bleed
+  const testWords = (words: string[]) => {
+    return words.some((w) => {
+      const reg = new RegExp(
+        `\\b${w.replace(/[-\\/\\\\^$*+?.()|[\\]{}]/g, "\\$&")}`,
+        "i"
+      );
+      return reg.test(clean);
+    });
+  };
+
   if (
-    lower.includes("paneer") ||
-    lower.includes("milk") ||
-    lower.includes("curd") ||
-    lower.includes("cheese") ||
-    lower.includes("dahi") ||
-    lower.includes("egg") ||
-    lower.includes("butter") ||
-    lower.includes("batter") ||
-    lower.includes("bread") ||
-    lower.includes("pav")
+    testWords([
+      "paneer",
+      "milk",
+      "curd",
+      "cheese",
+      "dahi",
+      "egg",
+      "eggs",
+      "anda",
+      "butter",
+      "batter",
+      "bread",
+      "pav",
+      "yogurt",
+      "cream",
+    ])
   ) {
     return "Dairy, Bread & Eggs";
   }
+
   if (
-    lower.includes("gobi") ||
-    lower.includes("palak") ||
-    lower.includes("spinach") ||
-    lower.includes("methi") ||
-    lower.includes("bhindi") ||
-    lower.includes("bindi") ||
-    lower.includes("okra") ||
-    lower.includes("lady finger") ||
-    lower.includes("onion") ||
-    lower.includes("tomato") ||
-    lower.includes("potato") ||
-    lower.includes("chilli") ||
-    lower.includes("mirch") ||
-    lower.includes("carrot") ||
-    lower.includes("beans") ||
-    lower.includes("cucumber") ||
-    lower.includes("lettuce") ||
-    lower.includes("lauki") ||
-    lower.includes("ghea") ||
-    lower.includes("tori") ||
-    lower.includes("thori") ||
-    lower.includes("brinjal") ||
-    lower.includes("baingan") ||
-    lower.includes("eggplant") ||
-    lower.includes("badanekaayi") ||
-    lower.includes("fruit") ||
-    lower.includes("apple") ||
-    lower.includes("banana")
+    testWords([
+      "gobi",
+      "palak",
+      "spinach",
+      "methi",
+      "bhindi",
+      "bindi",
+      "okra",
+      "lady finger",
+      "onion",
+      "tomato",
+      "potato",
+      "chilli",
+      "mirch",
+      "carrot",
+      "beans",
+      "cucumber",
+      "lettuce",
+      "lauki",
+      "ghea",
+      "tori",
+      "thori",
+      "brinjal",
+      "baingan",
+      "eggplant",
+      "badanekaayi",
+      "fruit",
+      "apple",
+      "banana",
+      "lemon",
+      "nimbu",
+      "ginger",
+      "adrak",
+      "garlic",
+      "lehsun",
+      "avocado",
+      "orange",
+      "pomegranate",
+      "grapes",
+      "watermelon",
+    ])
   ) {
     return "Fruits & Vegetables";
   }
+
   if (
-    lower.includes("atta") ||
-    lower.includes("flour") ||
-    lower.includes("dal") ||
-    lower.includes("rice") ||
-    lower.includes("oil") ||
-    lower.includes("ghee") ||
-    lower.includes("rajma") ||
-    lower.includes("chana") ||
-    lower.includes("besan") ||
-    lower.includes("poha") ||
-    lower.includes("suji")
+    testWords([
+      "atta",
+      "flour",
+      "dal",
+      "daal",
+      "rice",
+      "oil",
+      "ghee",
+      "rajma",
+      "chana",
+      "besan",
+      "poha",
+      "suji",
+      "sooji",
+      "rava",
+      "maida",
+    ])
   ) {
     return "Atta, Rice, Oil & Dals";
   }
+
   if (
-    lower.includes("salt") ||
-    lower.includes("sugar") ||
-    lower.includes("jeera") ||
-    lower.includes("haldi") ||
-    lower.includes("mirch") ||
-    lower.includes("garam masala") ||
-    lower.includes("hing") ||
-    lower.includes("kaju") ||
-    lower.includes("badam") ||
-    lower.includes("peanut") ||
-    lower.includes("spice")
+    testWords([
+      "salt",
+      "sugar",
+      "jeera",
+      "haldi",
+      "garam masala",
+      "hing",
+      "kaju",
+      "badam",
+      "peanut",
+      "peanuts",
+      "spice",
+      "spices",
+      "clove",
+      "cinnamon",
+      "elaichi",
+      "cardamom",
+      "cashew",
+      "almond",
+      "walnut",
+      "pista",
+      "mustard seed",
+      "rai",
+    ])
   ) {
     return "Masala & Dry Fruits";
   }
+
   if (
-    lower.includes("tea") ||
-    lower.includes("chai") ||
-    lower.includes("coffee") ||
-    lower.includes("juice") ||
-    lower.includes("coconut water") ||
-    lower.includes("coke") ||
-    lower.includes("soda")
+    testWords([
+      "tea",
+      "chai",
+      "coffee",
+      "juice",
+      "coconut water",
+      "coke",
+      "soda",
+      "drink",
+      "beverage",
+    ])
   ) {
     return "Tea, Coffee & Drinks";
   }
+
   if (
-    lower.includes("oat") ||
-    lower.includes("flake") ||
-    lower.includes("honey") ||
-    lower.includes("jam") ||
-    lower.includes("ketchup") ||
-    lower.includes("sauce") ||
-    lower.includes("muesli")
+    testWords([
+      "oat",
+      "oats",
+      "flake",
+      "flakes",
+      "honey",
+      "jam",
+      "ketchup",
+      "sauce",
+      "muesli",
+      "cereal",
+      "mayo",
+      "mayonnaise",
+    ])
   ) {
     return "Breakfast & Sauces";
   }
+
   if (
-    lower.includes("biscuit") ||
-    lower.includes("cookie") ||
-    lower.includes("chip") ||
-    lower.includes("namkeen") ||
-    lower.includes("makhana") ||
-    lower.includes("chocolate") ||
-    lower.includes("noodle") ||
-    lower.includes("pasta")
+    testWords([
+      "biscuit",
+      "biscuits",
+      "cookie",
+      "cookies",
+      "chip",
+      "chips",
+      "namkeen",
+      "makhana",
+      "chocolate",
+      "noodle",
+      "noodles",
+      "pasta",
+      "snack",
+      "snacks",
+      "popcorn",
+    ])
   ) {
     return "Munchies & Biscuits";
   }
+
   if (
-    lower.includes("cat food") ||
-    lower.includes("sheba") ||
-    lower.includes("me-o") ||
-    lower.includes("poop bag") ||
-    lower.includes("cat litter") ||
-    lower.includes("dishwash") ||
-    lower.includes("detergent") ||
-    lower.includes("tissue") ||
-    lower.includes("toilet roll") ||
-    lower.includes("kitchen roll") ||
-    lower.includes("garbage")
+    testWords([
+      "cat food",
+      "sheba",
+      "me-o",
+      "poop bag",
+      "cat litter",
+      "dishwash",
+      "detergent",
+      "tissue",
+      "toilet roll",
+      "toilet paper",
+      "kitchen roll",
+      "garbage",
+      "cleaner",
+      "soap",
+      "shampoo",
+      "scrub",
+    ])
   ) {
     return "Pet Care & Household";
   }
+
   return "Other Items";
 }
 
