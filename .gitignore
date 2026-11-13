@@ -38,3 +38,12 @@ __pycache__/
 
 # submodules / third-party tools
 Gods Eye/
+
+# raw scraper payloads and private chat logs
+data/*_raw.json
+data/chat_*.txt
+
+# verification harness and agent evidence
+.verify-instance.*
+evidence/
+.claude/

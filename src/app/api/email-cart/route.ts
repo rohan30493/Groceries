@@ -26,9 +26,8 @@ function readEmailEnv(): { user: string; pass: string; to: string } | null {
 /**
  * GET /api/email-cart
  *
- * Read-only readiness probe: verifies the configured Gmail SMTP login with
- * nodemailer's verify (connection + AUTH only - no message is sent).
- * Returns no addresses, mail content or credentials.
+ * Lightweight readiness probe: checks whether the email environment is configured
+ * without making external network calls.
  */
 export async function GET() {
   const env = readEmailEnv();
@@ -38,30 +37,7 @@ export async function GET() {
       { status: 503 }
     );
   }
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: env.user, pass: env.pass },
-    });
-    await transporter.verify();
-    return NextResponse.json({ ok: true, cooldownSecondsRemaining: 0 });
-  } catch (err) {
-    // Strictly sanitized diagnostics: error class only, never server
-    // responses, hosts, addresses or credential material.
-    const name = err instanceof Error ? err.name : "unknown";
-    const shape = err as { code?: unknown; responseCode?: unknown };
-    const code =
-      typeof shape.code === "string" && /^[A-Z0-9_]{2,24}$/.test(shape.code)
-        ? ` ${shape.code}`
-        : "";
-    const rsp =
-      typeof shape.responseCode === "number" ? ` ${shape.responseCode}` : "";
-    console.error(`[email-cart] SMTP verify failed: ${name}${code}${rsp}`);
-    return NextResponse.json(
-      { ok: false, error: "Email status unavailable." },
-      { status: 503 }
-    );
-  }
+  return NextResponse.json({ ok: true });
 }
 
 /**

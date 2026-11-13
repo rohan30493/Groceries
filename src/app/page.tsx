@@ -27,8 +27,6 @@ import {
   Truck,
   XCircle,
   Clock,
-  Bell,
-  BellRing,
   X,
 } from "lucide-react";
 import {
@@ -40,6 +38,7 @@ import {
   CategoryItemDef,
   getItemVisual,
   CATEGORY_ICONS,
+  CATEGORY_ORDER,
 } from "../lib/patterns";
 import { fetchCategorySectionsDb } from "../lib/supabase";
 import { OrderStatus, OrderItemStatus } from "../lib/orderLifecycle";
@@ -628,23 +627,9 @@ export default function GroceryAssistantApp() {
       categoryMap[cat].push({ ...it, category: cat });
     });
 
-    const categoryOrder = [
-      "Fruits & Vegetables",
-      "Dairy, Bread & Eggs",
-      "Atta, Rice, Oil & Dals",
-      "Masala & Dry Fruits",
-      "Breakfast & Sauces",
-      "Tea, Coffee & Drinks",
-      "Tea, Coffee & Beverages",
-      "Munchies & Biscuits",
-      "Munchies & Snacks",
-      "Pet Care & Household",
-      "Other Items",
-    ];
-
     const sortedCats = Object.keys(categoryMap).sort((a, b) => {
-      const idxA = categoryOrder.indexOf(a);
-      const idxB = categoryOrder.indexOf(b);
+      const idxA = CATEGORY_ORDER.indexOf(a);
+      const idxB = CATEGORY_ORDER.indexOf(b);
       if (idxA !== -1 && idxB !== -1) return idxA - idxB;
       if (idxA !== -1) return -1;
       if (idxB !== -1) return 1;
@@ -705,23 +690,9 @@ export default function GroceryAssistantApp() {
       categoryMap[cat].push({ ...it, category: cat });
     });
 
-    const categoryOrder = [
-      "Fruits & Vegetables",
-      "Dairy, Bread & Eggs",
-      "Atta, Rice, Oil & Dals",
-      "Masala & Dry Fruits",
-      "Breakfast & Sauces",
-      "Tea, Coffee & Drinks",
-      "Tea, Coffee & Beverages",
-      "Munchies & Biscuits",
-      "Munchies & Snacks",
-      "Pet Care & Household",
-      "Other Items",
-    ];
-
     const sortedCats = Object.keys(categoryMap).sort((a, b) => {
-      const idxA = categoryOrder.indexOf(a);
-      const idxB = categoryOrder.indexOf(b);
+      const idxA = CATEGORY_ORDER.indexOf(a);
+      const idxB = CATEGORY_ORDER.indexOf(b);
       if (idxA !== -1 && idxB !== -1) return idxA - idxB;
       if (idxA !== -1) return -1;
       if (idxB !== -1) return 1;

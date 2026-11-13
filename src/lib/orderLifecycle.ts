@@ -308,6 +308,7 @@ export function recordItemToOrders(
   const recentIndex = orders.findIndex((ord) => {
     if (ord.platform !== "HOUSEHOLD_APP" && ord.platform !== "Zepto")
       return false;
+    if (ord.status === "CANCELLED") return false;
     const orderTime = new Date(ord.placedAt).getTime();
     if (isNaN(orderTime)) return false;
     return nowMs - orderTime <= windowMs;

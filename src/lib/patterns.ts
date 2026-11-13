@@ -90,6 +90,20 @@ export const CATEGORY_ICONS: Record<string, string> = {
   "Other Items": "🛒",
 };
 
+export const CATEGORY_ORDER = [
+  "Fruits & Vegetables",
+  "Dairy, Bread & Eggs",
+  "Atta, Rice, Oil & Dals",
+  "Masala & Dry Fruits",
+  "Breakfast & Sauces",
+  "Tea, Coffee & Drinks",
+  "Tea, Coffee & Beverages",
+  "Munchies & Biscuits",
+  "Munchies & Snacks",
+  "Pet Care & Household",
+  "Other Items",
+];
+
 export interface ItemVisual {
   imageUrl?: string;
   icon: string;

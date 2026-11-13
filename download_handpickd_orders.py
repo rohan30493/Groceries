@@ -4,7 +4,10 @@ import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1cmwiLCJ1c2VySWQiOiI0MWJjNzk4Yy02YTJjLTRjMDUtOWY1Mi1iZjg0YjA5YzM1Y2YiLCJyb2xlcyI6WyJWSVNJVE9SIiwiQ09OU1VNRVIiXSwiaWF0IjoxNzg5MTUwMzUxLCJleHAiOjE3ODkxNzE5NTF9.3U50ZMLOd9P2EodJmhp35d89f77uN3k3t1HJZDDk7Dc"
+TOKEN = os.getenv("HANDPICKD_TOKEN", "").strip()
+
+if not TOKEN:
+    print("Warning: HANDPICKD_TOKEN not set in environment. Scrape requests may fail.")
 
 HEADERS = {
     "Accept": "*/*",

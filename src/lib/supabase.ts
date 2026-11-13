@@ -274,6 +274,7 @@ export async function archiveCompletedRun(completedItems: GroceryItem[]) {
         "Could not archive order to household_orders:",
         orderErr.message
       );
+      return;
     }
 
     // 2. Clear completed items from grocery_items

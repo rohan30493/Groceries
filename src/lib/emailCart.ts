@@ -1,4 +1,9 @@
-import { GroceryItem, detectCategory, CATEGORY_ICONS } from "./patterns";
+import {
+  GroceryItem,
+  detectCategory,
+  CATEGORY_ICONS,
+  CATEGORY_ORDER,
+} from "./patterns";
 import { estimateBasketValue } from "./handoffNotification";
 
 /**
@@ -10,20 +15,6 @@ import { estimateBasketValue } from "./handoffNotification";
  * the recipient comes from the server's EMAIL_TO environment variable, so
  * the feature can only ever send the real cart to the configured address.
  */
-
-const CATEGORY_ORDER = [
-  "Fruits & Vegetables",
-  "Dairy, Bread & Eggs",
-  "Atta, Rice, Oil & Dals",
-  "Masala & Dry Fruits",
-  "Breakfast & Sauces",
-  "Tea, Coffee & Drinks",
-  "Tea, Coffee & Beverages",
-  "Munchies & Biscuits",
-  "Munchies & Snacks",
-  "Pet Care & Household",
-  "Other Items",
-];
 
 export interface CartEmailContent {
   recipient: string;

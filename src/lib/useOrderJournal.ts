@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import {
-  OrderJournal,
-  SupabaseOrderStore
-} from "./orderJournal";
+import { OrderJournal, SupabaseOrderStore } from "./orderJournal";
 import { HouseholdOrder, OrderStatus, OrderItemStatus } from "./orderLifecycle";
 import { GroceryItem } from "./patterns";
 
@@ -14,7 +11,9 @@ export function useOrderJournal() {
     journalRef.current = new OrderJournal(new SupabaseOrderStore());
   }
   const journal = journalRef.current;
-  const [orders, setOrders] = useState<HouseholdOrder[]>(() => journal.listOrders());
+  const [orders, setOrders] = useState<HouseholdOrder[]>(() =>
+    journal.listOrders()
+  );
 
   useEffect(() => {
     let cachedOrders: HouseholdOrder[] | undefined;
@@ -36,22 +35,28 @@ export function useOrderJournal() {
 
     return () => {
       unsub();
+      journal.destroy();
     };
   }, [journal]);
 
   const recordItem = useCallback(
-    (item: GroceryItem, orderedBy: string = "Rohan") => journal.recordItem(item, orderedBy),
+    (item: GroceryItem, orderedBy: string = "Rohan") =>
+      journal.recordItem(item, orderedBy),
     [journal]
   );
 
   const updateStatus = useCallback(
-    (orderId: string, status: OrderStatus) => journal.updateStatus(orderId, status),
+    (orderId: string, status: OrderStatus) =>
+      journal.updateStatus(orderId, status),
     [journal]
   );
 
   const updateItemOutcome = useCallback(
-    (orderId: string, lineItemIdOrCanonical: string, outcome: OrderItemStatus) =>
-      journal.updateItemOutcome(orderId, lineItemIdOrCanonical, outcome),
+    (
+      orderId: string,
+      lineItemIdOrCanonical: string,
+      outcome: OrderItemStatus
+    ) => journal.updateItemOutcome(orderId, lineItemIdOrCanonical, outcome),
     [journal]
   );
 
@@ -62,6 +67,6 @@ export function useOrderJournal() {
     activeOrders,
     recordItem,
     updateStatus,
-    updateItemOutcome
+    updateItemOutcome,
   };
 }

@@ -4,113 +4,205 @@ import { recordItemToOrders, HouseholdOrder } from "../src/lib/orderLifecycle";
 import { GroceryItem } from "../src/lib/patterns";
 
 test("Direct item ordering & 30-minute smart grouping into Order History", async (t) => {
-  await t.test("1. First item ordered creates a new order in Order History", () => {
-    const existingOrders: HouseholdOrder[] = [];
-    const item1: GroceryItem = {
-      id: "item-1",
-      name: "Milk 2 packs",
-      category: "Dairy, Bread & Eggs",
-      addedBy: "Lira",
-      addedAt: "Today, 10:00 AM",
-      isDone: false
-    };
+  await t.test(
+    "1. First item ordered creates a new order in Order History",
+    () => {
+      const existingOrders: HouseholdOrder[] = [];
+      const item1: GroceryItem = {
+        id: "item-1",
+        name: "Milk 2 packs",
+        category: "Dairy, Bread & Eggs",
+        addedBy: "Lira",
+        addedAt: "Today, 10:00 AM",
+        isDone: false,
+      };
 
-    const { updatedOrders, modifiedOrder } = recordItemToOrders(existingOrders, item1, "Rohan");
+      const { updatedOrders, modifiedOrder } = recordItemToOrders(
+        existingOrders,
+        item1,
+        "Rohan"
+      );
 
-    assert.strictEqual(updatedOrders.length, 1);
-    assert.strictEqual(modifiedOrder.itemsCount, 1);
-    assert.strictEqual(modifiedOrder.platform, "HOUSEHOLD_APP");
-    assert.strictEqual(modifiedOrder.status, "DELIVERED");
-    assert.strictEqual(modifiedOrder.items[0].name, "Milk 2 packs");
-    assert.strictEqual(modifiedOrder.items[0].quantity, 2);
-    assert.strictEqual(modifiedOrder.items[0].status, "DELIVERED");
-  });
+      assert.strictEqual(updatedOrders.length, 1);
+      assert.strictEqual(modifiedOrder.itemsCount, 1);
+      assert.strictEqual(modifiedOrder.platform, "HOUSEHOLD_APP");
+      assert.strictEqual(modifiedOrder.status, "DELIVERED");
+      assert.strictEqual(modifiedOrder.items[0].name, "Milk 2 packs");
+      assert.strictEqual(modifiedOrder.items[0].quantity, 2);
+      assert.strictEqual(modifiedOrder.items[0].status, "DELIVERED");
+    }
+  );
 
-  await t.test("2. Second item ordered within 30 minutes is grouped into the same order", () => {
-    const nowIso = new Date().toISOString();
-    const existingOrders: HouseholdOrder[] = [
-      {
-        orderId: "ord-test-1",
-        orderCode: "ORD-TEST01",
-        platform: "HOUSEHOLD_APP",
-        status: "DELIVERED",
-        placedAt: nowIso,
-        deliveredAt: nowIso,
-        totalAmount: 0,
-        itemsCount: 1,
-        items: [
-          {
-            id: "item-1",
-            name: "Milk",
-            canonicalName: "Milk",
-            quantity: 1,
-            category: "Dairy, Bread & Eggs",
-            status: "DELIVERED",
-            deliveredAt: nowIso
-          }
-        ],
-        orderedBy: "Rohan"
-      }
-    ];
+  await t.test(
+    "2. Second item ordered within 30 minutes is grouped into the same order",
+    () => {
+      const nowIso = new Date().toISOString();
+      const existingOrders: HouseholdOrder[] = [
+        {
+          orderId: "ord-test-1",
+          orderCode: "ORD-TEST01",
+          platform: "HOUSEHOLD_APP",
+          status: "DELIVERED",
+          placedAt: nowIso,
+          deliveredAt: nowIso,
+          totalAmount: 0,
+          itemsCount: 1,
+          items: [
+            {
+              id: "item-1",
+              name: "Milk",
+              canonicalName: "Milk",
+              quantity: 1,
+              category: "Dairy, Bread & Eggs",
+              status: "DELIVERED",
+              deliveredAt: nowIso,
+            },
+          ],
+          orderedBy: "Rohan",
+        },
+      ];
 
-    const item2: GroceryItem = {
-      id: "item-2",
-      name: "Eggs",
-      category: "Dairy, Bread & Eggs",
-      addedBy: "Rhythm",
-      addedAt: "Today, 10:05 AM",
-      isDone: false
-    };
+      const item2: GroceryItem = {
+        id: "item-2",
+        name: "Eggs",
+        category: "Dairy, Bread & Eggs",
+        addedBy: "Rhythm",
+        addedAt: "Today, 10:05 AM",
+        isDone: false,
+      };
 
-    const { updatedOrders, modifiedOrder } = recordItemToOrders(existingOrders, item2, "Rohan", 30 * 60 * 1000);
+      const { updatedOrders, modifiedOrder } = recordItemToOrders(
+        existingOrders,
+        item2,
+        "Rohan",
+        30 * 60 * 1000
+      );
 
-    assert.strictEqual(updatedOrders.length, 1, "Should stay grouped in 1 order");
-    assert.strictEqual(modifiedOrder.itemsCount, 2);
-    assert.strictEqual(modifiedOrder.items.length, 2);
-    assert.strictEqual(modifiedOrder.items[0].name, "Milk");
-    assert.strictEqual(modifiedOrder.items[1].name, "Eggs");
-  });
+      assert.strictEqual(
+        updatedOrders.length,
+        1,
+        "Should stay grouped in 1 order"
+      );
+      assert.strictEqual(modifiedOrder.itemsCount, 2);
+      assert.strictEqual(modifiedOrder.items.length, 2);
+      assert.strictEqual(modifiedOrder.items[0].name, "Milk");
+      assert.strictEqual(modifiedOrder.items[1].name, "Eggs");
+    }
+  );
 
-  await t.test("3. Item ordered after 30 minutes creates a separate order record", () => {
-    const fortyMinutesAgo = new Date(Date.now() - 40 * 60 * 1000).toISOString();
-    const existingOrders: HouseholdOrder[] = [
-      {
-        orderId: "ord-old",
-        orderCode: "ORD-OLD",
-        platform: "HOUSEHOLD_APP",
-        status: "DELIVERED",
-        placedAt: fortyMinutesAgo,
-        deliveredAt: fortyMinutesAgo,
-        totalAmount: 0,
-        itemsCount: 1,
-        items: [
-          {
-            id: "item-old",
-            name: "Bread",
-            canonicalName: "Bread",
-            quantity: 1,
-            category: "Dairy, Bread & Eggs",
-            status: "DELIVERED",
-            deliveredAt: fortyMinutesAgo
-          }
-        ],
-        orderedBy: "Rohan"
-      }
-    ];
+  await t.test(
+    "3. Item ordered after 30 minutes creates a separate order record",
+    () => {
+      const fortyMinutesAgo = new Date(
+        Date.now() - 40 * 60 * 1000
+      ).toISOString();
+      const existingOrders: HouseholdOrder[] = [
+        {
+          orderId: "ord-old",
+          orderCode: "ORD-OLD",
+          platform: "HOUSEHOLD_APP",
+          status: "DELIVERED",
+          placedAt: fortyMinutesAgo,
+          deliveredAt: fortyMinutesAgo,
+          totalAmount: 0,
+          itemsCount: 1,
+          items: [
+            {
+              id: "item-old",
+              name: "Bread",
+              canonicalName: "Bread",
+              quantity: 1,
+              category: "Dairy, Bread & Eggs",
+              status: "DELIVERED",
+              deliveredAt: fortyMinutesAgo,
+            },
+          ],
+          orderedBy: "Rohan",
+        },
+      ];
 
-    const itemNew: GroceryItem = {
-      id: "item-new",
-      name: "Bananas",
-      category: "Fruits & Vegetables",
-      addedBy: "Lira",
-      addedAt: "Today, 10:45 AM",
-      isDone: false
-    };
+      const itemNew: GroceryItem = {
+        id: "item-new",
+        name: "Bananas",
+        category: "Fruits & Vegetables",
+        addedBy: "Lira",
+        addedAt: "Today, 10:45 AM",
+        isDone: false,
+      };
 
-    const { updatedOrders, modifiedOrder } = recordItemToOrders(existingOrders, itemNew, "Rohan", 30 * 60 * 1000);
+      const { updatedOrders, modifiedOrder } = recordItemToOrders(
+        existingOrders,
+        itemNew,
+        "Rohan",
+        30 * 60 * 1000
+      );
 
-    assert.strictEqual(updatedOrders.length, 2, "Should create a separate new order");
-    assert.strictEqual(modifiedOrder.items[0].name, "Bananas");
-    assert.strictEqual(updatedOrders[0].orderId, modifiedOrder.orderId);
-  });
+      assert.strictEqual(
+        updatedOrders.length,
+        2,
+        "Should create a separate new order"
+      );
+      assert.strictEqual(modifiedOrder.items[0].name, "Bananas");
+      assert.strictEqual(updatedOrders[0].orderId, modifiedOrder.orderId);
+    }
+  );
+
+  await t.test(
+    "4. Item ordered within 30 minutes of a CANCELLED order creates a new order without reviving cancelled order",
+    () => {
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const existingOrders: HouseholdOrder[] = [
+        {
+          orderId: "ord-cancelled-1",
+          orderCode: "ORD-CAN01",
+          platform: "HOUSEHOLD_APP",
+          status: "CANCELLED",
+          placedAt: tenMinutesAgo,
+          totalAmount: 0,
+          itemsCount: 1,
+          items: [
+            {
+              id: "item-cancelled",
+              name: "Bread",
+              canonicalName: "Bread",
+              quantity: 1,
+              category: "Dairy, Bread & Eggs",
+              status: "CANCELLED",
+            },
+          ],
+          orderedBy: "Rohan",
+        },
+      ];
+
+      const newItem: GroceryItem = {
+        id: "item-fresh",
+        name: "Milk",
+        category: "Dairy, Bread & Eggs",
+        addedBy: "Rohan",
+        addedAt: new Date().toISOString(),
+        isDone: false,
+      };
+
+      const { updatedOrders, modifiedOrder } = recordItemToOrders(
+        existingOrders,
+        newItem,
+        "Rohan"
+      );
+
+      assert.strictEqual(
+        updatedOrders.length,
+        2,
+        "Should create a new order rather than grouping into cancelled one"
+      );
+      assert.strictEqual(modifiedOrder.status, "DELIVERED");
+      assert.strictEqual(modifiedOrder.items[0].name, "Milk");
+      // Ensure the cancelled order is unchanged
+      const previousOrder = updatedOrders.find(
+        (o) => o.orderId === "ord-cancelled-1"
+      );
+      assert.ok(previousOrder);
+      assert.strictEqual(previousOrder.status, "CANCELLED");
+      assert.strictEqual(previousOrder.items[0].status, "CANCELLED");
+    }
+  );
 });

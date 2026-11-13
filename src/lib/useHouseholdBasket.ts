@@ -58,6 +58,7 @@ export function useHouseholdBasket() {
 
     return () => {
       unsub();
+      basket.destroy();
     };
   }, [basket]);
 
