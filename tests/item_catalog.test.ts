@@ -6,11 +6,53 @@ describe("ItemCatalog Deep Module", () => {
   const catalog = new ItemCatalog();
 
   it("resolves raw brand and variant names to canonical identity", () => {
-    assert.equal(catalog.resolve("Nandini Goodlife Milk").canonicalName, "Milk");
+    assert.equal(
+      catalog.resolve("Nandini Goodlife Milk").canonicalName,
+      "Milk"
+    );
     assert.equal(catalog.resolve("Yelakki Bananas").canonicalName, "Bananas");
-    assert.equal(catalog.resolve("Fresh Malai Paneer").canonicalName, "Fresh Paneer");
-    assert.equal(catalog.resolve("Aashirvaad Atta 5kg").canonicalName, "Atta / Wheat Flour");
-    assert.equal(catalog.resolve("Vim Dishwash Gel 500ml").canonicalName, "Dishwash Liquid");
+    assert.equal(
+      catalog.resolve("Fresh Malai Paneer").canonicalName,
+      "Fresh Paneer"
+    );
+    assert.equal(
+      catalog.resolve("Aashirvaad Atta 5kg").canonicalName,
+      "Atta / Wheat Flour"
+    );
+    assert.equal(
+      catalog.resolve("Vim Dishwash Gel 500ml").canonicalName,
+      "Dishwash Liquid"
+    );
+
+    // Specific compound items are not shadowed by base ingredient rules
+    assert.equal(
+      catalog.resolve("Maggi Tomato Ketchup 500g").canonicalName,
+      "Ketchup"
+    );
+    assert.equal(
+      catalog.resolve("Figaro Olive Oil 500ml").canonicalName,
+      "Olive Oil"
+    );
+    assert.equal(
+      catalog.resolve("Everest Coriander Powder").canonicalName,
+      "Dhania / Coriander Powder"
+    );
+    assert.equal(
+      catalog.resolve("Amul Buttermilk 200ml").canonicalName,
+      "Buttermilk"
+    );
+    assert.equal(
+      catalog.resolve("Pintola Peanut Butter 1kg").canonicalName,
+      "Peanut Butter"
+    );
+    assert.equal(
+      catalog.resolve("Lays Potato Chips 50g").canonicalName,
+      "Potato Chips"
+    );
+    assert.equal(
+      catalog.resolve("Dabur Ginger Garlic Paste 100g").canonicalName,
+      "Ginger-Garlic Paste"
+    );
   });
 
   it("extracts quantities and cleans raw product names", () => {
@@ -41,8 +83,14 @@ describe("ItemCatalog Deep Module", () => {
     const cadence = catalog.getCadence("Fresh Paneer");
     assert.equal(cadence.canonicalName, "Fresh Paneer");
     assert.ok(cadence.purchaseCount >= 3);
-    assert.ok(cadence.typicalReorderDays !== null && cadence.typicalReorderDays > 0);
-    assert.ok(["DUE_NOW", "APPROACHING_DUE", "NOT_DUE"].includes(cadence.replenishmentStatus));
+    assert.ok(
+      cadence.typicalReorderDays !== null && cadence.typicalReorderDays > 0
+    );
+    assert.ok(
+      ["DUE_NOW", "APPROACHING_DUE", "NOT_DUE"].includes(
+        cadence.replenishmentStatus
+      )
+    );
   });
 
   it("returns insufficient history for items with fewer than 3 purchases", () => {
@@ -57,12 +105,22 @@ describe("ItemCatalog Deep Module", () => {
         orderId: "ord-1",
         status: "ORDER_PLACED",
         items: [
-          { name: "Nandini Toned Milk 1L", canonicalName: "Milk", status: "ORDER_PLACED" }
-        ]
-      }
+          {
+            name: "Nandini Toned Milk 1L",
+            canonicalName: "Milk",
+            status: "ORDER_PLACED",
+          },
+        ],
+      },
     ];
 
-    assert.equal(catalog.isItemInActiveOrder("Cow Milk", mockActiveOrders), true);
-    assert.equal(catalog.isItemInActiveOrder("Fresh Paneer", mockActiveOrders), false);
+    assert.equal(
+      catalog.isItemInActiveOrder("Cow Milk", mockActiveOrders),
+      true
+    );
+    assert.equal(
+      catalog.isItemInActiveOrder("Fresh Paneer", mockActiveOrders),
+      false
+    );
   });
 });

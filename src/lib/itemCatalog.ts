@@ -74,8 +74,8 @@ export interface AutonomousRecommendation {
   category: string;
 }
 
-import { CANONICAL_MATCH_RULES } from "./canonicalRules";
-export { CANONICAL_MATCH_RULES };
+import { CANONICAL_MATCH_RULES, matchCanonicalName } from "./canonicalRules";
+export { CANONICAL_MATCH_RULES, matchCanonicalName };
 export function calculateMedian(numbers: number[]): number | null {
   if (!numbers || numbers.length === 0) return null;
   const sorted = [...numbers].sort((a, b) => a - b);
@@ -311,17 +311,13 @@ export class ItemCatalog {
     }
 
     const { cleanName, quantity } = parseQuantityAndCleanName(rawName);
-    const lowerClean = cleanName.toLowerCase().trim();
+    const matchedCanonical = matchCanonicalName(cleanName);
 
-    for (const [canonical, aliases] of this.canonicalMap.entries()) {
-      for (const alias of aliases) {
-        if (lowerClean.includes(alias)) {
-          return { canonicalName: canonical, cleanName, quantity };
-        }
-      }
-    }
-
-    return { canonicalName: cleanName, cleanName, quantity };
+    return {
+      canonicalName: matchedCanonical || cleanName,
+      cleanName,
+      quantity,
+    };
   }
 
   getPrice(itemName: string): number | null {

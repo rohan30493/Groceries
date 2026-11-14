@@ -1,5 +1,5 @@
 import { itemCatalog } from "./itemCatalog";
-import { CANONICAL_MATCH_RULES } from "./canonicalRules";
+import { CANONICAL_MATCH_RULES, matchCanonicalName } from "./canonicalRules";
 import { HouseholdOrder, OrderLineItem } from "./orderLifecycle";
 
 export interface OrderItem {
@@ -35,27 +35,7 @@ const CANONICAL_NAMES_SET = new Set(
  * Maps any variant/brand or raw item name to its normalized canonical identity.
  */
 export function toCanonicalItemName(rawName: string): string | null {
-  if (!rawName || !rawName.trim()) return null;
-  const trimmed = rawName.trim();
-  const lower = trimmed.toLowerCase();
-
-  // If already an exact canonical name
-  for (const [canon] of CANONICAL_MATCH_RULES) {
-    if (canon.toLowerCase() === lower) {
-      return canon;
-    }
-  }
-
-  // Match keywords
-  for (const [canon, keywords] of CANONICAL_MATCH_RULES) {
-    for (const kw of keywords) {
-      if (lower.includes(kw)) {
-        return canon;
-      }
-    }
-  }
-
-  return null;
+  return matchCanonicalName(rawName);
 }
 
 /**

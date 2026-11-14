@@ -195,6 +195,19 @@ describe("executeCartEmailSend", () => {
     assert.equal(getState(), null);
   });
 
+  it("clears expired lock row on send success instead of restoring it", async () => {
+    // Initial state is an expired lock row (> 5 minutes ago)
+    const expiredState: EmailCartState = {
+      lastSentAt: new Date(NOW.getTime() - 10 * 60 * 1000).toISOString(),
+      lastHash: "__send_lock__",
+    };
+    const { deps, events, getState } = makeDeps({}, expiredState);
+    const result = await executeCartEmailSend(deps);
+    assert.equal(result.kind, "sent");
+    assert.deepEqual(events, ["claim", "send", "release"]);
+    assert.equal(getState(), null);
+  });
+
   it("lets exactly one of two racing sends through", async () => {
     const { deps, events } = makeDeps();
     const [a, b] = await Promise.all([

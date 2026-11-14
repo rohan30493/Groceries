@@ -59,6 +59,36 @@ test("Order Recency & Canonical Item Mapping", async (t) => {
         "Cat Food"
       );
 
+      // Specific compound items are not shadowed by generic base ingredients
+      assert.strictEqual(
+        toCanonicalItemName("Maggi Tomato Ketchup 500g"),
+        "Ketchup"
+      );
+      assert.strictEqual(
+        toCanonicalItemName("Figaro Olive Oil 500ml"),
+        "Olive Oil"
+      );
+      assert.strictEqual(
+        toCanonicalItemName("Everest Coriander Powder 100g"),
+        "Dhania / Coriander Powder"
+      );
+      assert.strictEqual(
+        toCanonicalItemName("Amul Masti Spiced Buttermilk 200ml"),
+        "Buttermilk"
+      );
+      assert.strictEqual(
+        toCanonicalItemName("Pintola All Natural Peanut Butter 1kg"),
+        "Peanut Butter"
+      );
+      assert.strictEqual(
+        toCanonicalItemName("Lays Classic Potato Chips 50g"),
+        "Potato Chips"
+      );
+      assert.strictEqual(
+        toCanonicalItemName("Dabur Hommade Ginger Garlic Paste 200g"),
+        "Ginger-Garlic Paste"
+      );
+
       // Unrecognized item
       assert.strictEqual(
         toCanonicalItemName("NonExistentRandomGizmo123"),

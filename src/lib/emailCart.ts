@@ -198,9 +198,9 @@ export async function executeCartEmailSend(
       return { kind: "no-pending" };
     }
     await deps.send(email);
-    // Send complete: release the slot so a deliberate resend is never
-    // blocked. Only an actually in-flight send holds it.
-    await safeRelease(deps, acquired, state);
+    // Send complete: release the slot cleanly so a deliberate resend is never
+    // blocked and no stale/expired lock records remain in database.
+    await safeRelease(deps, acquired, null);
     return { kind: "sent" };
   } catch (err) {
     await safeRelease(deps, acquired, state);

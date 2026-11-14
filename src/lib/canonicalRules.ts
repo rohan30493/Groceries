@@ -44,6 +44,7 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
     "Fresh Paneer",
     ["paneer", "gowardhan", "malai paneer", "cottage cheese", "milky mist"],
   ],
+  ["Buttermilk", ["buttermilk", "chaas", "chaach"]],
   [
     "Milk",
     [
@@ -75,7 +76,6 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
   ["Butter", ["butter", "amul butter"]],
   ["Ghee", ["ghee", "desi ghee"]],
   ["Feta Cheese", ["feta", "feta cheese"]],
-  ["Buttermilk", ["buttermilk", "chaas"]],
   ["Greek Yogurt", ["greek yogurt", "epigamia"]],
   ["Skyr", ["skyr"]],
   [
@@ -128,6 +128,7 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
   ["Black Chana", ["black chana", "kala chana"]],
   ["Rajma", ["rajma", "kidney beans"]],
   ["Besan", ["besan", "gram flour"]],
+  ["Olive Oil", ["olive oil", "extra virgin olive oil"]],
   [
     "Cooking Oil",
     [
@@ -140,7 +141,6 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
       "cooking oil",
     ],
   ],
-  ["Olive Oil", ["olive oil", "extra virgin olive oil"]],
   ["Poha", ["poha", "aval"]],
   ["Suji / Semolina", ["suji", "semolina", "rava"]],
   ["Vermicelli / Seviyan", ["vermicelli", "seviyan", "semiya"]],
@@ -249,7 +249,10 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
       "dry fruit mix",
     ],
   ],
-  ["Potato Chips", ["chips", "crisps", "lays", "doritos", "bingo", "pringles"]],
+  [
+    "Potato Chips",
+    ["potato chips", "chips", "crisps", "lays", "doritos", "bingo", "pringles"],
+  ],
   ["Instant Noodles", ["maggi", "noodles", "yippee"]],
 
   // Pet Care & Household Essentials
@@ -304,3 +307,53 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
     ],
   ],
 ];
+
+function matchesKeyword(text: string, kw: string): boolean {
+  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(^|\\W)${escaped}(?:s|es)?(\\W|$)`, "i");
+  return regex.test(text);
+}
+
+/**
+ * Resolves any variant, brand, or raw item name to its normalized canonical identity.
+ * 1. Checks exact canonical name match (case-insensitive).
+ * 2. Checks whole-word keyword patterns, prioritizing the longest matching keyword.
+ *    Ties are broken by the order of rules defined in CANONICAL_MATCH_RULES.
+ */
+export function matchCanonicalName(rawName: string): string | null {
+  if (!rawName || typeof rawName !== "string") return null;
+  const trimmed = rawName.trim();
+  if (!trimmed) return null;
+  const lower = trimmed.toLowerCase();
+
+  // 1. Exact match against canonical name
+  for (const [canon] of CANONICAL_MATCH_RULES) {
+    if (canon.toLowerCase() === lower) {
+      return canon;
+    }
+  }
+
+  // 2. Keyword matching: longest matching whole-word keyword wins
+  let bestMatch: {
+    canon: string;
+    keywordLength: number;
+    ruleIndex: number;
+  } | null = null;
+
+  for (
+    let ruleIndex = 0;
+    ruleIndex < CANONICAL_MATCH_RULES.length;
+    ruleIndex++
+  ) {
+    const [canon, keywords] = CANONICAL_MATCH_RULES[ruleIndex];
+    for (const kw of keywords) {
+      if (matchesKeyword(lower, kw)) {
+        if (!bestMatch || kw.length > bestMatch.keywordLength) {
+          bestMatch = { canon, keywordLength: kw.length, ruleIndex };
+        }
+      }
+    }
+  }
+
+  return bestMatch ? bestMatch.canon : null;
+}
