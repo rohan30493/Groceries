@@ -47,3 +47,4 @@ data/chat_*.txt
 .verify-instance.*
 evidence/
 .claude/
+.env*
