@@ -18,6 +18,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   - `src/lib/orderRecency.ts`: Recency calculations and human-relative date formatting.
   - `src/lib/replenishment.ts`: Cadence-driven auto-replenishment calculations.
   - `src/lib/purchaseMemory.ts`: Delivered purchase tracking.
+  - `src/lib/instinctSummary.ts`: Formatter and category grouper for Instinct / WhatsApp autonomous polling.
   - `src/lib/supabase.ts`: Supabase persistence client.
 - **Data & Ingestion**: `data/*.json` (historical orders), Python ingestion scripts (`download_*.py`, `parse_*.py`).
 - **Checks & Tests**: `npm test` (`tsx --test tests/**/*.test.ts`), `npm run typecheck` (`tsc --noEmit`).
