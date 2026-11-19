@@ -11,6 +11,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Architecture & Navigation Pointers
 
 - **UI & App Pages**: `src/app/page.tsx`, `src/app/layout.tsx`
+- **Live Production Domain**: `https://d718.vercel.app` (Vercel Project: `ghar-ki-groceries`)
 - **Domain Modules**:
   - `src/lib/householdBasket.ts`: State machine for basket items (`idle` -> `building` -> `ready_for_order` -> `ordered`). Actor invariant: only human actor places orders; autonomous agents cannot.
   - `src/lib/itemCatalog.ts`: Canonical product normalizer, brand resolution, cadence intervals.
@@ -21,12 +22,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   - `src/lib/instinctSummary.ts`: Formatter and category grouper for Instinct / WhatsApp autonomous polling.
   - `src/lib/supabase.ts`: Supabase persistence client.
 - **Data & Ingestion**: `data/*.json` (historical orders), Python ingestion scripts (`download_*.py`, `parse_*.py`).
-- **Checks & Tests**: `npm test` (`tsx --test tests/**/*.test.ts`), `npm run typecheck` (`tsc --noEmit`).
+- **Checks & Tests**: `npm test` (`tsx --test tests/**/*.test.ts`), `npm run typecheck` (`tsc --noEmit`), `npm run build` (`next build`).
 
 ## Enforced Rules Table
 
 | Mistake Class                     | Rule                                                                                                               | Enforcement Level                   | What Enforces It                                                          | Demonstrative Proof                                                       |
 | :-------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :---------------------------------- | :------------------------------------------------------------------------ | :------------------------------------------------------------------------ |
+| **Route Segment Re-export**       | Never re-export route configs (`dynamic`, `maxDuration`, etc.); declare them as literals directly in route file.   | Turbopack / Build Guard             | `npm run build` (Turbopack AST check)                                     | Fails with `Next.js can't recognize the exported dynamic field in route`  |
+| **Pre-Push Build Verification**   | Always run `npm run build` before pushing changes that add or modify API routes or Next.js pages.                  | CI / Deployment Guard               | `npm run build`                                                           | Catches Next.js route AST & Turbopack errors missed by `tsc --noEmit`     |
 | **Loose Typing / Escape Hatches** | Never use `as any` or loose `any` types in source files; type raw sources or use typed records/unions.             | Types + Anti-Regression Test        | `tests/code_integrity.test.ts` (Rule 1) & `npm run typecheck`             | Fails on `unifiedOrdersRaw as any[]` and `(order as any).placedAt`        |
 | **DOM Mutation in React**         | Never mutate DOM directly (`style.display =`, `querySelector`) in JSX handlers; use declarative React state.       | Component Architecture + Test Guard | `tests/code_integrity.test.ts` (Rule 2) & `BrowseItemThumbnail` component | Fails on `e.currentTarget.style.display = "none"` in image error handlers |
 | **Mobile Accessibility & Zoom**   | Never disable viewport zoom (`user-scalable=0`, `maximum-scale=1` without zoom).                                   | Test Guard (WCAG 1.4.4 AA)          | `tests/code_integrity.test.ts` (Rule 3)                                   | Fails on `user-scalable=0` in `layout.tsx`                                |
