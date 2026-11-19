@@ -25,7 +25,7 @@ export function initHandoffState(itemsCount: number = 0): BasketHandoffState {
     handoffAt: null,
     orderedAt: null,
     orderedBy: null,
-    lastRunSummary: null
+    lastRunSummary: null,
   };
 }
 
@@ -42,19 +42,23 @@ export function registerBasketActivity(
       ...currentState,
       status: "idle",
       handoffMessage: null,
-      handoffAt: null
+      handoffAt: null,
     };
   }
 
   // If already ready_for_order, adding more items returns to building for Lira's final handoff
-  if (currentState.status === "ready_for_order" || currentState.status === "idle" || currentState.status === "ordered") {
+  if (
+    currentState.status === "ready_for_order" ||
+    currentState.status === "idle" ||
+    currentState.status === "ordered"
+  ) {
     return {
       ...currentState,
       status: "building",
       handoffMessage: null,
       handoffAt: null,
       orderedAt: null,
-      orderedBy: null
+      orderedBy: null,
     };
   }
 
@@ -78,7 +82,7 @@ export function liraCompleteAndHandoff(
     handoffMessage: LIRA_HANDOFF_MESSAGE,
     handoffAt: new Date().toISOString(),
     orderedAt: null,
-    orderedBy: null
+    orderedBy: null,
   };
 }
 
@@ -95,20 +99,20 @@ export interface CanPlaceOrderResult {
  */
 export function canPlaceOrder(
   state: BasketHandoffState,
-  actor: "Lira" | "Rhythm" | "Rohan",
+  actor: "Lira" | "Rhythm" | "Rohan" | "Instinct",
   itemsCount: number
 ): CanPlaceOrderResult {
-  if (actor === "Lira" || actor === "Rhythm") {
+  if (actor === "Lira" || actor === "Rhythm" || actor === "Instinct") {
     return {
       allowed: false,
-      reason: `${actor} cannot place the order. ${actor} hands off the basket to Rohan to place the order.`
+      reason: `${actor} cannot place the order. ${actor} hands off the basket to Rohan to place the order.`,
     };
   }
 
   if (itemsCount === 0) {
     return {
       allowed: false,
-      reason: "Basket is empty. Add items before ordering."
+      reason: "Basket is empty. Add items before ordering.",
     };
   }
 
@@ -116,18 +120,19 @@ export function canPlaceOrder(
     if (state.status === "building") {
       return {
         allowed: false,
-        reason: "Lira is still building the basket. Awaiting Lira’s handoff ('I’m done. Please proceed with order.')."
+        reason:
+          "Lira is still building the basket. Awaiting Lira’s handoff ('I’m done. Please proceed with order.').",
       };
     }
     if (state.status === "ordered") {
       return {
         allowed: false,
-        reason: "Current basket has already been ordered."
+        reason: "Current basket has already been ordered.",
       };
     }
     return {
       allowed: false,
-      reason: "Basket has not been handed off for ordering."
+      reason: "Basket has not been handed off for ordering.",
     };
   }
 
@@ -139,7 +144,7 @@ export function canPlaceOrder(
  */
 export function executePlaceOrder(
   state: BasketHandoffState,
-  actor: "Lira" | "Rhythm" | "Rohan",
+  actor: "Lira" | "Rhythm" | "Rohan" | "Instinct",
   itemsCount: number
 ): { success: boolean; nextState: BasketHandoffState; error?: string } {
   const check = canPlaceOrder(state, actor, itemsCount);
@@ -147,7 +152,7 @@ export function executePlaceOrder(
     return {
       success: false,
       error: check.reason,
-      nextState: state
+      nextState: state,
     };
   }
 
@@ -162,9 +167,9 @@ export function executePlaceOrder(
       orderedBy: "Rohan",
       lastRunSummary: {
         itemCount: itemsCount,
-        orderedAt: nowIso
-      }
-    }
+        orderedAt: nowIso,
+      },
+    },
   };
 }
 
@@ -178,7 +183,7 @@ export function resetBasketState(): BasketHandoffState {
     handoffAt: null,
     orderedAt: null,
     orderedBy: null,
-    lastRunSummary: null
+    lastRunSummary: null,
   };
 }
 

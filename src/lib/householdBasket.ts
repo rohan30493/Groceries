@@ -430,7 +430,8 @@ export class HouseholdBasket {
    */
   async addItems(
     textOrNames: string | string[],
-    addedBy: "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion" = "Lira"
+    addedBy:
+      "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion" | "Instinct" = "Lira"
   ): Promise<GroceryItem[]> {
     const names = Array.isArray(textOrNames)
       ? textOrNames

@@ -1287,6 +1287,10 @@ export default function GroceryAssistantApp() {
                                           <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-blue-100 text-blue-800 font-semibold border border-blue-200">
                                             Rohan
                                           </span>
+                                        ) : it.addedBy === "Instinct" ? (
+                                          <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-teal-100 text-teal-800 font-semibold border border-teal-200">
+                                            Instinct
+                                          </span>
                                         ) : (
                                           <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-semibold border border-amber-200">
                                             AI Suggestion

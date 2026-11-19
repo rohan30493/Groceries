@@ -25,7 +25,7 @@ export interface GroceryItem {
   id: string;
   name: string;
   category: string;
-  addedBy: "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion";
+  addedBy: "Lira" | "Rhythm" | "Rohan" | "Pattern Suggestion" | "Instinct";
   addedAt: string;
   isDone: boolean;
   purchasedAt?: string;
