@@ -8,6 +8,7 @@ import {
 } from "./replenishment";
 import { HouseholdOrder } from "./orderLifecycle";
 import { isItemInActiveOrder } from "./purchaseMemory";
+import { matchCanonicalName } from "./canonicalRules";
 
 export interface CompanionSuggestion {
   item: string;
@@ -133,6 +134,7 @@ const ITEM_ALIASES: Array<[string[], string]> = [
   [["peanut butter"], "Peanut Butter"],
   [["olive oil", "extra virgin olive oil"], "Olive Oil"],
   [["coconut milk", "almond milk", "soya milk", "oat milk"], "Milk"],
+  [["milk bread", "milk-bread", "milkbread"], "Bread"],
   [
     [
       "red chilli powder",
@@ -197,7 +199,21 @@ const ITEM_ALIASES: Array<[string[], string]> = [
   [["ghee", "desi ghee", "cow ghee"], "Ghee"],
   [["milk", "doodh", "toned milk", "cow milk"], "Milk"],
   [
-    ["bread", "pav", "bun", "sliced bread", "brown bread", "white bread"],
+    [
+      "bread",
+      "milk bread",
+      "milk-bread",
+      "milkbread",
+      "pav",
+      "bun",
+      "sliced bread",
+      "brown bread",
+      "white bread",
+      "keto bread",
+      "sandwich bread",
+      "atta bread",
+      "whole wheat bread",
+    ],
     "Bread",
   ],
   [["salt", "namak", "sendha namak", "rock salt", "pink salt"], "Salt"],
@@ -308,7 +324,16 @@ export function getItemVisual(
     return { imageUrl: exact.imageUrl, icon: exact.icon || "🛒" };
   }
 
-  // 2. Alias match with word boundary
+  // 2. Canonical match check using single source of truth rules (longest keyword match)
+  const canonical = matchCanonicalName(clean);
+  if (canonical) {
+    const cat = CATALOG_MAP.get(canonical.toLowerCase());
+    if (cat?.imageUrl) {
+      return { imageUrl: cat.imageUrl, icon: cat.icon || "🛒" };
+    }
+  }
+
+  // 3. Alias match with word boundary
   for (const [kwList, target] of ITEM_ALIASES) {
     for (const kw of kwList) {
       const reg = new RegExp(
@@ -779,10 +804,27 @@ export function parseNaturalLanguageList(input: string): string[] {
     " "
   );
 
-  // 3. Normalize spoken conjunctions into delimiters: "and", "then", "also", "plus", "with"
+  // 3. Pre-normalize alternative phrases before conjunction splitting
+  // e.g. "ghea and lauki as a alternative", "ghea or lauki as an alternative", "ghea with lauki as alternative"
+  text = text.replace(
+    /(?:,\s*|\s+)(?:and|or|with|-)\s+([^,;()\n]+?)\s+as\s+(?:an?|the)?\s*alternative\b/gi,
+    (_m, alt) => {
+      const cleanAlt = alt.trim().charAt(0).toUpperCase() + alt.trim().slice(1);
+      return ` (${cleanAlt} as alternative)`;
+    }
+  );
+  text = text.replace(
+    /,\s*([^,;()\n]+?)\s+as\s+(?:an?|the)?\s*alternative\b/gi,
+    (_m, alt) => {
+      const cleanAlt = alt.trim().charAt(0).toUpperCase() + alt.trim().slice(1);
+      return ` (${cleanAlt} as alternative)`;
+    }
+  );
+
+  // 4. Normalize spoken conjunctions into delimiters: "and", "then", "also", "plus", "with"
   text = text.replace(/\b(?:and|then|also|plus|with|as well as)\b/gi, ",");
 
-  // 4. Split by explicit delimiters: newlines, commas, semicolons
+  // 5. Split by explicit delimiters: newlines, commas, semicolons
   const rawChunks = text
     .split(/[\n,;+]+/)
     .map((s) => s.trim())
@@ -839,8 +881,12 @@ export function parseNaturalLanguageList(input: string): string[] {
 }
 
 function normalizeForCompanions(name: string): string {
+  const canon = matchCanonicalName(name);
+  if (canon) return canon;
+
   const n = name.toLowerCase();
   if (n.includes("paneer")) return "Fresh Paneer";
+  if (n.includes("milk bread")) return "Bread";
   if (n.includes("milk")) return "Milk";
   if (n.includes("egg")) return "Eggs";
   if (n.includes("cherry tomato")) return "Cherry Tomatoes";

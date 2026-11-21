@@ -244,16 +244,30 @@ export function parseInputItems(raw: unknown): AddItemInput[] {
     const parsed = parseNaturalLanguageList(raw);
     return parsed
       .map((name) => {
+        let clean = name.trim();
+        let notes: string | undefined = undefined;
+
         const noteMatch =
-          name.match(/^(.*?)\s*[\(\[]note:\s*([^\)\]]+)[\)\]]$/i) ||
-          name.match(/^(.*?)\s*[\(\[](.*?)[\)\]]$/);
-        if (noteMatch) {
-          return {
-            name: noteMatch[1].trim(),
-            notes: noteMatch[2].trim(),
-          };
+          clean.match(/^(.*?)\s*[\(\[]note:\s*([^\)\]]+)[\)\]]$/i) ||
+          clean.match(/^(.*?)\s*[\(\[](.*?)[\)\]]$/);
+        if (noteMatch && noteMatch[1].trim().length > 0) {
+          clean = noteMatch[1].trim();
+          notes = noteMatch[2].trim();
         }
-        return { name: name.trim() };
+
+        if (clean.toLowerCase() === "ghea") {
+          clean = "Ghea";
+          if (!notes) {
+            notes = "Lauki as alternative";
+          } else if (!notes.toLowerCase().includes("lauki")) {
+            notes = `${notes}, Lauki as alternative`;
+          }
+        }
+
+        return {
+          name: clean,
+          notes,
+        };
       })
       .filter((it) => it.name.length > 0);
   }
@@ -334,14 +348,23 @@ export function processAddItems(
     }
 
     const detectedCat = detectCategory(cleanName);
+    let itemNotes = input.notes;
+    if (lowerName === "ghea") {
+      if (!itemNotes) {
+        itemNotes = "Lauki as alternative";
+      } else if (!itemNotes.toLowerCase().includes("lauki")) {
+        itemNotes = `${itemNotes}, Lauki as alternative`;
+      }
+    }
+
     const newItem: GroceryItem = {
       id: `item-${now.getTime()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
-      name: cleanName,
+      name: lowerName === "ghea" ? "Ghea" : cleanName,
       category: detectedCat,
       addedBy: input.addedBy || "Instinct",
       addedAt: now.toISOString(),
       isDone: false,
-      notes: input.notes,
+      notes: itemNotes,
     };
 
     added.push(newItem);

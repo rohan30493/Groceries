@@ -405,9 +405,15 @@ export default function GroceryAssistantApp() {
     const createdNames = new Set(
       created.map((c) => c.name.toLowerCase().trim())
     );
-    const skipped = parsedNames.filter(
-      (n) => !createdNames.has(n.toLowerCase().trim())
-    );
+    const skipped = parsedNames.filter((n) => {
+      const cleanN = n
+        .replace(/\s*[\(\[].*?[\)\]]/, "")
+        .trim()
+        .toLowerCase();
+      return (
+        !createdNames.has(cleanN) && !createdNames.has(n.toLowerCase().trim())
+      );
+    });
     setDuplicateNotice(skipped);
     if (created.length > 0) {
       setLastAddedItem(created[0].name);
@@ -1264,15 +1270,22 @@ export default function GroceryAssistantApp() {
                                     />
 
                                     <div className="min-w-0 flex-1">
-                                      <span
-                                        className={`text-base font-medium block truncate transition-all ${
-                                          isItemOrdered || it.isDone
-                                            ? "line-through text-slate-400 font-normal"
-                                            : "text-slate-800"
-                                        }`}
-                                      >
-                                        {it.name}
-                                      </span>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span
+                                          className={`text-base font-medium block truncate transition-all ${
+                                            isItemOrdered || it.isDone
+                                              ? "line-through text-slate-400 font-normal"
+                                              : "text-slate-800"
+                                          }`}
+                                        >
+                                          {it.name}
+                                        </span>
+                                        {it.notes && (
+                                          <span className="text-[11px] text-amber-800 bg-amber-50/90 border border-amber-200 px-1.5 py-0.5 rounded-md font-medium shrink-0">
+                                            {it.notes}
+                                          </span>
+                                        )}
+                                      </div>
                                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                         {/* Person Tag Badge */}
                                         {it.addedBy === "Rhythm" ? (

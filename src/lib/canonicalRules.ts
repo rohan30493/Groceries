@@ -38,6 +38,7 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
   ["Pomegranate", ["pomegranate", "anar"]],
   ["Mandarin Orange", ["mandarin", "orange mini mandarin", "kinnow", "santra"]],
   ["Kiwi", ["kiwi"]],
+  ["Brinjal / Eggplant", ["eggplant", "brinjal", "baingan", "aubergine"]],
 
   // Dairy, Bread & Eggs
   [
@@ -68,6 +69,8 @@ export const CANONICAL_MATCH_RULES: Array<[string, string[]]> = [
       "pav",
       "burger bun",
       "milk bread",
+      "milk-bread",
+      "milkbread",
       "brown bread",
       "sandwich bread",
       "keto bread",

@@ -447,23 +447,45 @@ export class HouseholdBasket {
       const trimmed = name.trim();
       if (!trimmed) continue;
 
+      let itemName = trimmed;
+      let itemNotes: string | undefined = undefined;
+
+      const noteMatch =
+        trimmed.match(/^(.*?)\s*[\(\[]note:\s*([^\)\]]+)[\)\]]$/i) ||
+        trimmed.match(/^(.*?)\s*[\(\[](.*?)[\)\]]$/);
+      if (noteMatch && noteMatch[1].trim().length > 0) {
+        itemName = noteMatch[1].trim();
+        itemNotes = noteMatch[2].trim();
+      }
+
+      // Auto-attach Lauki as alternative whenever Ghea is added
+      if (itemName.toLowerCase() === "ghea") {
+        itemName = "Ghea";
+        if (!itemNotes) {
+          itemNotes = "Lauki as alternative";
+        } else if (!itemNotes.toLowerCase().includes("lauki")) {
+          itemNotes = `${itemNotes}, Lauki as alternative`;
+        }
+      }
+
       // Deduplicate against items currently visible in the basket. Stale
       // ordered items hidden after their 24h window must not block re-adding.
       const isDuplicate = this.items.some(
         (it) =>
           isVisibleInBasket(it) &&
-          it.name.toLowerCase().trim() === trimmed.toLowerCase()
+          it.name.toLowerCase().trim() === itemName.toLowerCase().trim()
       );
       if (isDuplicate) continue;
 
       const item: GroceryItem = {
         id: `item-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
-        name: trimmed,
-        category: detectCategory(trimmed),
+        name: itemName,
+        category: detectCategory(itemName),
         addedBy,
         addedAt: nowIso,
         createdAt: nowIso,
         isDone: false,
+        notes: itemNotes,
       };
       created.push(item);
     }

@@ -74,7 +74,11 @@ function buildDetailedBody(
 ): string {
   const sections = groupByCategory(pending)
     .map((group) => {
-      const lines = group.items.map((it) => `  - ${it.name}`).join("\n");
+      const lines = group.items
+        .map((it) =>
+          it.notes ? `  - ${it.name} (${it.notes})` : `  - ${it.name}`
+        )
+        .join("\n");
       return `${group.icon} ${group.category}\n${lines}`;
     })
     .join("\n\n");
